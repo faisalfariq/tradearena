@@ -1,0 +1,123 @@
+# Milestone M3 — Participants, Stocks & Picks
+
+This plan implements Participant management, Stock Master catalog (IDX stocks), Tournament Membership, and Daily Stock Picks evaluation inputs according to `tradearena-prd.md` Milestone M3 scope.
+
+## User Review Required
+
+> [!NOTE]
+> - Backend remains the sole source of truth for business validations: stock picks reject duplicates per `[tournamentId, participantId, tradingDate, stockId]` with HTTP 409 Conflict.
+> - Picks require the participant to be an enrolled member of the tournament and the trading date to fall within `[startDate, endDate]`.
+> - Initial top liquid IDX stocks (BBCA, BBRI, BMRI, TLKM, ASII, BBNI, GOTO, AMMN, ADRO, BRIS, etc.) will be seeded.
+
+---
+
+## Proposed Changes
+
+### 1. Backend Modules (`/backend`)
+
+#### [NEW] Stocks Module (`backend/src/stocks`)
+- `stocks.service.ts`:
+  - List stocks with pagination, search query (symbol/name), and active status filter.
+  - Find stock by ID or symbol.
+  - Create/update stocks.
+- `stocks.controller.ts`:
+  - `GET /api/v1/stocks`: List stocks (supports `?search=...&isActive=true`).
+  - `GET /api/v1/stocks/:id`: Stock details.
+  - `POST /api/v1/stocks`: Protected Admin to add stock.
+  - `PUT /api/v1/stocks/:id`: Protected Admin to edit stock.
+- `dto/create-stock.dto.ts` & `dto/query-stock.dto.ts`.
+
+#### [NEW] Participants Module (`backend/src/participants`)
+- `participants.service.ts`:
+  - List participants with search filter.
+  - Create, update, get participant by ID.
+  - Manage tournament enrollment (`TournamentParticipant`):
+    - `enroll(tournamentId, participantId)`
+    - `unenroll(tournamentId, participantId)`
+    - `getTournamentParticipants(tournamentId)`
+- `participants.controller.ts`:
+  - `GET /api/v1/participants`: List all participants.
+  - `POST /api/v1/participants`: Create participant.
+  - `GET /api/v1/participants/:id`: Participant details with pick history.
+  - `PUT /api/v1/participants/:id`: Update participant.
+  - `GET /api/v1/tournaments/:tournamentId/participants`: List enrolled participants.
+  - `POST /api/v1/tournaments/:tournamentId/participants`: Enroll participant.
+  - `DELETE /api/v1/tournaments/:tournamentId/participants/:participantId`: Remove participant from tournament.
+
+#### [NEW] Picks Module (`backend/src/picks`)
+- `picks.service.ts`:
+  - Enforce business validations:
+    - Verify tournament exists.
+    - Verify participant is enrolled in tournament.
+    - Verify stock exists and is active (`isActive = true`).
+    - Verify trading date is within tournament `[startDate, endDate]`.
+    - Verify positive entry price.
+    - Reject duplicates based on `@@unique([tournamentId, participantId, tradingDate, stockId])` with a clear 409 Conflict.
+  - Query picks with filters: `tournamentId`, `tradingDate`, `participantId`, `stockId`.
+  - Update and delete pick.
+- `picks.controller.ts`:
+  - `GET /api/v1/tournaments/:tournamentId/picks`: List picks for a tournament (filterable by date & participant).
+  - `POST /api/v1/tournaments/:tournamentId/picks`: Create stock pick.
+  - `GET /api/v1/picks/:id`: Pick details.
+  - `PUT /api/v1/picks/:id`: Update pick (entry price, source, timestamp).
+  - `DELETE /api/v1/picks/:id`: Delete pick.
+
+#### [MODIFY] `backend/src/app.module.ts`
+- Register `StocksModule`, `ParticipantsModule`, and `PicksModule`.
+
+#### [MODIFY] `backend/prisma/seed.ts`
+- Add initial liquid IDX stocks (BBCA, BBRI, BMRI, TLKM, ASII, BBNI, GOTO, AMMN, ADRO, BRIS, KLBF, ICBP, PGAS, UNTR) and demo participants.
+
+---
+
+### 2. Frontend Application (`/frontend`)
+
+#### [NEW] Participant Management (`/participants`)
+- `frontend/src/app/participants/page.tsx`:
+  - Responsive table and cards of registered participants.
+  - Search by name or email.
+  - Modal to add new participant.
+
+#### [NEW] Stock Catalog (`/stocks`)
+- `frontend/src/app/stocks/page.tsx`:
+  - Directory of IDX stocks with symbol, name, exchange, and status.
+  - Instant search and filter.
+
+#### [NEW] Tournament Details & Picks Management (`/tournaments/[id]`)
+- `frontend/src/app/tournaments/[id]/page.tsx`:
+  - Tab 1: **Rules & Overview** (dates, status, -3% CL, -3% TS).
+  - Tab 2: **Participants** (view enrolled, enroll new participant button).
+  - Tab 3: **Daily Stock Picks** (filter by trading date, participant selector, stock search picker, entry price input, duplicate warning badge).
+
+#### [MODIFY] `frontend/src/components/Navbar.tsx`
+- Add navigation items for `/participants` and `/stocks`.
+
+---
+
+### 3. Automated Tests & Verification
+
+- **Unit Tests**:
+  - `backend/src/stocks/stocks.service.spec.ts`
+  - `backend/src/participants/participants.service.spec.ts`
+  - `backend/src/picks/picks.service.spec.ts` (verifies duplicate rejection, date boundaries, enrollment check)
+- **E2E Tests**:
+  - `backend/test/picks.e2e-spec.ts` (full flow: create participant -> enroll in tournament -> submit pick -> duplicate rejected 409 -> query daily picks)
+- **CI / Build Gates**:
+  - `npm run lint` (backend & frontend)
+  - `npm test` & `npm run test:e2e`
+  - `npm run build` (backend & frontend)
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Backend Unit Tests: `cmd.exe /c npm --prefix backend test`
+- Backend E2E Tests: `cmd.exe /c npm --prefix backend run test:e2e`
+- Backend Build: `cmd.exe /c npm --prefix backend run build`
+- Frontend Lint: `cmd.exe /c npm --prefix frontend run lint`
+- Frontend Build: `cmd.exe /c npm --prefix frontend run build`
+
+### Manual Verification
+- Verify via API that duplicate pick on same date returns 409 Conflict.
+- Verify participant enrollment and daily picks display in UI at `http://localhost:4444/tournaments/[id]`.

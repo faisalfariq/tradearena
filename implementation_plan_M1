@@ -1,0 +1,44 @@
+# Milestone M1 — Authentication & User Foundation
+
+This plan implements secure Admin authentication, password hashing, JWT access & refresh token rotation, RBAC guards, and the frontend login interface according to `tradearena-prd.md` M1 scope.
+
+## Scope & Components
+
+### 1. Backend Authentication Module (`/backend`)
+- **Dependencies**: `bcrypt`, `@types/bcrypt`, `@nestjs/jwt`, `@nestjs/passport`, `passport`, `passport-jwt`, `@types/passport-jwt`.
+- **Database Layer**:
+  - `PrismaService` & `PrismaModule` to interact with PostgreSQL models (`User`, `RefreshToken`).
+  - Admin seed script (`prisma/seed.ts`).
+- **Domain & Services**:
+  - `UsersService`: User lookup, password verification, profile retrieval.
+  - `AuthService`: Login, issue JWT access + hashed refresh tokens, token rotation on `/auth/refresh`, revocation on `/auth/logout`.
+  - `JwtStrategy`: Passport JWT extraction from `Authorization: Bearer <token>`.
+  - `JwtAuthGuard` & `RolesGuard`: Endpoint protection enforcing authentication and `Role.ADMIN`.
+- **API Endpoints**:
+  - `POST /api/v1/auth/login`: Authenticates admin email & password.
+  - `POST /api/v1/auth/refresh`: Rotates refresh token and issues fresh access token.
+  - `POST /api/v1/auth/logout`: Revokes refresh token.
+  - `GET /api/v1/auth/me`: Protected endpoint returning authenticated user profile.
+- **Automated Tests**:
+  - `src/auth/auth.service.spec.ts`: Unit tests for login, credential validation, token rotation, and logout.
+  - `test/auth.e2e-spec.ts`: E2E API tests covering valid login, invalid credentials (401), protected endpoint unauthorized access (401), and profile resolution (200).
+
+### 2. Frontend Authentication & Shell (`/frontend`)
+- **Login View (`/login`)**:
+  - Responsive, dark-mode glassmorphic login card with validation and error states.
+  - Integration with `POST /api/v1/auth/login`.
+- **Auth State Management**:
+  - Client-side auth context (`useAuth`) storing token and active user profile.
+  - Auto-login check via `/api/v1/auth/me`.
+- **Navbar & Navigation**:
+  - Displays authenticated status, user badge, and Logout button.
+  - Redirect logic to `/login` when unauthenticated.
+
+## Verification Plan
+- `npm --prefix backend run lint` -> PASS
+- `npm --prefix backend test` -> PASS
+- `npm --prefix backend run test:e2e` -> PASS
+- `npm --prefix backend run build` -> PASS
+- `npm --prefix frontend run lint` -> PASS
+- `npm --prefix frontend run build` -> PASS
+- Live test on endpoints `/api/v1/auth/login` and `/api/v1/auth/me`.

@@ -1,0 +1,54 @@
+# Milestone M0 — Project Bootstrap
+
+TradeArena is a web application for automated stock-picking tournament evaluation based on historical intraday market data.
+This plan bootstraps the foundational monorepo architecture for TradeArena according to `tradearena-prd.md` and `tradearena-tech-stack.md`.
+
+## User Review Required
+
+> [!NOTE]
+> Node.js v22.19.0 and npm 10.9.3 are installed. In this Windows environment, npm commands are executed via `cmd /c npm` or `.cmd` wrappers due to PowerShell execution policy.
+> Docker CLI is currently not available on this host; `docker-compose.yml` will be provided for containerized deployment/services, while local dev tooling will support both local execution and mock/configured database connections.
+
+## Proposed Changes
+
+### Root Repository Configuration
+- [NEW] [.gitignore](file:///d:/My%20Dev/tradearena/.gitignore)
+- [NEW] [.env.example](file:///d:/My%20Dev/tradearena/.env.example)
+- [NEW] [docker-compose.yml](file:///d:/My%20Dev/tradearena/docker-compose.yml)
+- [NEW] [package.json](file:///d:/My%20Dev/tradearena/package.json) (Root workspace orchestration scripts)
+- [NEW] [run.sh](file:///d:/My%20Dev/tradearena/run.sh) (Cross-platform shell launcher)
+- [NEW] [run.bat](file:///d:/My%20Dev/tradearena/run.bat) (Windows batch launcher)
+- [NEW] [README.md](file:///d:/My%20Dev/tradearena/README.md)
+
+### Documentation
+- [NEW] [docs/progress.md](file:///d:/My%20Dev/tradearena/docs/progress.md)
+- [NEW] [docs/architecture/overview.md](file:///d:/My%20Dev/tradearena/docs/architecture/overview.md)
+- [NEW] [docs/decisions/001-bootstrap-stack.md](file:///d:/My%20Dev/tradearena/docs/decisions/001-bootstrap-stack.md)
+
+### Backend (`/backend`)
+NestJS Modular Monolith + TypeScript + Prisma + PostgreSQL:
+- [NEW] `backend/package.json`
+- [NEW] `backend/tsconfig.json`
+- [NEW] `backend/nest-cli.json`
+- [NEW] `backend/src/main.ts` (Listens on port 3001, global prefix `/api/v1`)
+- [NEW] `backend/src/app.module.ts`
+- [NEW] `backend/src/health/health.module.ts` & `health.controller.ts` (`GET /api/v1/health`)
+- [NEW] `backend/prisma/schema.prisma` (PostgreSQL schema with users, tournaments, rules, participants, picks, candles, evaluations, points, results, audit)
+- [NEW] `backend/test/health.e2e-spec.ts` & unit test baseline
+
+### Frontend (`/frontend`)
+Next.js (App Router) + TypeScript + Tailwind CSS:
+- [NEW] `frontend/package.json`
+- [NEW] `frontend/tsconfig.json`
+- [NEW] `frontend/next.config.js`
+- [NEW] `frontend/tailwind.config.js` & `postcss.config.js`
+- [NEW] `frontend/src/app/layout.tsx` & `page.tsx`
+- [NEW] `frontend/src/app/globals.css` (Premium dark mode UI tokens)
+
+## Verification Plan
+### Automated Tests
+- Backend lint: `npm --prefix backend run lint`
+- Backend unit & e2e test: `npm --prefix backend test`
+- Backend build: `npm --prefix backend run build`
+- Frontend build: `npm --prefix frontend run build`
+- Root launcher verification: test run scripts & child process termination

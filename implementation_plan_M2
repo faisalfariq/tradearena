@@ -1,0 +1,33 @@
+# Milestone M2 — Tournament Core & Rules
+
+This plan implements Tournament lifecycle management and explicit business rules configuration according to `tradearena-prd.md` M2 scope.
+
+## Scope & Components
+
+### 1. Backend (`/backend`)
+- **DTOs**:
+  - `CreateTournamentDto` & `TournamentRuleDto`: validates tournament meta, date ranges (end > start), stop percentages (default 3% / 0.03), candle ambiguity policies, gap policies, and IDX fraction versioning.
+  - `UpdateTournamentDto` & `UpdateTournamentStatusDto`: handles safe transitions (`DRAFT`, `UPCOMING`, `ACTIVE`, `COMPLETED`, `CANCELLED`).
+- **TournamentsService & TournamentsController**:
+  - CRUD operations with relational `TournamentRule` creation and transaction management.
+  - Enforce backend validation as source of truth.
+  - Protected endpoints using `JwtAuthGuard` and `RolesGuard(ADMIN)`.
+- **Automated Tests**:
+  - `tournaments.service.spec.ts`: Unit tests verifying rule assignment, date validations, and updates.
+  - `test/tournaments.e2e-spec.ts`: E2E tests for tournament creation with rules, retrieval, unauthorized access rejection, and status updates.
+
+### 2. Frontend (`/frontend`)
+- **Tournament Pages**:
+  - `/tournaments`: Responsive tournament dashboard with status badges, rules preview (-3% CL / -3% TS), and date ranges.
+  - `/tournaments/new`: Form modal/page with intuitive inputs and preset BSJP defaults.
+  - `/tournaments/[id]`: Detail page with rule inspector and status management.
+- **Navigation**:
+  - Integrated navigation links in `Navbar`.
+
+## Verification Plan
+- `npm --prefix backend run lint` -> PASS
+- `npm --prefix backend test` -> PASS
+- `npm --prefix backend run test:e2e` -> PASS
+- `npm --prefix backend run build` -> PASS
+- `npm --prefix frontend run lint` -> PASS
+- `npm --prefix frontend run build` -> PASS

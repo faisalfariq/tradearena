@@ -1,0 +1,158 @@
+# TradeArena — Progress Tracking
+
+Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD dan Acceptance Criteria.
+
+---
+
+## Status Milestone Ringkas
+
+| Milestone | Scope | Status | Completion Date |
+|---|---|---|---|
+| **M0** | Project Bootstrap | **COMPLETED** | 2026-09-05 |
+| **M1** | Authentication & User Management | **COMPLETED** | 2026-09-05 |
+| **M2** | Tournament Core & Rules | **COMPLETED** | 2026-09-05 |
+| **M3** | Participants, Stocks & Picks | **COMPLETED** | 2026-09-06 |
+| **M4** | Market Data Integration | **IN PROGRESS** / NEXT | - |
+| **M5** | Trade Evaluation Engine | NOT STARTED | - |
+| **M6** | Points & Results | NOT STARTED | - |
+| **M7** | Leaderboard & Dashboard | NOT STARTED | - |
+| **M8** | Automation & Exception Handling | NOT STARTED | - |
+| **M9** | MVP Stabilization | NOT STARTED | - |
+
+---
+
+## Detail Milestone
+
+### M0 — Project Bootstrap
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-05
+- **Implemented Scope:**
+  - Monorepo structure (`frontend/`, `backend/`, `docs/`)
+  - Root configuration (`.gitignore`, `.env.example`, `docker-compose.yml`, `package.json`)
+  - Root launchers (`run.sh` untuk Linux/macOS, `run.bat` untuk Windows)
+  - Backend NestJS Modular Monolith + TypeScript + Prisma + PostgreSQL schema
+  - Frontend Next.js 14 App Router + Tailwind CSS + Responsive UI + Live API Health checker
+  - Endpoints: `GET /api/v1/health`, Swagger docs `/api/docs`
+  - Documentation: `README.md`, `docs/architecture/overview.md`, `docs/decisions/001-bootstrap-stack.md`, `docs/progress.md`
+- **Verification:**
+  - Lint: PASS
+  - Tests: PASS (Unit & E2E)
+  - Builds: PASS (Backend & Frontend)
+
+---
+
+### M1 — Authentication & User Management
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-05
+- **Implemented Scope:**
+  - Backend `PrismaService` & `PrismaModule`
+  - `UsersService` & `UsersModule` (Lookup by email/id, user creation, password hashing with bcrypt)
+  - `AuthService` & `AuthController` (`POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`, `GET /api/v1/auth/me`, `GET /api/v1/auth/admin-test`)
+  - JWT Access Token (1h) + Refresh Token rotation (7d)
+  - Passport JWT Strategy (`JwtStrategy`), `JwtAuthGuard`, `RolesGuard`, dan `@Roles(Role.ADMIN)`
+  - Admin seed script: `backend/prisma/seed.ts`
+  - Frontend `AuthContext` (`AuthProvider`, `useAuth`) dengan persistent session dan auto-sync
+  - Responsive dark-mode Login Page (`/login`) dengan validation, error feedback, dan auto-redirect
+  - Updated `Navbar` menampilkan profil user terautentikasi, badge Role ADMIN, dan action Logout
+- **Verification:**
+  - Lint: PASS
+  - Unit Tests: PASS (10/10 passed)
+  - E2E Tests: PASS (9/9 passed)
+  - Builds: PASS (Backend & Frontend)
+
+---
+
+### M2 — Tournament Core & Rules
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-05
+- **Implemented Scope:**
+  - Backend `TournamentsModule`, `TournamentsService`, dan `TournamentsController`
+  - CRUD turnamen dengan relasi aturan trading `TournamentRule` (Initial Cut Loss % default 3%, Trailing Stop % default 3% dari peak, Candle Ambiguity Policy, Gap Policy, Price Fraction Policy)
+  - Enforce backend validation: rentang tanggal valid (`endDate > startDate`), sanitasi persentase stop, proteksi penghapusan turnamen berstatus ACTIVE
+  - Endpoints REST `/api/v1/tournaments`:
+    * `GET /api/v1/tournaments` (List dengan filter status & rules summary)
+    * `GET /api/v1/tournaments/:id` (Detail turnamen dan aturan)
+    * `POST /api/v1/tournaments` (Protected Admin: buat turnamen dan auto-generate rules)
+    * `PUT /api/v1/tournaments/:id` (Protected Admin: update turnamen & rules)
+    * `PATCH /api/v1/tournaments/:id/status` (Protected Admin: transisi status UPCOMING -> ACTIVE -> COMPLETED)
+    * `DELETE /api/v1/tournaments/:id` (Protected Admin: hapus turnamen non-aktif)
+  - Frontend Manajemen Turnamen:
+    * `/tournaments`: Dashboard daftar turnamen responsif dengan filter status (All, Upcoming, Active, Completed), indikator tanggal, jumlah peserta/picks, dan highlight rules (-3% CL & -3% TS).
+    * `/tournaments/new`: Formulir interaktif pembuatan turnamen dengan preset aturan BSJP default dan pengaturan kebijakan candle/gap.
+    * Navbar update dengan tautan cepat ke menu "Turnamen".
+- **Database Changes:**
+  - Memanfaatkan relasi entitas `Tournament` dan `TournamentRule` pada schema Prisma.
+- **API Changes:**
+  - `GET /api/v1/tournaments`
+  - `POST /api/v1/tournaments`
+  - `GET /api/v1/tournaments/:id`
+  - `PUT /api/v1/tournaments/:id`
+  - `PATCH /api/v1/tournaments/:id/status`
+  - `DELETE /api/v1/tournaments/:id`
+- **Frontend Changes:**
+  - File baru `frontend/src/app/tournaments/page.tsx`
+  - File baru `frontend/src/app/tournaments/new/page.tsx`
+  - Update `frontend/src/components/Navbar.tsx`
+- **Tests:**
+  - `src/tournaments/tournaments.service.spec.ts`: Unit tests untuk date range validation, default BSJP -3% rules creation, list retrieval, status update, dan active deletion constraint -> PASS.
+  - `test/tournaments.e2e-spec.ts`: E2E tests untuk public list, unauthenticated rejection 401, admin creation 201 dengan rules, status patch 200 -> PASS.
+- **Verification:**
+  - Lint: PASS (Backend: 0 errors/warnings | Frontend: 0 errors/warnings)
+  - Backend Unit Tests: PASS (19/19 passed)
+  - Backend E2E Tests: PASS (14/14 passed)
+  - Backend Build: PASS (exit code 0)
+  - Frontend Build: PASS (exit code 0, 7/7 static routes generated)
+- **Decisions:**
+  - Default BSJP initial CL (-3%) dan Trailing Stop (-3% dari peak) ditetapkan secara otomatis jika tidak dispesifikasikan saat turnamen dibuat.
+- **Known Limitations:**
+  - None
+- **Blockers:** None
+- **Next Milestone:** M3 — Participants, Stocks & Picks
+
+---
+
+### M3 — Participants, Stocks & Picks
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - Backend `StocksModule`, `StocksService`, dan `StocksController`:
+    * Master emiten saham IDX (create, update, search, active filter, soft-delete protection).
+    * Endpoints: `GET /api/v1/stocks`, `GET /api/v1/stocks/:id`, `POST /api/v1/stocks`, `PUT /api/v1/stocks/:id`, `DELETE /api/v1/stocks/:id`.
+  - Backend `ParticipantsModule`, `ParticipantsService`, dan `ParticipantsController`:
+    * CRUD peserta turnamen (nama, email unik, nomor telepon WhatsApp).
+    * Tournament Membership: pendaftaran (`enroll`), pembatalan (`unenroll`), dan list peserta terdaftar (`getTournamentParticipants`) dengan hitungan picks.
+    * Endpoints: `GET /api/v1/participants`, `POST /api/v1/participants`, `GET /api/v1/participants/:id`, `PUT /api/v1/participants/:id`, `DELETE /api/v1/participants/:id`, `GET /api/v1/tournaments/:id/participants`, `POST /api/v1/tournaments/:id/participants`, `DELETE /api/v1/tournaments/:id/participants/:participantId`.
+  - Backend `PicksModule`, `PicksService`, dan `PicksController`:
+    * Input pilihan saham harian peserta (`StockPick`).
+    * Strict backend business validations:
+      - Validasi keberadaan turnamen dan peserta.
+      - Enforce kepesertaan turnamen (peserta wajib terdaftar di `TournamentParticipant`).
+      - Validasi emiten saham aktif (`isActive = true`).
+      - Validasi tanggal trading berada dalam rentang `[startDate, endDate]` turnamen.
+      - Validasi harga entry bernilai positif (> 0).
+      - **Enforce penolakan pick duplikat (HTTP 409 Conflict)** sesuai `@@unique([tournamentId, participantId, tradingDate, stockId])`.
+    * Endpoints: `GET /api/v1/tournaments/:id/picks`, `POST /api/v1/tournaments/:id/picks`, `GET /api/v1/picks/:id`, `PUT /api/v1/picks/:id`, `DELETE /api/v1/picks/:id`.
+  - Database & Seeding (`backend/prisma/seed.ts`):
+    * 15 emiten saham terlikuid IDX (BBCA, BBRI, BMRI, BBNI, TLKM, ASII, AMMN, GOTO, ADRO, BRIS, UNTR, ICBP, KLBF, PGAS, CPIN).
+    * 5 demo peserta turnamen (Budi Santoso, Siti Rahma, Denny Pratama, Hendra Wijaya, Rina Kusuma).
+    * Turnamen aktif "BSJP Championship Musim 1 — 2026" beserta pendaftaran 5 peserta dan demo picks harian.
+  - Frontend Views:
+    * `/participants`: Dashboard manajemen peserta, pencarian, statistik enrollment/picks, dan modal tambah peserta.
+    * `/stocks`: Katalog master emiten saham IDX dengan filter status aktif/non-aktif, pencarian ticker/nama, dan modal tambah emiten baru.
+    * `/tournaments/[id]`: Halaman detail turnamen interaktif dengan 3 tab:
+      - Tab Stock Picks: tabel picks harian, filter tanggal trading, dan modal submit stock pick dengan validasi relasi.
+      - Tab Peserta Terdaftar: daftar anggota turnamen dan modal daftarkan peserta dari master data.
+      - Tab Overview & Rules: highlight -3% Cut Loss dan -3% Trailing Stop dari peak beserta kebijakan candle ambiguity & gap.
+    * Navbar update: penambahan tautan navigasi langsung ke menu "Peserta" dan "Saham".
+    * Dashboard Turnamen update: tautan "Detail & Picks →" langsung pada setiap kartu turnamen.
+- **Verification:**
+  - Lint: PASS (Backend: 0 errors/warnings | Frontend: 0 errors/warnings)
+  - Backend Unit Tests: PASS (6/6 test suites, 39/39 tests passed)
+  - Backend E2E Tests: PASS (4/4 test suites, 21/21 tests passed)
+  - Backend Build: PASS (`nest build`, exit code 0)
+  - Frontend Build: PASS (`next build`, 9/9 routes compiled, exit code 0)
+- **Decisions:**
+  - Validasi duplikasi pick menghasilkan HTTP 409 Conflict yang jelas bagi client/UI.
+  - Tanggal perdagangan diparsing secara konsisten pada format `YYYY-MM-DD` untuk menghindari pergeseran akibat timezone client.
+- **Next Milestone:** M4 — Market Data Integration (Canonical intraday data provider adapter, normalizer, candle ingestion & sync tracking)
+
