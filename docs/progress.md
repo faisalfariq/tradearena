@@ -14,10 +14,10 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 | **M3** | Participants, Stocks & Picks | **COMPLETED** | 2026-09-06 |
 | **M4** | Market Data Integration | **COMPLETED** | 2026-09-06 |
 | **M5** | Trade Evaluation Engine | **COMPLETED** | 2026-09-06 |
-| **M6** | Points & Results | **NEXT** | - |
-| **M7** | Leaderboard & Dashboard | NOT STARTED | - |
-| **M8** | Automation & Exception Handling | NOT STARTED | - |
-| **M9** | MVP Stabilization | NOT STARTED | - |
+| **M6** | Points & Results | **COMPLETED** | 2026-09-06 |
+| **M7** | Leaderboard & Dashboard | **COMPLETED** | 2026-09-06 |
+| **M8** | Automation & Exception Handling | **COMPLETED** | 2026-09-06 |
+| **M9** | MVP Stabilization | **NEXT** | - |
 
 ---
 
@@ -322,4 +322,41 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 - **Decisions:**
   - Halaman utama (root `/`) dibuat adaptif: menyajikan landing hero konversi untuk publik dan dashboard operasional real-time untuk admin.
   - Halaman leaderboard publik (`/tournaments/[id]/leaderboard`) dipisahkan dari konsol admin agar bebas dari tombol manipulasi data saat disiarkan ke publik/peserta.
-- **Next Milestone:** M8 — Automation & Exception Handling (Scheduler, BullMQ jobs, retry mechanisms, REVIEW_REQUIRED handling)
+- **Next Milestone:** M8 — Automation & Exception Handling
+
+---
+
+### M8 — Automation & Exception Handling
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - **Backend Automation Module (`AutomationService`, `AutomationController`, `AutomationScheduler`, `AutomationModule`):**
+    * Orkesktasi Pipeline Pasca-Market Terpadu (`runDailyPipeline`): 4-step pipeline sekuensial dan atomik:
+      1. Koleksi Stock Pick terkonfirmasi turnamen untuk tanggal perdagangan target.
+      2. Sinkronisasi data intraday bursa untuk seluruh emiten unik pick.
+      3. Eksekusi evaluasi deterministik (Cut Loss / Trailing Stop) dengan pencatatan status exception.
+      4. Kalkulasi ulang perolehan poin dan peringkat klasemen turnamen secara instan.
+      5. Pencatatan audit trail permanen dengan metadata lengkap metrik pemrosesan.
+    * Scheduler Cron Otomatis: `@Cron('15 16 * * 1-5', { timeZone: 'Asia/Jakarta' })` yang berjalan setiap hari bursa (Senin-Jumat) pukul 16:15 WIB untuk seluruh turnamen berstatus `ACTIVE`.
+    * Exception Handling & Recovery Center:
+      * Identifikasi trade yang berstatus `REVIEW_REQUIRED` (ambiguitas candle ekstrem) atau `PENDING_DATA` (data bursa belum lengkap).
+      * Endpoint `GET /api/v1/tournaments/:tournamentId/exceptions` untuk inventarisasi exception.
+      * Endpoint `POST /api/v1/evaluations/:id/retry` untuk coba ulang sinkronisasi bursa dan evaluasi ulang trade pick secara individual.
+      * Integrasi mulus dengan modal manual override untuk penyelesaian sengketa manual oleh admin.
+    * Riwayat Audit Log Operasional:
+      * Endpoint `GET /api/v1/tournaments/:tournamentId/audit-trail` untuk melacak seluruh aktivitas pipeline harian, retry, dan override.
+  - **Frontend Tab 7: "Otomasi & Exceptions" (`/tournaments/[id]`):**
+    * Toolbar eksekusi on-demand dengan date picker dan tombol "Jalankan Pipeline Harian".
+    * Stepper visual 4 tahap real-time dengan status badge (Berhasil, Peringatan, Dilewati, Gagal) dan metrik pill (jumlah pick, emiten unik, evaluasi selesai, poin dihitung).
+    * Exception Center Management Table: Daftar emiten/peserta yang membutuhkan tindakan dengan tombol aksi "Retry" dan "Override".
+    * Tabel Riwayat Audit Trail Operasional dengan timeline aktivitas admin/sistem.
+- **Verification:**
+  - Backend Unit Tests: PASS (`automation.service.spec.ts`, 4/4 passed)
+  - Backend Lint & Build: PASS (`nest build`, exit code 0)
+  - Frontend Lint & Build: PASS (`next build`, 10/10 routes compiled, 0 lint/type errors, exit code 0)
+  - Live End-to-End Test (`verify-m8.js`): PASS (Admin auth, eksekusi pipeline lengkap 4 step, query exceptions, query audit trail, dan pemeriksaan HTTP 200 Tab 7)
+- **Decisions:**
+  - Pipeline dirancang idempoten sehingga dapat dijalankan ulang berkali-kali secara aman (manual on-demand maupun cron) tanpa merusak konsistensi data poin.
+  - Jika tanggal yang diproses tidak memiliki stock pick, langkah sinkronisasi dan evaluasi dilewati (`SKIPPED`) dengan anggun tanpa menggagalkan keseluruhan pipeline.
+- **Next Milestone:** M9 — MVP Stabilization (E2E testing, security hardening, final polish, and release sign-off)
+

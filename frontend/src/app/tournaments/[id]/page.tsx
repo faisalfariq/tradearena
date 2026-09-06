@@ -38,6 +38,8 @@ import {
   HelpCircle,
   ChevronDown,
   ChevronUp,
+  Zap,
+  RotateCcw,
 } from 'lucide-react';
 
 interface DailyResultItem {
@@ -284,7 +286,7 @@ export default function TournamentDetailPage() {
   const [tournament, setTournament] = useState<TournamentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    'OVERVIEW' | 'PARTICIPANTS' | 'PICKS' | 'SYNC' | 'EVALUATION' | 'RESULTS'
+    'OVERVIEW' | 'PARTICIPANTS' | 'PICKS' | 'SYNC' | 'EVALUATION' | 'RESULTS' | 'AUTOMATION'
   >('PICKS');
 
   // Enrolled Participants state
@@ -377,6 +379,18 @@ export default function TournamentDetailPage() {
   const [resultsActionSuccess, setResultsActionSuccess] = useState('');
   const [showTieBreakerGuide, setShowTieBreakerGuide] = useState(false);
 
+  // Automation & Exception states (Milestone M8)
+  const [automationDate, setAutomationDate] = useState('');
+  const [runningPipeline, setRunningPipeline] = useState(false);
+  const [pipelineReport, setPipelineReport] = useState<any | null>(null);
+  const [pipelineError, setPipelineError] = useState('');
+  const [pipelineSuccess, setPipelineSuccess] = useState('');
+  const [exceptionsList, setExceptionsList] = useState<any[]>([]);
+  const [loadingExceptions, setLoadingExceptions] = useState(false);
+  const [retryingEvalId, setRetryingEvalId] = useState<string | null>(null);
+  const [auditTrailList, setAuditTrailList] = useState<any[]>([]);
+  const [loadingAuditTrail, setLoadingAuditTrail] = useState(false);
+
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333/api/v1';
 
   // Fetch tournament details
@@ -394,10 +408,12 @@ export default function TournamentDetailPage() {
             setPickDate(today);
             setEvalDateFilter(today);
             setResultsDateFilter(today);
+            setAutomationDate(today);
           } else {
             setPickDate(start);
             setEvalDateFilter(start);
             setResultsDateFilter(start);
+            setAutomationDate(start);
           }
         }
       }
@@ -909,6 +925,115 @@ export default function TournamentDetailPage() {
     }
   };
 
+  // Fetch Exceptions List (Milestone M8)
+  const fetchExceptions = useCallback(
+    async (dateStr?: string) => {
+      setLoadingExceptions(true);
+      try {
+        const q = dateStr ? `?tradingDate=${dateStr}` : '';
+        const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/exceptions${q}`, {
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setExceptionsList(data.items || []);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingExceptions(false);
+      }
+    },
+    [API_BASE, tournamentId, token],
+  );
+
+  // Fetch Audit Trail (Milestone M8)
+  const fetchAuditTrail = useCallback(async () => {
+    setLoadingAuditTrail(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/audit-trail`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAuditTrailList(data || []);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingAuditTrail(false);
+    }
+  }, [API_BASE, tournamentId, token]);
+
+  // Run Daily Pipeline (Milestone M8)
+  const handleRunPipeline = async () => {
+    setRunningPipeline(true);
+    setPipelineError('');
+    setPipelineSuccess('');
+    setPipelineReport(null);
+
+    const dateStr =
+      automationDate || (tournament?.startDate ? tournament.startDate.substring(0, 10) : '');
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/tournaments/${tournamentId}/pipeline/run?tradingDate=${dateStr}`,
+        {
+          method: 'POST',
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal menjalankan pipeline pasca-market');
+      }
+
+      setPipelineReport(data);
+      setPipelineSuccess(
+        `Pipeline harian pasca-market selesai dieksekusi dengan status: ${data.overallStatus}!`,
+      );
+      fetchExceptions(dateStr);
+      fetchAuditTrail();
+      fetchEvaluations(dateStr);
+    } catch (err: any) {
+      setPipelineError(err.message || 'Terjadi kesalahan saat mengeksekusi pipeline');
+    } finally {
+      setRunningPipeline(false);
+    }
+  };
+
+  // Retry Evaluation (Milestone M8)
+  const handleRetryEvaluation = async (evaluationId: string) => {
+    setRetryingEvalId(evaluationId);
+    try {
+      const res = await fetch(`${API_BASE}/evaluations/${evaluationId}/retry`, {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal mencoba ulang evaluasi');
+      }
+      alert(data.message || 'Evaluasi berhasil dicoba ulang');
+      fetchExceptions(automationDate);
+      fetchAuditTrail();
+      fetchEvaluations(automationDate);
+    } catch (err: any) {
+      alert(err.message || 'Gagal melakukan retry');
+    } finally {
+      setRetryingEvalId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
@@ -1088,6 +1213,25 @@ export default function TournamentDetailPage() {
         >
           <Trophy className="w-3.5 h-3.5" />
           <span>Hasil & Klasemen</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('AUTOMATION');
+            fetchExceptions(automationDate);
+            fetchAuditTrail();
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+            activeTab === 'AUTOMATION'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5" />
+          <span>Otomasi & Exceptions</span>
+          {exceptionsList.length > 0 && (
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          )}
         </button>
 
         <button
@@ -2849,6 +2993,328 @@ export default function TournamentDetailPage() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB 7: AUTOMATION & EXCEPTION HANDLING (Milestone M8) */}
+      {activeTab === 'AUTOMATION' && (
+        <div className="space-y-8">
+          {/* Header Action Toolbar */}
+          <div className="p-6 rounded-2xl glass-panel border border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  Post-Market Automation & Exceptions • Milestone M8
+                </span>
+              </div>
+              <h2 className="text-lg font-bold text-white">
+                Orkestrasi Otomasi Pasca-Market & Penanganan Exception
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Jalankan seluruh rangkaian pasca-market (Sync Data $\rightarrow$ Validasi $\rightarrow$ Evaluasi CL/TS $\rightarrow$ Kalkulasi Poin) dalam 1 klik terorkestrasi.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <input
+                  type="date"
+                  value={automationDate}
+                  onChange={(e) => {
+                    setAutomationDate(e.target.value);
+                    fetchExceptions(e.target.value);
+                  }}
+                  className="bg-transparent text-xs text-white focus:outline-none font-mono"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  fetchExceptions(automationDate);
+                  fetchAuditTrail();
+                }}
+                disabled={loadingExceptions || loadingAuditTrail}
+                className="p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-slate-200 transition-colors"
+                title="Segarkan Data"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${
+                    loadingExceptions || loadingAuditTrail ? 'animate-spin text-blue-400' : ''
+                  }`}
+                />
+              </button>
+
+              <button
+                onClick={handleRunPipeline}
+                disabled={runningPipeline}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50"
+              >
+                {runningPipeline ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Mengeksekusi Pipeline...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-current text-slate-950" />
+                    <span>Jalankan Pipeline Harian</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Feedback Messages */}
+          {pipelineError && (
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{pipelineError}</span>
+            </div>
+          )}
+
+          {pipelineSuccess && (
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{pipelineSuccess}</span>
+            </div>
+          )}
+
+          {/* Stepper Report when Pipeline Executed */}
+          {pipelineReport && (
+            <div className="p-6 rounded-2xl glass-panel border border-amber-500/30 space-y-6 bg-slate-900/40">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-800">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Laporan Eksekusi Pipeline #{pipelineReport.pipelineId}
+                  </span>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2 mt-0.5">
+                    <span>Hasil Orkestrasi Sesi: {pipelineReport.tradingDate}</span>
+                    <span
+                      className={`text-xs px-2.5 py-0.5 rounded-full font-extrabold ${
+                        pipelineReport.overallStatus === 'SUCCESS'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : pipelineReport.overallStatus === 'PARTIAL'
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      }`}
+                    >
+                      {pipelineReport.overallStatus}
+                    </span>
+                  </h3>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 text-xs">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-mono">
+                    Emiten: <strong>{pipelineReport.uniqueSymbolsCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-mono">
+                    Total Pick: <strong>{pipelineReport.picksCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+                    Selesai: <strong>{pipelineReport.completedCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
+                    Exceptions: <strong>{pipelineReport.exceptionsCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">
+                    Poin Terkalkulasi: <strong>{pipelineReport.recalculatedPointsCount}</strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* 4 Steps Stepper */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {pipelineReport.steps.map((stepItem: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 relative"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        Langkah {idx + 1}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                          stepItem.status === 'SUCCESS'
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : stepItem.status === 'WARNING'
+                            ? 'bg-amber-500/10 text-amber-400'
+                            : stepItem.status === 'SKIPPED'
+                            ? 'bg-slate-800 text-slate-400'
+                            : 'bg-rose-500/10 text-rose-400'
+                        }`}
+                      >
+                        {stepItem.status}
+                      </span>
+                    </div>
+                    <div className="text-xs font-bold text-white">{stepItem.step}</div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">{stepItem.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Exception Management Center */}
+          <div className="p-6 rounded-2xl glass-panel border border-slate-800 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-amber-400" />
+                  <span>Pusat Penanganan Exception ({exceptionsList.length} Kasus Perlu Ditinjau)</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Daftar trade yang berstatus REVIEW_REQUIRED atau PENDING_DATA yang membutuhkan perhatian admin.
+                </p>
+              </div>
+
+              <span className="text-xs text-slate-500">
+                Pengecualian diisolasi tanpa memblokir peserta lain
+              </span>
+            </div>
+
+            {loadingExceptions ? (
+              <div className="py-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                <span>Memuat daftar exception...</span>
+              </div>
+            ) : exceptionsList.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-300">
+                  <thead className="bg-slate-900/80 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3">Peserta</th>
+                      <th className="py-2.5 px-3">Emiten</th>
+                      <th className="py-2.5 px-3">Tanggal Sesi</th>
+                      <th className="py-2.5 px-3">Entry Price</th>
+                      <th className="py-2.5 px-3">Status Exception</th>
+                      <th className="py-2.5 px-3">Keterangan / Anomali</th>
+                      <th className="py-2.5 px-3 text-right">Tindakan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {exceptionsList.map((ex) => (
+                      <tr key={ex.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3 px-3 font-semibold text-white">{ex.participantName}</td>
+                        <td className="py-3 px-3">
+                          <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+                            {ex.stockSymbol}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-slate-400">{ex.tradingDate}</td>
+                        <td className="py-3 px-3 font-mono">
+                          Rp {ex.entryPrice.toLocaleString('id-ID')}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                              ex.status === 'REVIEW_REQUIRED'
+                                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            }`}
+                          >
+                            {ex.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-slate-400 max-w-xs truncate">{ex.notes}</td>
+                        <td className="py-3 px-3 text-right space-x-2">
+                          <button
+                            onClick={() => handleRetryEvaluation(ex.id)}
+                            disabled={retryingEvalId === ex.id}
+                            className="px-2.5 py-1 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 text-[11px] font-semibold inline-flex items-center gap-1 transition-colors disabled:opacity-50"
+                          >
+                            <RotateCcw
+                              className={`w-3 h-3 ${
+                                retryingEvalId === ex.id ? 'animate-spin' : ''
+                              }`}
+                            />
+                            <span>Retry</span>
+                          </button>
+                          <button
+                            onClick={() => handleOpenOverride(ex as any)}
+                            className="px-2.5 py-1 rounded-lg bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/20 text-[11px] font-semibold inline-flex items-center gap-1 transition-colors"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>Override</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-8 rounded-xl bg-slate-900/50 border border-slate-800 text-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div className="text-xs font-bold text-white">
+                  Semua Trade Berhasil Dievaluasi Tanpa Exception!
+                </div>
+                <p className="text-[11px] text-slate-400 max-w-md mx-auto">
+                  Tidak ada trade berstatus REVIEW_REQUIRED atau PENDING_DATA pada tanggal yang dipilih. Seluruh evaluasi telah memenuhi aturan bursa IDX dan PRD.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Audit Trail History Log */}
+          <div className="p-6 rounded-2xl glass-panel border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-400" />
+                <span>Audit Trail Riwayat Operasional Turnamen</span>
+              </h3>
+              <span className="text-xs text-slate-500">Pencatatan Permanen & Imutable</span>
+            </div>
+
+            {loadingAuditTrail ? (
+              <div className="py-8 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+                <span>Memuat audit trail...</span>
+              </div>
+            ) : auditTrailList.length > 0 ? (
+              <div className="overflow-x-auto border border-slate-800 rounded-xl">
+                <table className="w-full text-left text-xs text-slate-300">
+                  <thead className="bg-slate-900/90 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3">Waktu WIB</th>
+                      <th className="py-2.5 px-3">Aksi / Operasi</th>
+                      <th className="py-2.5 px-3">Entitas</th>
+                      <th className="py-2.5 px-3">Rincian Perubahan (Audit Payload)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+                    {auditTrailList.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-2.5 px-3 text-slate-400">
+                          {new Date(log.createdAt).toLocaleString('id-ID', {
+                            dateStyle: 'short',
+                            timeStyle: 'medium',
+                          })}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span className="font-bold text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-300">{log.entityType}</td>
+                        <td className="py-2.5 px-3 text-slate-400 max-w-md truncate">
+                          {JSON.stringify(log.newValues || log.oldValues || {})}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-slate-500 text-xs">
+                Belum ada catatan audit trail operasional untuk turnamen ini.
+              </div>
+            )}
+          </div>
         </div>
       )}
 

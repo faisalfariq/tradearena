@@ -10,8 +10,10 @@ import { ParticipantsModule } from './participants/participants.module';
 import { PicksModule } from './picks/picks.module';
 import { MarketDataModule } from './market-data/market-data.module';
 import { EvaluationModule } from './evaluation/evaluation.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ResultsModule } from './results/results.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AutomationModule } from './automation/automation.module';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
       isGlobal: true,
       envFilePath: ['.env', '../.env'],
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     UsersModule,
     AuthModule,
@@ -30,6 +33,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     EvaluationModule,
     ResultsModule,
     DashboardModule,
+    AutomationModule,
     HealthModule,
   ],
 })
