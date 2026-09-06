@@ -43,6 +43,12 @@ export default function UserManagementPage() {
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'ADMIN' | 'USER'>('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   // Guard: Admin only
   useEffect(() => {
@@ -87,16 +93,8 @@ export default function UserManagementPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleRoleChange = async (targetUser: UserItem, newRole: 'ADMIN' | 'USER') => {
+  const executeRoleChange = async (targetUser: UserItem, newRole: 'ADMIN' | 'USER') => {
     if (!token) return;
-
-    if (targetUser.id === user?.id && newRole === 'USER') {
-      const confirmSelf = confirm(
-        'PERINGATAN: Anda akan menurunkan akun Anda sendiri menjadi USER biasa. Anda akan kehilangan akses ke menu admin. Lanjutkan?',
-      );
-      if (!confirmSelf) return;
-    }
-
     setUpdatingId(targetUser.id);
     try {
       const res = await fetch(`${API_BASE}/users/${targetUser.id}/role`, {
@@ -123,6 +121,24 @@ export default function UserManagementPage() {
     } finally {
       setUpdatingId(null);
     }
+  };
+
+  const handleRoleChange = async (targetUser: UserItem, newRole: 'ADMIN' | 'USER') => {
+    if (targetUser.id === user?.id && newRole === 'USER') {
+      setConfirmModal({
+        isOpen: true,
+        title: 'Konfirmasi Turunkan Hak Akses Sendiri',
+        description:
+          'PERINGATAN: Anda akan mengubah role akun Anda sendiri menjadi USER biasa. Anda akan langsung kehilangan akses ke panel manajemen Admin. Lanjutkan tindakan ini?',
+        onConfirm: () => {
+          setConfirmModal(null);
+          executeRoleChange(targetUser, newRole);
+        },
+      });
+      return;
+    }
+
+    await executeRoleChange(targetUser, newRole);
   };
 
   const totalUsers = users.length;
@@ -403,6 +419,39 @@ export default function UserManagementPage() {
           </table>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmModal && confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-6 relative animate-in zoom-in-95 duration-150">
+            <div className="flex items-start gap-3.5 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">{confirmModal.title}</h3>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">{confirmModal.description}</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(null)}
+                className="px-4 py-2 rounded-xl border border-slate-700 text-xs font-semibold text-slate-300 hover:bg-slate-800"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmModal.onConfirm}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white shadow-md shadow-amber-600/30"
+              >
+                Ya, Lanjutkan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

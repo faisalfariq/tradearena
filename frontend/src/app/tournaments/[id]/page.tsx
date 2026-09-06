@@ -160,6 +160,22 @@ interface EnrolledParticipant {
   picksCount: number;
 }
 
+interface ConfirmDialogState {
+  isOpen: boolean;
+  type: 'DANGER' | 'WARNING' | 'SUCCESS' | 'INFO';
+  title: string;
+  description: string;
+  warningNote?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  hasInput?: boolean;
+  inputLabel?: string;
+  inputPlaceholder?: string;
+  inputValue?: string;
+  isLoading?: boolean;
+  onConfirm: (val?: string) => Promise<void> | void;
+}
+
 interface Stock {
   id: string;
   symbol: string;
@@ -331,6 +347,20 @@ export default function TournamentDetailPage() {
   const [newParticipantName, setNewParticipantName] = useState('');
   const [newParticipantEmail, setNewParticipantEmail] = useState('');
   const [newParticipantPhone, setNewParticipantPhone] = useState('');
+
+  // Premium Custom Confirmation Modal state
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | null>(null);
+  const [confirmInputValue, setConfirmInputValue] = useState('');
+
+  const showConfirmDialog = (cfg: Omit<ConfirmDialogState, 'isOpen'>) => {
+    setConfirmInputValue(cfg.inputValue || '');
+    setConfirmDialog({ ...cfg, isOpen: true });
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDialog(null);
+    setConfirmInputValue('');
+  };
 
   // Stock Picks state
   const [picks, setPicks] = useState<StockPick[]>([]);
@@ -702,41 +732,47 @@ export default function TournamentDetailPage() {
   }, [API_BASE, tournamentId]);
 
   // Recalculate tournament points (Admin only)
-  const handleRecalculatePoints = async () => {
-    if (
-      !confirm(
-        'Hitung ulang seluruh poin peserta turnamen ini berdasarkan evaluasi trade yang telah selesai?',
-      )
-    ) {
-      return;
-    }
-    setRecalculatingPoints(true);
-    setResultsActionError('');
-    setResultsActionSuccess('');
+  const handleRecalculatePoints = () => {
+    showConfirmDialog({
+      type: 'INFO',
+      title: 'Hitung Ulang Poin Turnamen',
+      description:
+        'Hitung ulang seluruh akumulasi poin dan klasemen peserta turnamen ini berdasarkan evaluasi trade yang telah selesai?',
+      warningNote:
+        'Proses ini akan mengagregasi kembali poin seluruh sesi trading harian untuk turnamen ini.',
+      confirmLabel: 'Ya, Hitung Ulang',
+      cancelLabel: 'Batal',
+      onConfirm: async () => {
+        closeConfirmDialog();
+        setRecalculatingPoints(true);
+        setResultsActionError('');
+        setResultsActionSuccess('');
 
-    try {
-      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/results/recalculate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
+        try {
+          const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/results/recalculate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Gagal menghitung ulang poin turnamen');
-      }
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.message || 'Gagal menghitung ulang poin turnamen');
+          }
 
-      setResultsActionSuccess(data.message || 'Poin turnamen berhasil dihitung ulang!');
-      fetchDailyResults();
-      fetchOverallResults();
-      setTimeout(() => setResultsActionSuccess(''), 4000);
-    } catch (err: any) {
-      setResultsActionError(err.message || 'Terjadi kesalahan saat kalkulasi ulang poin');
-    } finally {
-      setRecalculatingPoints(false);
-    }
+          setResultsActionSuccess(data.message || 'Poin turnamen berhasil dihitung ulang!');
+          fetchDailyResults();
+          fetchOverallResults();
+          setTimeout(() => setResultsActionSuccess(''), 4000);
+        } catch (err: any) {
+          setResultsActionError(err.message || 'Terjadi kesalahan saat kalkulasi ulang poin');
+        } finally {
+          setRecalculatingPoints(false);
+        }
+      },
+    });
   };
 
   useEffect(() => {
@@ -1039,65 +1075,86 @@ export default function TournamentDetailPage() {
   };
 
   // Unenroll participant handler
-  const handleUnenrollParticipant = async (participantId: string, participantName: string) => {
+  const handleUnenrollParticipant = (participantId: string, participantName: string) => {
     if (!token) return;
-    if (
-      !confirm(
-        `Apakah Anda yakin ingin mengeluarkan "${participantName}" dari turnamen ini?\n\nPerhatian: Data keikutsertaan dan seluruh stock picks peserta ini pada turnamen ini akan dihapus.`,
-      )
-    ) {
-      return;
-    }
-    try {
-      const res = await fetch(
-        `${API_BASE}/tournaments/${tournamentId}/participants/${participantId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      if (res.ok) {
-        fetchEnrolled();
-        fetchAllParticipants();
-        fetchApplicants(applicantStatusFilter);
-      } else {
-        const err = await res.json().catch(() => ({}));
-        alert(err.message || 'Gagal mengeluarkan peserta dari turnamen');
-      }
-    } catch {
-      alert('Terjadi kesalahan koneksi server');
-    }
+    showConfirmDialog({
+      type: 'DANGER',
+      title: 'Keluarkan Peserta Turnamen',
+      description: `Apakah Anda yakin ingin mengeluarkan "${participantName}" dari turnamen ini?`,
+      warningNote:
+        'Data keikutsertaan dan seluruh catatan stock picks peserta ini pada turnamen ini akan dihapus secara permanen.',
+      confirmLabel: 'Ya, Keluarkan Peserta',
+      cancelLabel: 'Batal',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(
+            `${API_BASE}/tournaments/${tournamentId}/participants/${participantId}`,
+            {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+          if (res.ok) {
+            closeConfirmDialog();
+            fetchEnrolled();
+            fetchAllParticipants();
+            fetchApplicants(applicantStatusFilter);
+          } else {
+            const err = await res.json().catch(() => ({}));
+            alert(err.message || 'Gagal mengeluarkan peserta dari turnamen');
+          }
+        } catch {
+          alert('Terjadi kesalahan koneksi server');
+        }
+      },
+    });
   };
 
   // Toggle Disqualify handler
-  const handleToggleDisqualify = async (
+  const handleToggleDisqualify = (
     participantId: string,
     participantName: string,
     currentStatus: string,
   ) => {
     if (!token) return;
     if (currentStatus === 'DISQUALIFIED') {
-      if (
-        !confirm(
-          `Aktifkan dan pulihkan kembali status peserta "${participantName}" dalam turnamen ini?`,
-        )
-      ) {
-        return;
-      }
-      await handleReviewApplicant(participantId, 'APPROVED');
+      showConfirmDialog({
+        type: 'SUCCESS',
+        title: 'Pulihkan & Aktifkan Peserta',
+        description: `Apakah Anda ingin mengaktifkan kembali status peserta "${participantName}" dalam turnamen ini?`,
+        warningNote:
+          'Peserta akan kembali berstatus Aktif (APPROVED) dan sah untuk mengirimkan stock pick.',
+        confirmLabel: 'Ya, Pulihkan Status',
+        cancelLabel: 'Batal',
+        onConfirm: async () => {
+          closeConfirmDialog();
+          await handleReviewApplicant(participantId, 'APPROVED');
+        },
+      });
     } else {
-      const reason = prompt(
-        `Masukkan alasan diskualifikasi untuk peserta "${participantName}":`,
-        'Pelanggaran aturan turnamen / Cut Loss',
-      );
-      if (reason === null) return;
-      await handleReviewApplicant(
-        participantId,
-        'DISQUALIFIED',
-        reason.trim() || 'Didiskualifikasi oleh Admin',
-      );
+      showConfirmDialog({
+        type: 'WARNING',
+        title: 'Diskualifikasi Peserta Turnamen',
+        description: `Peserta "${participantName}" akan dinonaktifkan dari turnamen ini dan dilarang mengirim stock pick baru.`,
+        warningNote:
+          'Status diskualifikasi akan tercatat secara resmi dan dapat dipulihkan sewaktu-waktu oleh Admin.',
+        hasInput: true,
+        inputLabel: 'Alasan Diskualifikasi',
+        inputPlaceholder: 'e.g. Pelanggaran aturan cut loss / multi-akun',
+        inputValue: 'Pelanggaran aturan turnamen / Cut Loss',
+        confirmLabel: 'Konfirmasi Diskualifikasi',
+        cancelLabel: 'Batal',
+        onConfirm: async (reason) => {
+          closeConfirmDialog();
+          await handleReviewApplicant(
+            participantId,
+            'DISQUALIFIED',
+            reason?.trim() || 'Didiskualifikasi oleh Admin',
+          );
+        },
+      });
     }
   };
 
@@ -1145,23 +1202,32 @@ export default function TournamentDetailPage() {
   };
 
   // Delete pick handler
-  const handleDeletePick = async (pickId: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus stock pick ini?')) return;
-
-    try {
-      const res = await fetch(`${API_BASE}/picks/${pickId}`, {
-        method: 'DELETE',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
-      if (res.ok) {
-        fetchPicks();
-        fetchEnrolled();
-      }
-    } catch {
-      // ignore
-    }
+  const handleDeletePick = (pickId: string) => {
+    showConfirmDialog({
+      type: 'DANGER',
+      title: 'Hapus Stock Pick',
+      description: 'Apakah Anda yakin ingin menghapus stock pick ini?',
+      warningNote: 'Stock pick yang dihapus tidak dapat dipulihkan kembali.',
+      confirmLabel: 'Ya, Hapus Pick',
+      cancelLabel: 'Batal',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_BASE}/picks/${pickId}`, {
+            method: 'DELETE',
+            headers: {
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          });
+          if (res.ok) {
+            closeConfirmDialog();
+            fetchPicks();
+            fetchEnrolled();
+          }
+        } catch {
+          // ignore
+        }
+      },
+    });
   };
 
   // Fetch Exceptions List (Milestone M8)
@@ -4118,6 +4184,126 @@ export default function TournamentDetailPage() {
                 Belum ada catatan audit trail operasional untuk turnamen ini.
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* GLOBAL CUSTOM CONFIRMATION MODAL */}
+      {confirmDialog && confirmDialog.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900/95 border border-slate-700/80 shadow-2xl shadow-black/80 p-6 sm:p-7 relative overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Top glowing aura stripe */}
+            <div
+              className={`absolute top-0 left-0 right-0 h-1.5 ${
+                confirmDialog.type === 'DANGER'
+                  ? 'bg-gradient-to-r from-rose-500 via-red-500 to-rose-600 shadow-md shadow-rose-500/50'
+                  : confirmDialog.type === 'WARNING'
+                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 shadow-md shadow-amber-500/50'
+                  : confirmDialog.type === 'SUCCESS'
+                  ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 shadow-md shadow-emerald-500/50'
+                  : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 shadow-md shadow-blue-500/50'
+              }`}
+            />
+
+            <button
+              onClick={closeConfirmDialog}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-start gap-4 mb-4">
+              <div
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-lg ${
+                  confirmDialog.type === 'DANGER'
+                    ? 'bg-rose-500/15 border-rose-500/30 text-rose-400 shadow-rose-500/20'
+                    : confirmDialog.type === 'WARNING'
+                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-amber-500/20'
+                    : confirmDialog.type === 'SUCCESS'
+                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-emerald-500/20'
+                    : 'bg-blue-500/15 border-blue-500/30 text-blue-400 shadow-blue-500/20'
+                }`}
+              >
+                {confirmDialog.type === 'DANGER' ? (
+                  <Trash2 className="w-6 h-6" />
+                ) : confirmDialog.type === 'WARNING' ? (
+                  <ShieldAlert className="w-6 h-6" />
+                ) : confirmDialog.type === 'SUCCESS' ? (
+                  <CheckCircle2 className="w-6 h-6" />
+                ) : (
+                  <HelpCircle className="w-6 h-6" />
+                )}
+              </div>
+
+              <div className="pr-6">
+                <h3 className="text-base sm:text-lg font-bold text-white tracking-tight leading-snug">
+                  {confirmDialog.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+                  {confirmDialog.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Warning / Note Box */}
+            {confirmDialog.warningNote && (
+              <div
+                className={`p-3.5 rounded-xl border text-xs flex items-start gap-2.5 mb-4 ${
+                  confirmDialog.type === 'DANGER'
+                    ? 'bg-rose-950/40 border-rose-500/30 text-rose-300'
+                    : confirmDialog.type === 'WARNING'
+                    ? 'bg-amber-950/40 border-amber-500/30 text-amber-300'
+                    : 'bg-slate-800/80 border-slate-700 text-slate-300'
+                }`}
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{confirmDialog.warningNote}</span>
+              </div>
+            )}
+
+            {/* Optional Input Prompt */}
+            {confirmDialog.hasInput && (
+              <div className="mb-5 space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-200">
+                  {confirmDialog.inputLabel || 'Keterangan'}
+                </label>
+                <input
+                  type="text"
+                  placeholder={confirmDialog.inputPlaceholder || 'Ketik di sini...'}
+                  value={confirmInputValue}
+                  onChange={(e) => setConfirmInputValue(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  autoFocus
+                />
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={closeConfirmDialog}
+                className="px-4 py-2.5 rounded-xl border border-slate-700 hover:border-slate-600 bg-slate-800/60 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition-all"
+              >
+                {confirmDialog.cancelLabel || 'Batal'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => confirmDialog.onConfirm(confirmInputValue)}
+                className={`px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-lg ${
+                  confirmDialog.type === 'DANGER'
+                    ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/30'
+                    : confirmDialog.type === 'WARNING'
+                    ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/30'
+                    : confirmDialog.type === 'SUCCESS'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30'
+                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/30'
+                }`}
+              >
+                <span>{confirmDialog.confirmLabel || 'Konfirmasi'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
