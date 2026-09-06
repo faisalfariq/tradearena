@@ -200,7 +200,7 @@ export default function NewTournamentPage() {
               <span>2. Aturan Evaluasi Trading (Tournament Rules)</span>
             </h2>
             <p className="text-xs text-slate-400 mb-4">
-              Nilai default disesuaikan dengan standar turnamen BSJP: Cut Loss minimum -3% dan Trailing Stop 3% dari Peak harga valid.
+              Konfigurasi persentase Cut Loss dan Trailing Stop dinamis sesuai setup turnamen Anda (nilai default: 3%).
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,8 +217,8 @@ export default function NewTournamentPage() {
                 <input
                   type="number"
                   step="0.5"
-                  min="1"
-                  max="20"
+                  min="0.5"
+                  max="50"
                   required
                   value={initialStopPct}
                   onChange={(e) => setInitialStopPct(Number(e.target.value))}
@@ -242,15 +242,15 @@ export default function NewTournamentPage() {
                 <input
                   type="number"
                   step="0.5"
-                  min="1"
-                  max="20"
+                  min="0.5"
+                  max="50"
                   required
                   value={trailingStopPct}
                   onChange={(e) => setTrailingStopPct(Number(e.target.value))}
                   className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition-all"
                 />
                 <span className="text-[10px] text-slate-500 block mt-1">
-                  Drawdown statis dari titik harga puncak (peak) tertinggi sejak entry.
+                  Drawdown minimum dari puncak tertinggi (peak high watermark) yang mengunci profit.
                 </span>
               </div>
 
@@ -301,7 +301,7 @@ export default function NewTournamentPage() {
             <div className="mt-4 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-start gap-2.5">
               <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
               <span>
-                <strong>Prinsip Penentuan Exit:</strong> -3% adalah batas minimum stop threshold. Exit aktual menggunakan level harga valid (fraksi tick size IDX) pertama yang tercapai secara kronologis.
+                <strong>Prinsip Penentuan Exit:</strong> Persentase Cut Loss dan Trailing Stop yang dikonfigurasi adalah batas minimum stop threshold. Exit aktual menggunakan level harga valid (fraksi tick size IDX) pertama yang tercapai secara kronologis.
               </span>
             </div>
           </div>

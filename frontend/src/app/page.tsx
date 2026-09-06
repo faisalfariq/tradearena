@@ -476,8 +476,8 @@ export default function HomePage() {
 
           <p className="text-base sm:text-lg text-slate-400 mb-8 leading-relaxed max-w-2xl mx-auto">
             TradeArena mengotomatisasi evaluasi harian turnamen saham IDX setelah market close.
-            Mengeksekusi rule <strong>Initial CL -3%</strong>, <strong>Trailing Stop -3% dari Peak</strong>,
-            dan <strong>Market Close Exit</strong> secara presisi dengan data kanonikal intraday 1 menit.
+            Mengeksekusi rule <strong>Initial Cut Loss</strong>, <strong>Dynamic Trailing Stop (dari Peak)</strong>,
+            dan <strong>Market Close Exit</strong> secara presisi dan dinamis sesuai parameter konfigurasi turnamen dengan data kanonikal intraday 1 menit.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
@@ -522,9 +522,9 @@ export default function HomePage() {
             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 text-emerald-400">
               <BarChart3 className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">CL & Trailing Stop -3%</h3>
+            <h3 className="text-lg font-bold text-white mb-2">Dynamic Cut Loss & Trailing Stop</h3>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Membedakan batas theoretical threshold dengan actual exit price level. Mendukung trailing stop static 3% yang hanya boleh naik mengunci profit.
+              Persentase Cut Loss dan Trailing Stop dapat disesuaikan dinamis per turnamen (misal 2%, 3%, 5%, dsb). Menghitung level stop yang bergerak mengunci profit dari peak dan membedakan batas theoretical threshold dengan actual exit price level IDX.
             </p>
           </div>
 

@@ -1485,7 +1485,7 @@ export default function TournamentDetailPage() {
                   -{(Number(tournament.rules.initialStopPct) * 100).toFixed(1)}% dari Harga Entry
                 </span>
                 <p className="text-[11px] text-slate-500 mt-1">
-                  Threshold minimal -3% wajib dipatuhi. Simualted exit dieksekusi pada harga actual tick IDX.
+                  Threshold minimal -{(Number(tournament.rules.initialStopPct) * 100).toFixed(1)}% wajib dipatuhi. Simulated exit dieksekusi pada harga actual tick IDX.
                 </p>
               </div>
 
@@ -1788,7 +1788,7 @@ export default function TournamentDetailPage() {
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 max-w-2xl">
-                  Evaluasi otomatis murni matematis (non-LLM) berdasarkan candle 1-menit kanonikal, fraksi harga resmi IDX, initial cut loss (-3%), trailing stop dari peak tertinggi, gap down open, dan fallback market close.
+                  Evaluasi otomatis murni matematis (non-LLM) berdasarkan candle 1-menit kanonikal, fraksi harga resmi IDX, initial cut loss terkonfigurasi, trailing stop dinamis dari peak tertinggi, gap down open, dan fallback market close.
                 </p>
               </div>
 
@@ -1914,7 +1914,9 @@ export default function TournamentDetailPage() {
                 <span className="text-xl font-extrabold text-rose-400 font-mono mt-1 block">
                   {evaluations.filter((e) => e.exitReason === 'INITIAL_CL').length}
                 </span>
-                <span className="text-[10px] text-slate-500 block">Exit di -3% floor</span>
+                <span className="text-[10px] text-slate-500 block">
+                  Exit di -{(Number(tournament.rules?.initialStopPct || 0.03) * 100).toFixed(0)}% floor
+                </span>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
@@ -1924,7 +1926,9 @@ export default function TournamentDetailPage() {
                 <span className="text-xl font-extrabold text-amber-400 font-mono mt-1 block">
                   {evaluations.filter((e) => e.exitReason === 'TRAILING_STOP').length}
                 </span>
-                <span className="text-[10px] text-slate-500 block">Exit -3% dari peak</span>
+                <span className="text-[10px] text-slate-500 block">
+                  Exit -{(Number(tournament.rules?.trailingStopPct || 0.03) * 100).toFixed(0)}% dari peak
+                </span>
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">

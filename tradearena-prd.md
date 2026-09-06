@@ -142,24 +142,26 @@ timezone
 status
 ```
 
-Default untuk BSJP:
+Preset Default (Komunitas BSJP):
 
 ```text
-Initial CL       = minimum -3%
-Trailing Stop    = minimum -3% dari peak
+Initial CL       = dinamis per turnamen (default BSJP: minimum -3%)
+Trailing Stop    = dinamis per turnamen (default BSJP: minimum -3% dari peak)
 Timezone         = Asia/Jakarta
 Market           = IDX
 ```
 
-Rule tidak boleh tersembunyi di frontend.
+Persentase Initial Cut Loss (`initialStopPct`) dan Trailing Stop (`trailingStopPct`) bersifat **dinamis dan dapat dikonfigurasi sepenuhnya per turnamen** saat pembuatan maupun pembaruan turnamen (misalnya 2%, 3%, 5%, dll).
 
-Backend adalah source of truth.
+Rule tidak boleh tersembunyi di frontend. Backend adalah source of truth.
 
 ---
 
-# 7. Critical Stop Rule
+# 7. Critical Stop Rule (Configurable Initial Cut Loss)
 
 ## 7.1 Initial Cut Loss
+
+Persentase Initial Cut Loss ditentukan secara dinamis berdasarkan parameter turnamen (`initialStopPct`).
 
 Jika entry price:
 
@@ -167,44 +169,44 @@ Jika entry price:
 100
 ```
 
-theoretical threshold:
+Dan aturan turnamen menetapkan Cut Loss sebesar 3% (`initialStopPct = 0.03`), maka theoretical threshold:
 
 ```text
-100 × 97% = 97
+100 × (1 - 0.03) = 97
 ```
 
-Namun angka theoretical hanya threshold.
+Namun angka theoretical hanya threshold minimum.
 
-Official simulated exit harus menggunakan valid market price level berdasarkan tournament price-fraction policy dan actual chronological market movement.
+Official simulated exit harus menggunakan valid market price level berdasarkan tournament price-fraction policy (fraksi harga resmi bursa IDX) dan actual chronological market movement.
 
-Initial CL -3% berarti:
+Initial Cut Loss berarti:
 
-> Stop mulai valid ketika penurunan minimum telah mencapai 3%.
+> Stop mulai valid ketika penurunan minimum telah mencapai atau melewati persentase threshold yang dikonfigurasi.
 
-Jika actual valid next price level menghasilkan -3.5%, maka result menggunakan actual -3.5%, bukan dipaksa -3%.
+Jika actual valid next price level menghasilkan penurunan yang melampaui threshold (misalnya -3.5%), maka result menggunakan actual -3.5%, bukan dipaksa tepat di threshold theoretical.
 
 ---
 
-# 8. Trailing Stop Rule
+# 8. Trailing Stop Rule (Dynamic High Watermark)
 
-Trailing Stop adalah percentage static sebesar 3% dari highest valid price yang telah tercapai sejak entry.
+Trailing Stop dihitung secara dinamis berdasarkan persentase yang dikonfigurasi pada aturan turnamen (`trailingStopPct`), diukur dari highest valid price (peak / high watermark) yang telah tercapai sejak entry.
 
-Contoh:
+Contoh (dengan Trailing Stop 3% / `trailingStopPct = 0.03`):
 
 ```text
 Entry  = 100
 Peak   = 109
 
 Theoretical TS Threshold:
-109 × 97%
+109 × (1 - 0.03)
 = 105.73
 ```
 
-Misalnya price ladder yang relevan:
+Misalnya price ladder (fraksi harga valid IDX) yang relevan:
 
 ```text
-106 → drawdown dari peak belum mencapai -3%
-105 → drawdown sudah melewati -3%
+106 → drawdown dari peak belum mencapai threshold 3%
+105 → drawdown sudah melewati threshold 3%
 ```
 
 Maka simulated exit:
@@ -226,9 +228,9 @@ Realized return:
 = +5%
 ```
 
-Rule:
+Rule Fundamental:
 
-> Initial CL dan Trailing Stop menggunakan batas minimum -3%. Ketika actual valid market price pertama mencapai atau melewati threshold tersebut, actual valid price digunakan sebagai exit.
+> Initial CL dan Trailing Stop menggunakan persentase yang dikonfigurasi turnamen sebagai batas threshold minimum. Ketika actual valid market price pertama mencapai atau melewati threshold tersebut, actual valid price bursa digunakan sebagai harga exit.
 
 Trailing stop hanya boleh bergerak ke arah yang mengunci profit lebih tinggi. Tidak boleh turun kembali.
 

@@ -137,7 +137,7 @@ export default function TournamentsPage() {
             Manajemen Turnamen
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Kelola turnamen dan konfigurasi aturan evaluasi trading (Initial CL -3% & Trailing Stop -3%).
+            Kelola turnamen dan konfigurasi parameter evaluasi trading (Initial Cut Loss & Trailing Stop terkonfigurasi).
           </p>
         </div>
 
@@ -181,7 +181,7 @@ export default function TournamentsPage() {
           <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-base font-bold text-white mb-1">Belum Ada Turnamen</h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto mb-6">
-            Belum ada turnamen yang sesuai dengan filter. Buat turnamen baru dengan aturan BSJP default (-3% CL / -3% TS).
+            Belum ada turnamen yang sesuai dengan filter. Buat turnamen baru dengan parameter evaluasi yang dapat disesuaikan.
           </p>
           {user?.role === 'ADMIN' && (
             <Link
