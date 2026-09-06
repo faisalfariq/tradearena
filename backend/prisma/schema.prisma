@@ -9,7 +9,18 @@ datasource db {
 
 enum Role {
   ADMIN
-  PARTICIPANT
+  USER
+}
+
+enum ParticipantStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
 }
 
 enum TournamentStatus {
@@ -72,14 +83,19 @@ enum SyncStatus {
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
-  passwordHash  String         @map("password_hash")
+  passwordHash  String?        @map("password_hash")
   name          String
-  role          Role           @default(ADMIN)
+  role          Role           @default(USER)
+  provider      AuthProvider   @default(LOCAL)
+  googleId      String?        @unique @map("google_id")
+  avatarUrl     String?        @map("avatar_url")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
   overrides     EvaluationOverride[]
+  participant   Participant?
+  tournamentApplications TournamentParticipant[]
 
   @@map("users")
 }
@@ -132,6 +148,8 @@ model TournamentRule {
 
 model Participant {
   id          String                   @id @default(uuid())
+  userId      String?                  @unique @map("user_id")
+  user        User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
   name        String
   email       String?                  @unique
   phoneNumber String?                  @map("phone_number")
@@ -144,12 +162,19 @@ model Participant {
 }
 
 model TournamentParticipant {
-  id            String      @id @default(uuid())
-  tournamentId  String      @map("tournament_id")
-  tournament    Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  participantId String      @map("participant_id")
-  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  joinedAt      DateTime    @default(now()) @map("joined_at")
+  id            String            @id @default(uuid())
+  tournamentId  String            @map("tournament_id")
+  tournament    Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  participantId String            @map("participant_id")
+  participant   Participant       @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  userId        String?           @map("user_id")
+  user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status        ParticipantStatus @default(APPROVED)
+  registeredAt  DateTime          @default(now()) @map("registered_at")
+  reviewedAt    DateTime?         @map("reviewed_at")
+  reviewedBy    String?           @map("reviewed_by")
+  reviewNotes   String?           @map("review_notes")
+  joinedAt      DateTime          @default(now()) @map("joined_at")
 
   @@unique([tournamentId, participantId])
   @@map("tournament_participants")

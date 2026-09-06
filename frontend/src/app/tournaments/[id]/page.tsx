@@ -40,6 +40,8 @@ import {
   ChevronUp,
   Zap,
   RotateCcw,
+  UserCheck,
+  UserX,
 } from 'lucide-react';
 
 interface DailyResultItem {
@@ -286,8 +288,20 @@ export default function TournamentDetailPage() {
   const [tournament, setTournament] = useState<TournamentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    'OVERVIEW' | 'PARTICIPANTS' | 'PICKS' | 'SYNC' | 'EVALUATION' | 'RESULTS' | 'AUTOMATION'
+    'OVERVIEW' | 'PARTICIPANTS' | 'APPLICANTS' | 'PICKS' | 'SYNC' | 'EVALUATION' | 'RESULTS' | 'AUTOMATION'
   >('PICKS');
+
+  // Tournament Application & Applicants state (Milestone M10)
+  const [myApplication, setMyApplication] = useState<{
+    applied: boolean;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+    reviewNotes?: string;
+  } | null>(null);
+  const [applyingTournament, setApplyingTournament] = useState(false);
+  const [applicantsList, setApplicantsList] = useState<any[]>([]);
+  const [loadingApplicants, setLoadingApplicants] = useState(false);
+  const [applicantStatusFilter, setApplicantStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [reviewingParticipantId, setReviewingParticipantId] = useState<string | null>(null);
 
   // Enrolled Participants state
   const [enrolled, setEnrolled] = useState<EnrolledParticipant[]>([]);
@@ -453,6 +467,111 @@ export default function TournamentDetailPage() {
     }
   }, [API_BASE]);
 
+  // Fetch my application status (Milestone M10)
+  const fetchMyApplication = useCallback(async () => {
+    if (!token || !tournamentId) return;
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/my-status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMyApplication(data);
+      }
+    } catch {
+      // ignore
+    }
+  }, [API_BASE, token, tournamentId]);
+
+  // Fetch tournament applicants (Milestone M10 - Admin)
+  const fetchApplicants = useCallback(
+    async (status?: string) => {
+      if (!token || !tournamentId) return;
+      setLoadingApplicants(true);
+      try {
+        const query = status && status !== 'ALL' ? `?status=${status}` : '';
+        const res = await fetch(
+          `${API_BASE}/tournaments/${tournamentId}/applicants${query}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setApplicantsList(data);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingApplicants(false);
+      }
+    },
+    [API_BASE, token, tournamentId],
+  );
+
+  // Apply to tournament (User)
+  const handleApplyTournament = async () => {
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    setApplyingTournament(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || 'Pendaftaran berhasil diajukan!');
+        fetchMyApplication();
+        fetchApplicants();
+      } else {
+        alert(data.message || 'Gagal mengajukan pendaftaran turnamen');
+      }
+    } catch {
+      alert('Gagal menghubungi server API');
+    } finally {
+      setApplyingTournament(false);
+    }
+  };
+
+  // Review applicant (Admin)
+  const handleReviewApplicant = async (
+    participantId: string,
+    status: 'APPROVED' | 'REJECTED',
+  ) => {
+    if (!token) return;
+    setReviewingParticipantId(participantId);
+    try {
+      const res = await fetch(
+        `${API_BASE}/tournaments/${tournamentId}/applicants/${participantId}/review`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status }),
+        },
+      );
+      if (res.ok) {
+        fetchApplicants(applicantStatusFilter);
+        fetchEnrolled();
+      } else {
+        const err = await res.json();
+        alert(err.message || 'Gagal memperbarui status pendaftaran');
+      }
+    } catch {
+      alert('Gagal menghubungi server API');
+    } finally {
+      setReviewingParticipantId(null);
+    }
+  };
+
   // Fetch stocks catalog
   const fetchStocks = useCallback(async () => {
     try {
@@ -611,6 +730,8 @@ export default function TournamentDetailPage() {
     fetchEvaluations();
     fetchDailyResults();
     fetchOverallResults();
+    fetchMyApplication();
+    fetchApplicants();
   }, [
     fetchTournament,
     fetchEnrolled,
@@ -621,6 +742,8 @@ export default function TournamentDetailPage() {
     fetchEvaluations,
     fetchDailyResults,
     fetchOverallResults,
+    fetchMyApplication,
+    fetchApplicants,
   ]);
 
   // Trigger sync run handler
@@ -1151,6 +1274,71 @@ export default function TournamentDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* User Application Status / CTA (Milestone M10) */}
+        <div className="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400">Status Keikutsertaan:</span>
+            {!user ? (
+              <span className="text-xs text-slate-500">Belum masuk sistem</span>
+            ) : myApplication?.status === 'APPROVED' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Peserta Sah Turnamen (Approved)
+              </span>
+            ) : myApplication?.status === 'PENDING' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30 animate-pulse">
+                <Clock className="w-3.5 h-3.5" />
+                Menunggu Persetujuan Admin (Pending)
+              </span>
+            ) : myApplication?.status === 'REJECTED' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                <AlertCircle className="w-3.5 h-3.5" />
+                Permohonan Ditolak
+              </span>
+            ) : (
+              <span className="text-xs text-slate-400">Belum mendaftar di turnamen ini</span>
+            )}
+          </div>
+
+          <div>
+            {!user ? (
+              <Link
+                href="/login"
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition-all flex items-center gap-2"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Masuk dengan Google / Akun untuk Mendaftar</span>
+              </Link>
+            ) : !myApplication?.applied ? (
+              <button
+                onClick={handleApplyTournament}
+                disabled={applyingTournament}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                {applyingTournament ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Mengirim Permohonan...</span>
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="w-3.5 h-3.5" />
+                    <span>Daftar Ikut Turnamen Ini (Apply as Participant)</span>
+                  </>
+                )}
+              </button>
+            ) : myApplication?.status === 'REJECTED' ? (
+              <button
+                onClick={handleApplyTournament}
+                disabled={applyingTournament}
+                className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all"
+              >
+                Ajukan Ulang Permohonan
+              </button>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -1178,6 +1366,28 @@ export default function TournamentDetailPage() {
           <Users className="w-3.5 h-3.5" />
           <span>Peserta Terdaftar ({enrolled.length})</span>
         </button>
+
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => {
+              setActiveTab('APPLICANTS');
+              fetchApplicants(applicantStatusFilter);
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              activeTab === 'APPLICANTS'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>
+              Persetujuan Peserta ({applicantsList.filter((a) => a.status === 'PENDING').length} Baru)
+            </span>
+            {applicantsList.filter((a) => a.status === 'PENDING').length > 0 && (
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            )}
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('SYNC')}
@@ -1465,6 +1675,233 @@ export default function TournamentDetailPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB: APPLICANTS & APPROVAL (Milestone M10) */}
+      {activeTab === 'APPLICANTS' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-blue-400" />
+                <span>Persetujuan Peserta Turnamen (Applicant Review)</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Setujui atau tolak pelamar turnamen ini secara independen. Peserta dengan status <strong>Approved</strong> otomatis sah mengumpulkan stock picks.
+              </p>
+            </div>
+
+            {/* Filter buttons */}
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800">
+              {(['ALL', 'PENDING', 'APPROVED', 'REJECTED'] as const).map((st) => (
+                <button
+                  key={st}
+                  onClick={() => {
+                    setApplicantStatusFilter(st);
+                    fetchApplicants(st);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    applicantStatusFilter === st
+                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {st === 'ALL'
+                    ? 'Semua Status'
+                    : st === 'PENDING'
+                    ? 'Menunggu'
+                    : st === 'APPROVED'
+                    ? 'Disetujui'
+                    : 'Ditolak'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {loadingApplicants ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+              <p className="text-sm text-slate-400">Memuat data pelamar turnamen...</p>
+            </div>
+          ) : applicantsList.length === 0 ? (
+            <div className="glass-panel p-12 text-center rounded-2xl border border-slate-800">
+              <UserCheck className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+              <h3 className="text-base font-semibold text-slate-200">
+                Belum Ada Pendaftar
+              </h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                {applicantStatusFilter !== 'ALL'
+                  ? `Tidak ada pendaftar dengan status filter ${applicantStatusFilter}.`
+                  : 'Belum ada pengguna yang mendaftar ke turnamen ini.'}
+              </p>
+            </div>
+          ) : (
+            <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800/80 bg-slate-900/60 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <th className="py-3.5 px-6">Pelamar / Pengguna</th>
+                      <th className="py-3.5 px-6">Metode Akun</th>
+                      <th className="py-3.5 px-6">Tanggal Daftar</th>
+                      <th className="py-3.5 px-6 text-center">Status Kepesertaan</th>
+                      <th className="py-3.5 px-6">Catatan / Review</th>
+                      <th className="py-3.5 px-6 text-right">Aksi Admin</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                    {applicantsList.map((app) => (
+                      <tr key={app.id} className="hover:bg-slate-800/30 transition-colors">
+                        {/* User identity */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold text-xs flex items-center justify-center uppercase shrink-0">
+                              {app.user?.avatarUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={app.user.avatarUrl}
+                                  alt={app.participant.name}
+                                  className="w-full h-full rounded-xl object-cover"
+                                />
+                              ) : (
+                                app.participant.name.substring(0, 2)
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-slate-100">
+                                {app.participant.name}
+                              </div>
+                              <div className="text-[11px] text-slate-400">
+                                {app.participant.email || app.user?.email || '-'}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Provider */}
+                        <td className="py-4 px-6">
+                          {app.user?.provider === 'GOOGLE' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                              Google SSO
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                              Lokal
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Registered Date */}
+                        <td className="py-4 px-6 text-slate-400 text-xs font-mono">
+                          {new Date(app.registeredAt).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-4 px-6 text-center">
+                          {app.status === 'APPROVED' ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              APPROVED
+                            </span>
+                          ) : app.status === 'PENDING' ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 animate-pulse">
+                              <Clock className="w-3.5 h-3.5" />
+                              PENDING
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              REJECTED
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Review metadata */}
+                        <td className="py-4 px-6 text-slate-400 text-xs">
+                          {app.reviewedAt ? (
+                            <div>
+                              <span className="text-[11px] text-slate-300 block">
+                                Direview pada{' '}
+                                {new Date(app.reviewedAt).toLocaleDateString('id-ID', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                })}
+                              </span>
+                              {app.reviewNotes && (
+                                <span className="text-[10px] text-slate-500 italic block mt-0.5">
+                                  &quot;{app.reviewNotes}&quot;
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 text-[11px]">Belum direview</span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {reviewingParticipantId === app.participantId ? (
+                              <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Menyimpan...</span>
+                              </span>
+                            ) : app.status === 'PENDING' ? (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    handleReviewApplicant(app.participantId, 'APPROVED')
+                                  }
+                                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm shadow-emerald-600/30 flex items-center gap-1.5 transition-all"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Setujui</span>
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleReviewApplicant(app.participantId, 'REJECTED')
+                                  }
+                                  className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5 transition-all"
+                                >
+                                  <UserX className="w-3.5 h-3.5" />
+                                  <span>Tolak</span>
+                                </button>
+                              </>
+                            ) : app.status === 'APPROVED' ? (
+                              <button
+                                onClick={() =>
+                                  handleReviewApplicant(app.participantId, 'REJECTED')
+                                }
+                                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/20 text-xs font-semibold transition-all"
+                              >
+                                Batalkan (Tolak)
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleReviewApplicant(app.participantId, 'APPROVED')
+                                }
+                                className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all"
+                              >
+                                Setujui Ulang
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

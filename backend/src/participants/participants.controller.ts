@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -25,6 +26,7 @@ import { EnrollParticipantDto } from './dto/enroll-participant.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Role } from '@prisma/client';
 
 @ApiTags('Participants (Peserta Turnamen)')
@@ -142,5 +144,66 @@ export class ParticipantsController {
     @Param('participantId') participantId: string,
   ) {
     return this.participantsService.unenroll(tournamentId, participantId);
+  }
+
+  @Post('tournaments/:tournamentId/apply')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'User mengajukan diri mendaftar ke turnamen (Apply as Participant)' })
+  @ApiResponse({ status: 200, description: 'Permohonan pendaftaran berhasil diajukan' })
+  async apply(
+    @Param('tournamentId') tournamentId: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.participantsService.applyToTournament(tournamentId, user.id);
+  }
+
+  @Get('tournaments/:tournamentId/my-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Cek status pendaftaran user saat ini pada turnamen tertentu' })
+  @ApiResponse({ status: 200, description: 'Status pendaftaran turnamen' })
+  async getMyStatus(
+    @Param('tournamentId') tournamentId: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.participantsService.getMyTournamentStatus(tournamentId, user.id);
+  }
+
+  @Get('tournaments/:tournamentId/applicants')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Daftar seluruh pendaftar turnamen (Admin only)' })
+  @ApiQuery({ name: 'status', required: false, description: 'Filter status (PENDING, APPROVED, REJECTED)' })
+  @ApiResponse({ status: 200, description: 'Daftar pelamar turnamen berhasil diambil' })
+  async getApplicants(
+    @Param('tournamentId') tournamentId: string,
+    @Query('status') status?: any,
+  ) {
+    return this.participantsService.getApplicants(tournamentId, status);
+  }
+
+  @Patch('tournaments/:tournamentId/applicants/:participantId/review')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Persetujuan / Penolakan peserta turnamen oleh Admin (Approve/Reject)' })
+  @ApiResponse({ status: 200, description: 'Status aplikasi peserta berhasil diperbarui' })
+  async reviewApplicant(
+    @Param('tournamentId') tournamentId: string,
+    @Param('participantId') participantId: string,
+    @Body() body: { status: 'APPROVED' | 'REJECTED'; reviewNotes?: string },
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.participantsService.reviewApplicant(
+      tournamentId,
+      participantId,
+      body.status,
+      user.id,
+      body.reviewNotes,
+    );
   }
 }

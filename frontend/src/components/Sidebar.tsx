@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   Activity,
+  UserCog,
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -53,6 +54,16 @@ export default function Sidebar() {
       icon: Trophy,
       active: pathname.startsWith('/tournaments'),
     },
+    ...(user?.role === 'ADMIN'
+      ? [
+          {
+            label: 'Kelola Pengguna',
+            href: '/users',
+            icon: UserCog,
+            active: pathname.startsWith('/users'),
+          },
+        ]
+      : []),
     {
       label: 'Peserta',
       href: '/participants',

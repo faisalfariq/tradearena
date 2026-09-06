@@ -206,7 +206,10 @@ export class ParticipantsService {
     }
 
     const memberships = await this.prisma.tournamentParticipant.findMany({
-      where: { tournamentId },
+      where: {
+        tournamentId,
+        status: 'APPROVED',
+      },
       orderBy: { joinedAt: 'asc' },
       include: {
         participant: {
@@ -226,9 +229,219 @@ export class ParticipantsService {
     return memberships.map((m) => ({
       membershipId: m.id,
       tournamentId: m.tournamentId,
+      status: m.status,
       joinedAt: m.joinedAt,
       participant: m.participant,
       picksCount: m.participant._count.picks,
     }));
+  }
+
+  async applyToTournament(tournamentId: string, userId: string) {
+    const tournament = await this.prisma.tournament.findUnique({
+      where: { id: tournamentId },
+    });
+    if (!tournament) {
+      throw new NotFoundException(
+        `Turnamen dengan ID ${tournamentId} tidak ditemukan`,
+      );
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException(`Pengguna tidak ditemukan`);
+    }
+
+    // Find or create participant for this user
+    let participant = await this.prisma.participant.findFirst({
+      where: {
+        OR: [{ userId: user.id }, { email: user.email }],
+      },
+    });
+
+    if (!participant) {
+      participant = await this.prisma.participant.create({
+        data: {
+          name: user.name,
+          email: user.email,
+          userId: user.id,
+        },
+      });
+    } else if (!participant.userId) {
+      participant = await this.prisma.participant.update({
+        where: { id: participant.id },
+        data: { userId: user.id },
+      });
+    }
+
+    // Check existing membership
+    const existing = await this.prisma.tournamentParticipant.findUnique({
+      where: {
+        tournamentId_participantId: {
+          tournamentId,
+          participantId: participant.id,
+        },
+      },
+    });
+
+    if (existing) {
+      if (existing.status === 'APPROVED') {
+        throw new ConflictException(
+          'Anda sudah terdaftar sebagai peserta aktif di turnamen ini',
+        );
+      }
+      if (existing.status === 'PENDING') {
+        return {
+          message: 'Pendaftaran Anda sedang menunggu persetujuan admin',
+          status: 'PENDING',
+          membership: existing,
+        };
+      }
+      // If REJECTED, allow re-apply
+      const updated = await this.prisma.tournamentParticipant.update({
+        where: { id: existing.id },
+        data: {
+          status: 'PENDING',
+          registeredAt: new Date(),
+          reviewNotes: null,
+          reviewedAt: null,
+          reviewedBy: null,
+        },
+      });
+      return {
+        message: 'Permohonan pendaftaran ulang berhasil diajukan',
+        status: 'PENDING',
+        membership: updated,
+      };
+    }
+
+    const created = await this.prisma.tournamentParticipant.create({
+      data: {
+        tournamentId,
+        participantId: participant.id,
+        userId: user.id,
+        status: 'PENDING',
+        registeredAt: new Date(),
+      },
+      include: {
+        participant: true,
+      },
+    });
+
+    return {
+      message: 'Pendaftaran turnamen berhasil diajukan, menunggu persetujuan admin',
+      status: 'PENDING',
+      membership: created,
+    };
+  }
+
+  async getMyTournamentStatus(tournamentId: string, userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      return { applied: false, status: null };
+    }
+
+    const participant = await this.prisma.participant.findFirst({
+      where: {
+        OR: [{ userId: user.id }, { email: user.email }],
+      },
+    });
+
+    if (!participant) {
+      return { applied: false, status: null };
+    }
+
+    const membership = await this.prisma.tournamentParticipant.findUnique({
+      where: {
+        tournamentId_participantId: {
+          tournamentId,
+          participantId: participant.id,
+        },
+      },
+    });
+
+    if (!membership) {
+      return { applied: false, status: null };
+    }
+
+    return {
+      applied: true,
+      status: membership.status,
+      membershipId: membership.id,
+      participantId: participant.id,
+      registeredAt: membership.registeredAt,
+      reviewedAt: membership.reviewedAt,
+      reviewNotes: membership.reviewNotes,
+    };
+  }
+
+  async getApplicants(tournamentId: string, status?: any) {
+    const where: any = { tournamentId };
+    if (status) {
+      where.status = status;
+    }
+
+    return this.prisma.tournamentParticipant.findMany({
+      where,
+      orderBy: { registeredAt: 'desc' },
+      include: {
+        participant: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            provider: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+  }
+
+  async reviewApplicant(
+    tournamentId: string,
+    participantId: string,
+    status: 'APPROVED' | 'REJECTED',
+    adminUserId: string,
+    reviewNotes?: string,
+  ) {
+    const membership = await this.prisma.tournamentParticipant.findUnique({
+      where: {
+        tournamentId_participantId: {
+          tournamentId,
+          participantId,
+        },
+      },
+    });
+
+    if (!membership) {
+      throw new NotFoundException(
+        `Pendaftaran peserta dengan ID ${participantId} tidak ditemukan di turnamen ini`,
+      );
+    }
+
+    return this.prisma.tournamentParticipant.update({
+      where: {
+        tournamentId_participantId: {
+          tournamentId,
+          participantId,
+        },
+      },
+      data: {
+        status,
+        reviewedAt: new Date(),
+        reviewedBy: adminUserId,
+        reviewNotes: reviewNotes || null,
+        joinedAt: status === 'APPROVED' ? new Date() : membership.joinedAt,
+      },
+      include: {
+        participant: true,
+      },
+    });
   }
 }

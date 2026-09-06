@@ -7,6 +7,8 @@ export interface AuthUser {
   email: string;
   name: string;
   role: string;
+  provider?: string;
+  avatarUrl?: string;
 }
 
 interface AuthContextType {
@@ -14,6 +16,13 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<{ success: boolean; message?: string }>;
+  loginWithGoogle: (data: {
+    email?: string;
+    name?: string;
+    googleId?: string;
+    avatarUrl?: string;
+    credential?: string;
+  }) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -121,8 +130,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (data: {
+    email?: string;
+    name?: string;
+    googleId?: string;
+    avatarUrl?: string;
+    credential?: string;
+  }) => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const resData = await res.json();
+
+      if (!res.ok) {
+        return {
+          success: false,
+          message: resData.message || 'Login dengan Google gagal.',
+        };
+      }
+
+      setToken(resData.accessToken);
+      setUser(resData.user);
+      localStorage.setItem('tradearena_access_token', resData.accessToken);
+      localStorage.setItem('tradearena_refresh_token', resData.refreshToken);
+      localStorage.setItem('tradearena_user', JSON.stringify(resData.user));
+
+      return { success: true };
+    } catch {
+      return {
+        success: false,
+        message: 'Gagal terhubung ke server backend API.',
+      };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, isLoading, login, loginWithGoogle, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

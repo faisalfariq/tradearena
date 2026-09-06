@@ -38,6 +38,50 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
+  async loginWithGoogle(data: {
+    email?: string;
+    name?: string;
+    googleId?: string;
+    avatarUrl?: string;
+    credential?: string;
+  }) {
+    let email = data.email;
+    let name = data.name;
+    let googleId = data.googleId;
+    let avatarUrl = data.avatarUrl;
+
+    if (data.credential && !email) {
+      try {
+        const parts = data.credential.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(
+            Buffer.from(parts[1], 'base64').toString('utf8'),
+          );
+          email = payload.email;
+          name = payload.name;
+          googleId = payload.sub;
+          avatarUrl = payload.picture;
+        }
+      } catch {
+        throw new BadRequestException('Token Google tidak valid');
+      }
+    }
+
+    if (!email) {
+      throw new BadRequestException('Email akun Google wajib disertakan');
+    }
+
+    const user = await this.usersService.findOrCreateGoogleUser({
+      email,
+      name: name || email.split('@')[0],
+      googleId:
+        googleId || `google_${Date.now()}_${randomUUID().slice(0, 8)}`,
+      avatarUrl,
+    });
+
+    return this.generateTokens(user);
+  }
+
   async generateTokens(user: {
     id: string;
     email: string;

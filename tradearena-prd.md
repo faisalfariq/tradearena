@@ -86,39 +86,62 @@ MVP harus:
 # 4. Target Users
 
 ## 4.1 Admin
-Pengelola tournament/community.
+Pengelola turnamen dan komunitas trading. Bertanggung jawab atas konfigurasi turnamen, manajemen pengguna, persetujuan peserta turnamen, input/evaluasi pick, dan penanganan exception.
 
-## 4.2 Participant
-Peserta tournament.
+## 4.2 User (General / Community Member)
+Pengguna terdaftar sistem (melalui Google SSO atau email). Memiliki hak untuk melihat turnamen aktif, mendaftarkan diri (*apply*) ke turnamen pilihan, dan melihat leaderboard serta profil trading mereka.
 
-Participant login/self-service dapat menjadi Post-MVP. MVP boleh menggunakan admin sebagai pihak yang memasukkan pick.
+## 4.3 Participant (Tournament Role & Relationship)
+Peran kepesertaan kontekstual turnamen. Seorang `User` menjadi `Participant` pada suatu turnamen setelah mengajukan diri dan mendapatkan persetujuan (*approved*) dari Admin turnamen tersebut. Setiap turnamen memiliki daftar peserta independen.
 
 ---
 
-# 5. User Roles
+# 5. User Roles & Authorization System
 
-## ADMIN
-Boleh:
-- login;
-- manage tournament;
-- manage tournament rules;
-- manage participants;
-- manage picks;
-- trigger/retry data sync;
-- melihat evaluation;
-- melakukan manual review;
-- override result dengan reason;
-- melihat daily result;
-- melihat leaderboard.
+## 5.1 System Roles (Otorisasi Global)
+Sistem memiliki 2 role otorisasi utama:
 
-## PARTICIPANT
-Post-MVP atau optional MVP:
-- login;
-- submit pick sesuai rules;
-- melihat own result;
-- melihat leaderboard.
+1. **ADMIN**:
+   - Memiliki akses penuh ke operasional turnamen, evaluasi data pasar, override, dan konfigurasi.
+   - Mengakses menu **User Management** untuk mengelola seluruh pengguna dan mengubah role (`USER` <-> `ADMIN`).
+   - Mengelola pendaftaran peserta turnamen (Approve / Reject pendaftar).
+   - Memasukkan dan memvalidasi pick saham harian.
+   - Menjalankan pipeline evaluasi otomatis dan manual review.
 
-Participant tidak boleh mengubah evaluation.
+2. **USER**:
+   - Role default untuk setiap pengguna yang mendaftar mandiri ke sistem (misalnya via Google SSO).
+   - Dapat melihat daftar turnamen publik dan leaderboard.
+   - Dapat mengajukan permohonan keikutsertaan (*apply*) ke turnamen tertentu.
+   - Setelah disetujui (*Approved*) menjadi peserta turnamen, dapat melihat hasil trade dan evidence pribadinya.
+   - Tidak memiliki akses ke dashboard manajemen admin, setting turnamen, atau pengubahan evaluasi.
+
+## 5.2 Google SSO (Single Sign-On)
+- Pengguna dapat mendaftar dan masuk ke sistem menggunakan Akun Google (OAuth 2.0).
+- Akun yang terdaftar melalui Google SSO otomatis diberikan role **`USER`**.
+- Pendaftaran akun sistem belum otomatis menjadikan pengguna sebagai peserta turnamen manapun.
+
+## 5.3 Tournament Participant Lifecycle & Independent Approval
+- Partisipasi turnamen diatur melalui relasi `TournamentParticipant` antara entitas `User` dan `Tournament`.
+- Alur kepesertaan:
+  ```text
+  USER DAFTAR SISTEM (Google SSO)
+              ↓
+      ROLE: USER BIASA
+              ↓
+  USER AJUKAN DIRI KE TURNAMEN TERTENTU (Apply)
+              ↓
+    STATUS: PENDING APPROVAL
+              ↓
+  ADMIN TURNAMEN REVIEW APLIKASI
+        ↙               ↘
+  [APPROVE]          [REJECT]
+      ↓                  ↓
+  STATUS: APPROVED    STATUS: REJECTED
+      ↓
+  SAH JADI PARTICIPANT TURNAMEN
+  (Dapat memilih pick saham)
+  ```
+- Setiap turnamen mengelola daftar peserta dan status persetujuannya masing-masing secara terisolasi.
 
 ---
 
@@ -1770,3 +1793,30 @@ TradeArena tidak dibangun untuk menjadi trading platform yang kompleks.
 TradeArena dibangun agar tournament stock picking dapat dijalankan secara konsisten, transparan, dan jauh lebih efisien.
 
 **Admin menangani exception, sistem menangani perhitungan rutin.**
+
+---
+
+# 57. Milestone M10 — User Identity, Google SSO & Tournament Participant Lifecycle
+
+Milestone M10 merupakan milestone arsitektur identitas dan keikutsertaan turnamen:
+
+1. **System Roles Refactoring**:
+   - Skema role global sistem direfaktor menjadi `ADMIN` dan `USER`.
+   - `ADMIN` memiliki akses operasional penuh, termasuk menu User Management.
+   - `USER` adalah role standar bagi seluruh pendaftar mandiri.
+
+2. **Google Single Sign-On (SSO)**:
+   - Endpoint autentikasi Google OAuth 2.0 (`POST /api/v1/auth/google`).
+   - Tombol Google SSO pada antarmuka login frontend.
+   - Akun baru otomatis dibuat dengan role `USER`.
+
+3. **User Management Module**:
+   - Menu `User Management` di dashboard admin (`/users`).
+   - Kemampuan admin untuk menginspeksi seluruh pengguna terdaftar, provider pendaftaran, serta melakukan promosi/demosi role (`ADMIN` $\leftrightarrow$ `USER`).
+
+4. **Tournament Participant Relationship & Approval Workflow**:
+   - Entitas `TournamentParticipant` bertindak sebagai jembatan resmi antara `User` dan `Tournament`.
+   - Status pendaftaran: `PENDING`, `APPROVED`, `REJECTED`.
+   - Fitur bagi `USER` untuk mengajukan pendaftaran (*Apply*) ke turnamen yang diinginkan.
+   - Panel khusus di dalam Manajemen Turnamen bagi Admin untuk mereview pendaftar dan memberikan approval/rejection secara independen per turnamen.
+

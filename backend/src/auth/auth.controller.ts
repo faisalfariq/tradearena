@@ -36,6 +36,24 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login / Register dengan Akun Google (Google SSO)' })
+  @ApiResponse({ status: 200, description: 'Google SSO berhasil, mengembalikan token' })
+  @ApiResponse({ status: 400, description: 'Data atau credential Google tidak valid' })
+  async loginWithGoogle(
+    @Body()
+    body: {
+      email?: string;
+      name?: string;
+      googleId?: string;
+      avatarUrl?: string;
+      credential?: string;
+    },
+  ) {
+    return this.authService.loginWithGoogle(body);
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Rotate refresh token and get new access token' })
