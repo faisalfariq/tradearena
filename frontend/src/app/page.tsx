@@ -543,7 +543,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-slate-800/60 py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4">
-          TradeArena Platform • Built with Next.js, NestJS, Prisma & PostgreSQL • Monorepo Architecture
+          TradeArena Platform
         </div>
       </footer>
     </main>
