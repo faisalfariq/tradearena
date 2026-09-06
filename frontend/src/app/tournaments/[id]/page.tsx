@@ -33,7 +33,81 @@ import {
   Edit3,
   ArrowDownRight,
   ArrowUpRight,
+  Medal,
+  Crown,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
+
+interface DailyResultItem {
+  rank: number;
+  participantId: string;
+  participantName: string;
+  stockSymbol: string;
+  stockName: string;
+  tradingDate: string;
+  entryPrice: number | string;
+  highestPrice: number | string;
+  maxFloatingReturn: number | string;
+  exitPrice: number | string;
+  exitTimestamp: string;
+  exitReason: string;
+  realizedReturn: number | string;
+  points: number | string;
+  pointsRule: string;
+  evaluationStatus: string;
+}
+
+interface DailyMetrics {
+  tradingDate: string;
+  totalParticipants: number;
+  averageReturn: number;
+  gainersCount: number;
+  losersCount: number;
+  topGainer: {
+    participantName: string;
+    stockSymbol: string;
+    returnPct: number;
+    points: number;
+  } | null;
+  topLoser: {
+    participantName: string;
+    stockSymbol: string;
+    returnPct: number;
+    points: number;
+  } | null;
+}
+
+interface DailyResultsResponse {
+  tournamentId: string;
+  tradingDate: string;
+  metrics: DailyMetrics;
+  results: DailyResultItem[];
+}
+
+interface OverallResultItem {
+  rank: number;
+  participantId: string;
+  participantName: string;
+  totalPoints: number;
+  picksCount: number;
+  winCount: number;
+  lossCount: number;
+  breakevenCount: number;
+  winRate: number;
+  averageReturn: number;
+  bestPick: { symbol: string; returnPct: number; date: string; points: number } | null;
+  worstPick: { symbol: string; returnPct: number; date: string; points: number } | null;
+}
+
+interface OverallStandingsResponse {
+  tournamentId: string;
+  tournamentName: string;
+  totalParticipants: number;
+  totalEvaluatedPicks: number;
+  standings: OverallResultItem[];
+}
 
 interface TournamentRule {
   id: string;
@@ -210,7 +284,7 @@ export default function TournamentDetailPage() {
   const [tournament, setTournament] = useState<TournamentDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    'OVERVIEW' | 'PARTICIPANTS' | 'PICKS' | 'SYNC' | 'EVALUATION'
+    'OVERVIEW' | 'PARTICIPANTS' | 'PICKS' | 'SYNC' | 'EVALUATION' | 'RESULTS'
   >('PICKS');
 
   // Enrolled Participants state
@@ -291,6 +365,18 @@ export default function TournamentDetailPage() {
   // Re-evaluating pick state
   const [evaluatingPickId, setEvaluatingPickId] = useState<string | null>(null);
 
+  // Results & Standings states (Milestone M6)
+  const [resultsView, setResultsView] = useState<'DAILY' | 'OVERALL'>('DAILY');
+  const [resultsDateFilter, setResultsDateFilter] = useState('');
+  const [dailyResults, setDailyResults] = useState<DailyResultsResponse | null>(null);
+  const [loadingDailyResults, setLoadingDailyResults] = useState(false);
+  const [overallResults, setOverallResults] = useState<OverallStandingsResponse | null>(null);
+  const [loadingOverallResults, setLoadingOverallResults] = useState(false);
+  const [recalculatingPoints, setRecalculatingPoints] = useState(false);
+  const [resultsActionError, setResultsActionError] = useState('');
+  const [resultsActionSuccess, setResultsActionSuccess] = useState('');
+  const [showTieBreakerGuide, setShowTieBreakerGuide] = useState(false);
+
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333/api/v1';
 
   // Fetch tournament details
@@ -307,9 +393,11 @@ export default function TournamentDetailPage() {
           if (today >= start && today <= end) {
             setPickDate(today);
             setEvalDateFilter(today);
+            setResultsDateFilter(today);
           } else {
             setPickDate(start);
             setEvalDateFilter(start);
+            setResultsDateFilter(start);
           }
         }
       }
@@ -420,6 +508,83 @@ export default function TournamentDetailPage() {
     [API_BASE, tournamentId, evalDateFilter],
   );
 
+  // Fetch daily results
+  const fetchDailyResults = useCallback(
+    async (date?: string) => {
+      setLoadingDailyResults(true);
+      try {
+        const queryDate = date !== undefined ? date : resultsDateFilter;
+        const url = queryDate
+          ? `${API_BASE}/tournaments/${tournamentId}/results/daily?tradingDate=${queryDate}`
+          : `${API_BASE}/tournaments/${tournamentId}/results/daily`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          setDailyResults(data);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setLoadingDailyResults(false);
+      }
+    },
+    [API_BASE, tournamentId, resultsDateFilter],
+  );
+
+  // Fetch overall tournament standings
+  const fetchOverallResults = useCallback(async () => {
+    setLoadingOverallResults(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/results/overall`);
+      if (res.ok) {
+        const data = await res.json();
+        setOverallResults(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingOverallResults(false);
+    }
+  }, [API_BASE, tournamentId]);
+
+  // Recalculate tournament points (Admin only)
+  const handleRecalculatePoints = async () => {
+    if (
+      !confirm(
+        'Hitung ulang seluruh poin peserta turnamen ini berdasarkan evaluasi trade yang telah selesai?',
+      )
+    ) {
+      return;
+    }
+    setRecalculatingPoints(true);
+    setResultsActionError('');
+    setResultsActionSuccess('');
+
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/results/recalculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal menghitung ulang poin turnamen');
+      }
+
+      setResultsActionSuccess(data.message || 'Poin turnamen berhasil dihitung ulang!');
+      fetchDailyResults();
+      fetchOverallResults();
+      setTimeout(() => setResultsActionSuccess(''), 4000);
+    } catch (err: any) {
+      setResultsActionError(err.message || 'Terjadi kesalahan saat kalkulasi ulang poin');
+    } finally {
+      setRecalculatingPoints(false);
+    }
+  };
+
   useEffect(() => {
     fetchTournament();
     fetchEnrolled();
@@ -428,6 +593,8 @@ export default function TournamentDetailPage() {
     fetchPicks();
     fetchSyncRuns();
     fetchEvaluations();
+    fetchDailyResults();
+    fetchOverallResults();
   }, [
     fetchTournament,
     fetchEnrolled,
@@ -436,6 +603,8 @@ export default function TournamentDetailPage() {
     fetchPicks,
     fetchSyncRuns,
     fetchEvaluations,
+    fetchDailyResults,
+    fetchOverallResults,
   ]);
 
   // Trigger sync run handler
@@ -907,6 +1076,18 @@ export default function TournamentDetailPage() {
         >
           <Award className="w-3.5 h-3.5" />
           <span>Evaluasi Trade ({evaluations.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('RESULTS')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+            activeTab === 'RESULTS'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          <Trophy className="w-3.5 h-3.5" />
+          <span>Hasil & Klasemen</span>
         </button>
 
         <button
@@ -1829,6 +2010,845 @@ export default function TournamentDetailPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* TAB 6: RESULTS & STANDINGS (MILESTONE M6) */}
+      {activeTab === 'RESULTS' && (
+        <div className="space-y-6">
+          {/* Header Controls Toolbar */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 glass-panel p-5 rounded-2xl border border-slate-800">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* View Mode Toggle */}
+              <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setResultsView('DAILY')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    resultsView === 'DAILY'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Hasil Harian</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResultsView('OVERALL')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    resultsView === 'OVERALL'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  }`}
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                  <span>Klasemen Keseluruhan</span>
+                </button>
+              </div>
+
+              {/* Date Filter (for Daily view) */}
+              {resultsView === 'DAILY' && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">Tanggal:</span>
+                  <input
+                    type="date"
+                    value={resultsDateFilter}
+                    onChange={(e) => {
+                      setResultsDateFilter(e.target.value);
+                      fetchDailyResults(e.target.value);
+                    }}
+                    min={tournament?.startDate.substring(0, 10)}
+                    max={tournament?.endDate.substring(0, 10)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                  />
+                  {resultsDateFilter && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const defaultDate = tournament?.startDate.substring(0, 10) || '';
+                        setResultsDateFilter(defaultDate);
+                        fetchDailyResults(defaultDate);
+                      }}
+                      className="text-xs text-slate-400 hover:text-white"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Tie-breaker rules guide toggle */}
+              <button
+                type="button"
+                onClick={() => setShowTieBreakerGuide(!showTieBreakerGuide)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 text-xs font-medium border border-slate-800 transition-all"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-blue-400" />
+                <span>Aturan Tie-Breaker</span>
+                {showTieBreakerGuide ? (
+                  <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                )}
+              </button>
+
+              {/* Recalculate Points Button (Admin only) */}
+              {user?.role === 'ADMIN' && (
+                <button
+                  type="button"
+                  onClick={handleRecalculatePoints}
+                  disabled={recalculatingPoints}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/30 text-amber-300 text-xs font-semibold transition-all disabled:opacity-50"
+                  title="Kalkulasi ulang seluruh poin peserta turnamen ini berdasarkan formula poin aktif"
+                >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${recalculatingPoints ? 'animate-spin' : ''}`}
+                  />
+                  <span>
+                    {recalculatingPoints ? 'Menghitung Ulang...' : 'Hitung Ulang Poin'}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Action alerts */}
+          {resultsActionSuccess && (
+            <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{resultsActionSuccess}</span>
+              </div>
+              <button
+                onClick={() => setResultsActionSuccess('')}
+                className="text-emerald-400 hover:text-emerald-300"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {resultsActionError && (
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{resultsActionError}</span>
+              </div>
+              <button
+                onClick={() => setResultsActionError('')}
+                className="text-rose-400 hover:text-rose-300"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* Tie-Breaker Rules Explanation Panel */}
+          {showTieBreakerGuide && (
+            <div className="glass-panel p-6 rounded-2xl border border-blue-500/20 bg-blue-950/10 relative overflow-hidden">
+              <div className="flex items-center gap-2 mb-3">
+                <HelpCircle className="w-5 h-5 text-blue-400" />
+                <h4 className="text-sm font-bold text-white">
+                  Panduan Aturan Penentu Peringkat (Tie-Breaker Guide)
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mb-4 max-w-3xl">
+                Sistem TradeArena menggunakan aturan penentu peringkat hierarkis yang deterministik
+                tanpa ambiguitas jika terdapat nilai poin yang sama (PRD Section 21 &amp; 23).
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                {/* Daily Tie Breaker */}
+                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+                  <div className="font-semibold text-blue-300 flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4" />
+                    <span>4-Tier Tie-Breaker Harian (Daily Results)</span>
+                  </div>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                    <li>
+                      <strong className="text-white">Poin / Realized Return:</strong> Nilai return
+                      aktual atau poin tertinggi berada di peringkat teratas.
+                    </li>
+                    <li>
+                      <strong className="text-white">Max Floating Return:</strong> Jika poin sama,
+                      peserta dengan puncak gain teoretis intraday tertinggi diutamakan.
+                    </li>
+                    <li>
+                      <strong className="text-white">Chronological Survival Time:</strong> Jika
+                      masih sama, peserta yang bertahan lebih lama (exit timestamp paling lambat)
+                      menang.
+                    </li>
+                    <li>
+                      <strong className="text-white">Urutan Alfabetis:</strong> Penentu akhir adalah
+                      urutan alfabet nama peserta (A ke Z).
+                    </li>
+                  </ol>
+                </div>
+
+                {/* Overall Tie Breaker */}
+                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+                  <div className="font-semibold text-amber-300 flex items-center gap-1.5">
+                    <Trophy className="w-4 h-4" />
+                    <span>5-Tier Tie-Breaker Klasemen (Overall Standings)</span>
+                  </div>
+                  <ol className="list-decimal list-inside space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                    <li>
+                      <strong className="text-white">Total Poin Terakumulasi:</strong> Jumlah poin
+                      dari seluruh trade turnamen yang telah dievaluasi.
+                    </li>
+                    <li>
+                      <strong className="text-white">Win Count (Jumlah Menang):</strong> Total trade
+                      yang menghasilkan return positif (&gt; 0%).
+                    </li>
+                    <li>
+                      <strong className="text-white">Rata-rata Return Persentase:</strong> Rata-rata
+                      seluruh realized return peserta.
+                    </li>
+                    <li>
+                      <strong className="text-white">Best Single Pick:</strong> Nilai realized
+                      return tertinggi dari satu trade tunggal.
+                    </li>
+                    <li>
+                      <strong className="text-white">Urutan Alfabetis:</strong> Penentu akhir adalah
+                      urutan alfabet nama peserta (A ke Z).
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 1: DAILY RESULTS */}
+          {resultsView === 'DAILY' && (
+            <div className="space-y-6">
+              {loadingDailyResults ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                  <p className="text-xs text-slate-400">Memuat peringkat hasil harian...</p>
+                </div>
+              ) : !dailyResults || dailyResults.results.length === 0 ? (
+                <div className="glass-panel p-12 text-center rounded-2xl border border-slate-800">
+                  <BarChart3 className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-slate-200">
+                    Belum Ada Hasil Evaluasi untuk Tanggal Ini
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 mb-5 max-w-md mx-auto">
+                    Stock pick harian belum dievaluasi atau data candle bursa belum ditarik.
+                    Pastikan sinkronisasi data pasar dan evaluasi trade telah dijalankan.
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('SYNC')}
+                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
+                    >
+                      Buka Tab Data Pasar &amp; Sync
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('EVALUATION')}
+                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all"
+                    >
+                      Jalankan Evaluasi Trade
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Daily KPI Stat Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Top Gainer */}
+                    <div className="glass-panel p-5 rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-transparent relative overflow-hidden">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-400">
+                          Top Gainer Harian
+                        </span>
+                        <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+                          <Crown className="w-4 h-4" />
+                        </div>
+                      </div>
+                      {dailyResults.metrics.topGainer ? (
+                        <>
+                          <h4 className="text-base font-bold text-white truncate">
+                            {dailyResults.metrics.topGainer.participantName}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
+                              {dailyResults.metrics.topGainer.stockSymbol}
+                            </span>
+                            <span className="text-xs font-mono font-extrabold text-emerald-400">
+                              +{dailyResults.metrics.topGainer.returnPct.toFixed(2)}%
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 mt-2 block font-mono">
+                            Poin:{' '}
+                            <strong className="text-white">
+                              +{dailyResults.metrics.topGainer.points.toFixed(2)} pts
+                            </strong>
+                          </span>
+                        </>
+                      ) : (
+                        <p className="text-xs text-slate-500">Tidak ada pemenang</p>
+                      )}
+                    </div>
+
+                    {/* Average Return */}
+                    <div className="glass-panel p-5 rounded-2xl border border-slate-800">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">
+                          Rata-rata Realized Return
+                        </span>
+                        <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
+                          <TrendingUp className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <h4
+                        className={`text-2xl font-black font-mono tracking-tight ${
+                          dailyResults.metrics.averageReturn >= 0
+                            ? 'text-emerald-400'
+                            : 'text-rose-400'
+                        }`}
+                      >
+                        {dailyResults.metrics.averageReturn >= 0
+                          ? `+${dailyResults.metrics.averageReturn.toFixed(2)}%`
+                          : `${dailyResults.metrics.averageReturn.toFixed(2)}%`}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Dari {dailyResults.metrics.totalParticipants} trade terevaluasi
+                      </p>
+                    </div>
+
+                    {/* Win / Loss Ratio */}
+                    <div className="glass-panel p-5 rounded-2xl border border-slate-800">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">
+                          Rasio Menang / Kalah
+                        </span>
+                        <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">
+                          <Award className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-black text-emerald-400 font-mono">
+                          {dailyResults.metrics.gainersCount}W
+                        </span>
+                        <span className="text-slate-500">/</span>
+                        <span className="text-xl font-black text-rose-400 font-mono">
+                          {dailyResults.metrics.losersCount}L
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden flex">
+                        {dailyResults.metrics.totalParticipants > 0 && (
+                          <div
+                            className="bg-emerald-500 h-full"
+                            style={{
+                              width: `${
+                                (dailyResults.metrics.gainersCount /
+                                  dailyResults.metrics.totalParticipants) *
+                                100
+                              }%`,
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Total Picks / Peserta */}
+                    <div className="glass-panel p-5 rounded-2xl border border-slate-800">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">
+                          Peserta &amp; Evaluasi
+                        </span>
+                        <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400">
+                          <Users className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <h4 className="text-2xl font-black text-white font-mono tracking-tight">
+                        {dailyResults.results.length}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Picks terevaluasi pada tanggal ini
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Daily Rankings Table */}
+                  <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">
+                          Peringkat Harian (Daily Standings)
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          Urutan ditentukan oleh 4-tier tie-breaker otomatis TradeArena
+                        </p>
+                      </div>
+                      <span className="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800">
+                        Tanggal: {dailyResults.tradingDate}
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="text-[11px] text-slate-400 uppercase bg-slate-900/60 border-b border-slate-800">
+                          <tr>
+                            <th className="py-3 px-4 font-semibold text-center w-16">Peringkat</th>
+                            <th className="py-3 px-4 font-semibold">Peserta</th>
+                            <th className="py-3 px-4 font-semibold">Pilihan Emiten</th>
+                            <th className="py-3 px-4 font-semibold text-right">Harga Masuk</th>
+                            <th className="py-3 px-4 font-semibold text-right">Peak (Tertinggi)</th>
+                            <th className="py-3 px-4 font-semibold text-right">Harga Exit</th>
+                            <th className="py-3 px-4 font-semibold text-center">Realized Return</th>
+                            <th className="py-3 px-4 font-semibold text-center">Poin Turnamen</th>
+                            <th className="py-3 px-4 font-semibold text-center">Alasan Exit</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800">
+                          {dailyResults.results.map((r) => {
+                            const ret = Number(r.realizedReturn);
+                            const isPositive = ret >= 0;
+                            const pts = Number(r.points);
+
+                            return (
+                              <tr
+                                key={r.participantId + r.stockSymbol}
+                                className={`hover:bg-slate-800/30 transition-colors ${
+                                  r.rank === 1 ? 'bg-amber-500/5' : ''
+                                }`}
+                              >
+                                {/* Rank badge */}
+                                <td className="py-3.5 px-4 text-center">
+                                  {r.rank === 1 ? (
+                                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-black text-xs">
+                                      <Crown className="w-3.5 h-3.5" />
+                                    </span>
+                                  ) : r.rank === 2 ? (
+                                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-400/20 text-slate-200 border border-slate-400/40 font-bold text-xs">
+                                      #2
+                                    </span>
+                                  ) : r.rank === 3 ? (
+                                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 font-bold text-xs">
+                                      #3
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-400 font-mono font-semibold text-xs">
+                                      #{r.rank}
+                                    </span>
+                                  )}
+                                </td>
+
+                                {/* Participant */}
+                                <td className="py-3.5 px-4 font-medium text-white">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-7 h-7 rounded-lg bg-blue-600/20 text-blue-400 font-bold text-[11px] flex items-center justify-center uppercase shrink-0">
+                                      {r.participantName.substring(0, 2)}
+                                    </div>
+                                    <span className="truncate">{r.participantName}</span>
+                                  </div>
+                                </td>
+
+                                {/* Stock */}
+                                <td className="py-3.5 px-4">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-mono font-bold text-slate-100 bg-slate-800 px-2 py-0.5 rounded text-[11px] border border-slate-700">
+                                      {r.stockSymbol}
+                                    </span>
+                                    <span className="text-slate-400 text-[11px] truncate max-w-[120px]">
+                                      {r.stockName}
+                                    </span>
+                                  </div>
+                                </td>
+
+                                {/* Entry Price */}
+                                <td className="py-3.5 px-4 text-right font-mono text-slate-200">
+                                  Rp {Number(r.entryPrice).toLocaleString('id-ID')}
+                                </td>
+
+                                {/* Peak Price */}
+                                <td className="py-3.5 px-4 text-right font-mono">
+                                  <span className="text-emerald-400">
+                                    Rp {Number(r.highestPrice).toLocaleString('id-ID')}
+                                  </span>
+                                  <span className="text-[10px] text-emerald-500/80 block">
+                                    +{Number(r.maxFloatingReturn).toFixed(2)}%
+                                  </span>
+                                </td>
+
+                                {/* Exit Price */}
+                                <td className="py-3.5 px-4 text-right font-mono">
+                                  <span className="text-white font-semibold">
+                                    Rp {Number(r.exitPrice).toLocaleString('id-ID')}
+                                  </span>
+                                  <span className="text-[10px] text-slate-500 block">
+                                    {new Date(r.exitTimestamp).toLocaleTimeString('id-ID', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}{' '}
+                                    WIB
+                                  </span>
+                                </td>
+
+                                {/* Realized Return */}
+                                <td className="py-3.5 px-4 text-center font-mono">
+                                  <span
+                                    className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-bold ${
+                                      isPositive
+                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                    }`}
+                                  >
+                                    {isPositive ? (
+                                      <ArrowUpRight className="w-3 h-3" />
+                                    ) : (
+                                      <ArrowDownRight className="w-3 h-3" />
+                                    )}
+                                    <span>
+                                      {isPositive ? `+${ret.toFixed(2)}%` : `${ret.toFixed(2)}%`}
+                                    </span>
+                                  </span>
+                                </td>
+
+                                {/* Tournament Points */}
+                                <td className="py-3.5 px-4 text-center font-mono">
+                                  <span
+                                    className={`inline-block px-2.5 py-1 rounded-lg text-xs font-extrabold ${
+                                      pts > 0
+                                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                        : pts < 0
+                                        ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                        : 'bg-slate-800 text-slate-300 border border-slate-700'
+                                    }`}
+                                  >
+                                    {pts > 0 ? `+${pts.toFixed(2)} pts` : `${pts.toFixed(2)} pts`}
+                                  </span>
+                                </td>
+
+                                {/* Exit Reason */}
+                                <td className="py-3.5 px-4 text-center">
+                                  <span
+                                    className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                      r.exitReason === 'INITIAL_CL'
+                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                        : r.exitReason === 'TRAILING_STOP'
+                                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                        : r.exitReason === 'MARKET_CLOSE'
+                                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                        : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                                    }`}
+                                  >
+                                    {r.exitReason}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* VIEW 2: OVERALL STANDINGS */}
+          {resultsView === 'OVERALL' && (
+            <div className="space-y-6">
+              {loadingOverallResults ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                  <p className="text-xs text-slate-400">Memuat klasemen keseluruhan...</p>
+                </div>
+              ) : !overallResults || overallResults.standings.length === 0 ? (
+                <div className="glass-panel p-12 text-center rounded-2xl border border-slate-800">
+                  <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-slate-200">
+                    Klasemen Belum Dapat Dihitung
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 mb-5 max-w-md mx-auto">
+                    Belum ada trade yang selesai dievaluasi dalam turnamen ini. Klasemen keseluruhan
+                    akan otomatis tersusun setelah trade pertama diselesaikan.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Podium Highlights (Top 3) */}
+                  {overallResults.standings.length >= 1 && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                      {/* 2nd Place (Silver) */}
+                      {overallResults.standings.length > 1 ? (
+                        <div className="glass-panel p-5 rounded-2xl border border-slate-400/30 bg-gradient-to-t from-slate-400/5 to-transparent text-center relative order-2 md:order-1 self-end">
+                          <div className="w-12 h-12 rounded-2xl bg-slate-400/20 border border-slate-400/40 text-slate-200 mx-auto flex items-center justify-center font-black text-lg mb-2">
+                            <Medal className="w-6 h-6 text-slate-300" />
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                            Peringkat #2
+                          </span>
+                          <h4 className="text-base font-extrabold text-white mt-0.5 truncate">
+                            {overallResults.standings[1].participantName}
+                          </h4>
+                          <div className="mt-3 py-2 px-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <span className="text-xl font-black font-mono text-slate-200">
+                              {overallResults.standings[1].totalPoints.toFixed(2)} pts
+                            </span>
+                            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-400 mt-1">
+                              <span>
+                                Win Rate:{' '}
+                                <strong className="text-emerald-400">
+                                  {overallResults.standings[1].winRate}%
+                                </strong>
+                              </span>
+                              <span>•</span>
+                              <span>
+                                Trades:{' '}
+                                <strong className="text-white">
+                                  {overallResults.standings[1].picksCount}
+                                </strong>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="hidden md:block order-1" />
+                      )}
+
+                      {/* 1st Place (Gold / Champion) */}
+                      <div className="glass-panel p-6 rounded-3xl border-2 border-amber-500/50 bg-gradient-to-t from-amber-500/10 via-amber-500/5 to-transparent text-center relative order-1 md:order-2 shadow-xl shadow-amber-500/10">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-[10px] uppercase px-3 py-0.5 rounded-full shadow-md">
+                          Juara Turnamen
+                        </div>
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/50 text-amber-400 mx-auto flex items-center justify-center font-black text-2xl mb-2 mt-1 shadow-lg shadow-amber-500/20">
+                          <Crown className="w-8 h-8 text-amber-300" />
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+                          Peringkat #1
+                        </span>
+                        <h4 className="text-lg font-black text-white mt-0.5 truncate">
+                          {overallResults.standings[0].participantName}
+                        </h4>
+                        <div className="mt-3 py-2.5 px-4 rounded-xl bg-slate-900/90 border border-amber-500/30">
+                          <span className="text-2xl font-black font-mono text-amber-400">
+                            {overallResults.standings[0].totalPoints.toFixed(2)} pts
+                          </span>
+                          <div className="flex items-center justify-center gap-3 text-xs text-slate-400 mt-1">
+                            <span>
+                              Win Rate:{' '}
+                              <strong className="text-emerald-400">
+                                {overallResults.standings[0].winRate}%
+                              </strong>
+                            </span>
+                            <span>•</span>
+                            <span>
+                              Rata-rata:{' '}
+                              <strong className="text-white">
+                                {overallResults.standings[0].averageReturn >= 0
+                                  ? `+${overallResults.standings[0].averageReturn.toFixed(2)}%`
+                                  : `${overallResults.standings[0].averageReturn.toFixed(2)}%`}
+                              </strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 3rd Place (Bronze) */}
+                      {overallResults.standings.length > 2 ? (
+                        <div className="glass-panel p-5 rounded-2xl border border-orange-500/30 bg-gradient-to-t from-orange-500/5 to-transparent text-center relative order-3 self-end">
+                          <div className="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-500/40 text-orange-300 mx-auto flex items-center justify-center font-black text-lg mb-2">
+                            <Medal className="w-6 h-6 text-orange-300" />
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400 block">
+                            Peringkat #3
+                          </span>
+                          <h4 className="text-base font-extrabold text-white mt-0.5 truncate">
+                            {overallResults.standings[2].participantName}
+                          </h4>
+                          <div className="mt-3 py-2 px-3 rounded-xl bg-slate-900/80 border border-slate-800">
+                            <span className="text-xl font-black font-mono text-orange-300">
+                              {overallResults.standings[2].totalPoints.toFixed(2)} pts
+                            </span>
+                            <div className="flex items-center justify-center gap-3 text-[11px] text-slate-400 mt-1">
+                              <span>
+                                Win Rate:{' '}
+                                <strong className="text-emerald-400">
+                                  {overallResults.standings[2].winRate}%
+                                </strong>
+                              </span>
+                              <span>•</span>
+                              <span>
+                                Trades:{' '}
+                                <strong className="text-white">
+                                  {overallResults.standings[2].picksCount}
+                                </strong>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="hidden md:block order-3" />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Complete Standings Table */}
+                  <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-bold text-white">
+                          Tabel Klasemen Turnamen Lengkap
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          Diperbarui otomatis berdasarkan evaluasi trade dan tie-breaker hierarkis
+                        </p>
+                      </div>
+                      <span className="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800">
+                        Total Peserta: {overallResults.totalParticipants} • Trades:{' '}
+                        {overallResults.totalEvaluatedPicks}
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="text-[11px] text-slate-400 uppercase bg-slate-900/60 border-b border-slate-800">
+                          <tr>
+                            <th className="py-3 px-4 font-semibold text-center w-16">Peringkat</th>
+                            <th className="py-3 px-4 font-semibold">Peserta Turnamen</th>
+                            <th className="py-3 px-4 font-semibold text-center">Total Poin</th>
+                            <th className="py-3 px-4 font-semibold text-center">Win Rate</th>
+                            <th className="py-3 px-4 font-semibold text-center">
+                              Rekor (Menang / Kalah / Seri)
+                            </th>
+                            <th className="py-3 px-4 font-semibold text-right">
+                              Rata-rata Return
+                            </th>
+                            <th className="py-3 px-4 font-semibold text-center">Best Pick</th>
+                            <th className="py-3 px-4 font-semibold text-center">Worst Pick</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800">
+                          {overallResults.standings.map((s) => (
+                            <tr
+                              key={s.participantId}
+                              className={`hover:bg-slate-800/30 transition-colors ${
+                                s.rank === 1 ? 'bg-amber-500/5' : ''
+                              }`}
+                            >
+                              {/* Rank */}
+                              <td className="py-3.5 px-4 text-center">
+                                {s.rank === 1 ? (
+                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-black text-xs">
+                                    <Crown className="w-3.5 h-3.5" />
+                                  </span>
+                                ) : s.rank === 2 ? (
+                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-400/20 text-slate-200 border border-slate-400/40 font-bold text-xs">
+                                    #2
+                                  </span>
+                                ) : s.rank === 3 ? (
+                                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 font-bold text-xs">
+                                    #3
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 font-mono font-semibold text-xs">
+                                    #{s.rank}
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Participant */}
+                              <td className="py-3.5 px-4 font-medium text-white">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-7 h-7 rounded-lg bg-blue-600/20 text-blue-400 font-bold text-[11px] flex items-center justify-center uppercase shrink-0">
+                                    {s.participantName.substring(0, 2)}
+                                  </div>
+                                  <span className="font-semibold">{s.participantName}</span>
+                                </div>
+                              </td>
+
+                              {/* Total Points */}
+                              <td className="py-3.5 px-4 text-center font-mono">
+                                <span className="text-sm font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                                  {s.totalPoints.toFixed(2)} pts
+                                </span>
+                              </td>
+
+                              {/* Win Rate */}
+                              <td className="py-3.5 px-4 text-center font-mono">
+                                <div className="inline-flex flex-col items-center">
+                                  <span className="font-bold text-emerald-400">
+                                    {s.winRate}%
+                                  </span>
+                                  <div className="w-16 bg-slate-800 h-1 rounded-full mt-1 overflow-hidden">
+                                    <div
+                                      className="bg-emerald-500 h-full"
+                                      style={{ width: `${s.winRate}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Record */}
+                              <td className="py-3.5 px-4 text-center font-mono text-[11px]">
+                                <span className="text-emerald-400 font-bold">{s.winCount}W</span>{' '}
+                                <span className="text-slate-500">/</span>{' '}
+                                <span className="text-rose-400 font-bold">{s.lossCount}L</span>{' '}
+                                <span className="text-slate-500">/</span>{' '}
+                                <span className="text-slate-400 font-medium">
+                                  {s.breakevenCount}B
+                                </span>
+                              </td>
+
+                              {/* Average Return */}
+                              <td className="py-3.5 px-4 text-right font-mono">
+                                <span
+                                  className={`font-semibold ${
+                                    s.averageReturn >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                                  }`}
+                                >
+                                  {s.averageReturn >= 0
+                                    ? `+${s.averageReturn.toFixed(2)}%`
+                                    : `${s.averageReturn.toFixed(2)}%`}
+                                </span>
+                              </td>
+
+                              {/* Best Pick */}
+                              <td className="py-3.5 px-4 text-center font-mono text-[11px]">
+                                {s.bestPick ? (
+                                  <span className="inline-flex items-center gap-1 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                                    <span>{s.bestPick.symbol}</span>
+                                    <span className="font-bold">
+                                      (+{s.bestPick.returnPct.toFixed(2)}%)
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500">-</span>
+                                )}
+                              </td>
+
+                              {/* Worst Pick */}
+                              <td className="py-3.5 px-4 text-center font-mono text-[11px]">
+                                {s.worstPick ? (
+                                  <span className="inline-flex items-center gap-1 text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                                    <span>{s.worstPick.symbol}</span>
+                                    <span className="font-bold">
+                                      ({s.worstPick.returnPct.toFixed(2)}%)
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
 

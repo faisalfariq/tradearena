@@ -10,6 +10,7 @@ import { ParticipantsModule } from './participants/participants.module';
 import { PicksModule } from './picks/picks.module';
 import { MarketDataModule } from './market-data/market-data.module';
 import { EvaluationModule } from './evaluation/evaluation.module';
+import { ResultsModule } from './results/results.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { EvaluationModule } from './evaluation/evaluation.module';
     PicksModule,
     MarketDataModule,
     EvaluationModule,
+    ResultsModule,
     HealthModule,
   ],
 })

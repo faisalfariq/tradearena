@@ -257,7 +257,34 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 - **Decisions:**
   - Evaluasi wajib 100% deterministik untuk menjamin keadilan turnamen, replikabilitas, dan compliance.
   - Sifat fraksi harga IDX dipisahkan dalam service tersendiri (`PriceFractionService`) agar mudah disesuaikan bila bursa mengubah aturan tick.
-- **Next Milestone:** M6 — Points & Results Calculation (Leaderboard calculation rules, rank allocation, multi-day aggregate points)
+- **Next Milestone:** M6 — Results & Standings Engine
 
+---
 
-
+### M6 — Results & Standings Engine
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - **Scoring & Points Engine (`ResultsService`):**
+    * Kalkulasi poin berbasis rule turnamen (`PERCENTAGE_RETURN_V1`): 1% return = 1.0000 poin. Return negatif mengurangi poin secara simetris.
+    * Agregasi performa peserta multi-hari: total poin akumulasi, jumlah pick dievaluasi, jumlah menang (W), kalah (L), seri/breakeven (B), win rate %, dan average return %.
+    * Identifikasi otomatis emiten dengan return terbaik (*Best Pick*) dan return terburuk (*Worst Pick*) per peserta.
+  - **Deterministic Multi-Tier Tie-Breaking:**
+    * Peringkat klasemen turnamen deterministik: Total Points (DESC) -> Win Rate (DESC) -> Average Return (DESC) -> Evaluated Picks Count (DESC) -> Nama Peserta (ASC).
+  - **Daily Results & Intraday Breakdown:**
+    * `GET /api/v1/tournaments/:id/results/daily`: Mendukung parameter tanggal harian opsional (default ke `startDate` turnamen).
+    * `GET /api/v1/tournaments/:id/results/overall`: Rekap klasemen akumulasi turnamen.
+    * `POST /api/v1/tournaments/:id/results/recalculate`: Kalkulasi ulang seluruh perolehan poin dan klasemen oleh Admin.
+  - **Frontend Tab 6: "Hasil & Klasemen" (`/tournaments/[id]`):**
+    * Mode switcher: Klasemen Akumulasi (Overall) vs Hasil Harian (Daily).
+    * Podium Juara Top 3 (Emas #1, Perak #2, Perunggu #3) dengan kartu metrik visual, lencana win rate, dan emiten terbaik.
+    * Tabel Klasemen Turnamen Lengkap: Peringkat, Peserta, Poin Akumulasi, Total Pick, Rekor W/L/B, Win Rate badge, Rata-rata Return %, dan chip emiten terbaik/terburuk.
+    * Tabel Hasil Harian dengan date picker terintegrasi.
+    * Tombol aksi Admin "Hitung Ulang Klasemen" dengan feedback loading dan toast notifikasi.
+- **Verification:**
+  - Backend Build: PASS (`nest build`, exit code 0)
+  - Frontend Build: PASS (`next build`, 9/9 routes compiled, 0 lint/type errors, exit code 0)
+  - Live Database Verification (`verify-m6.js`): PASS (Admin auth, recalculate endpoint, query klasemen akumulasi, dan query hasil harian berhasil)
+- **Decisions:**
+  - Ranking dihitung dinamis dari data evaluasi dan poin otoritatif tanpa menyimpan static rank di database.
+- **Next Milestone:** M7 — Leaderboard & Dashboard (Admin Overview Dashboard, Public Leaderboard View, Responsive Layouts)
