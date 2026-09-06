@@ -17,7 +17,6 @@ import {
   Shield,
   Menu,
   X,
-  PlusCircle,
   Activity,
 } from 'lucide-react';
 
@@ -160,19 +159,6 @@ export default function Sidebar() {
                 </Link>
               );
             })}
-
-            {/* Quick Action Button for Admin */}
-            {user?.role === 'ADMIN' && (
-              <div className="pt-3">
-                <Link
-                  href="/tournaments/new"
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border border-blue-500/30 text-blue-300 hover:text-white hover:from-blue-600 hover:to-cyan-600 transition-all group"
-                >
-                  <PlusCircle className="w-4 h-4 text-blue-400 group-hover:text-white transition-colors" />
-                  <span>Buat Turnamen</span>
-                </Link>
-              </div>
-            )}
 
             <div className="px-3 pt-5 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               Developer & API
