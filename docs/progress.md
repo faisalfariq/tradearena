@@ -13,8 +13,8 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 | **M2** | Tournament Core & Rules | **COMPLETED** | 2026-09-05 |
 | **M3** | Participants, Stocks & Picks | **COMPLETED** | 2026-09-06 |
 | **M4** | Market Data Integration | **COMPLETED** | 2026-09-06 |
-| **M5** | Trade Evaluation Engine | **NEXT** | - |
-| **M6** | Points & Results | NOT STARTED | - |
+| **M5** | Trade Evaluation Engine | **COMPLETED** | 2026-09-06 |
+| **M6** | Points & Results | **NEXT** | - |
 | **M7** | Leaderboard & Dashboard | NOT STARTED | - |
 | **M8** | Automation & Exception Handling | NOT STARTED | - |
 | **M9** | MVP Stabilization | NOT STARTED | - |
@@ -199,6 +199,65 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 - **Decisions:**
   - Menghindari duplikasi penarikan data: hanya emiten unik dari stock picks yang ditarik, tidak peduli berapa banyak peserta memilih emiten yang sama.
   - Validasi integritas geometri bar candle dilakukan di backend sebelum persistensi.
-- **Next Milestone:** M5 — Trade Evaluation Engine (Deterministic trade evaluation, Initial Cut Loss -3%, Trailing Stop -3% from peak, IDX price fractions, and auditable trade logs)
+- **Next Milestone:** M5 — Trade Evaluation Engine
+
+---
+
+### M5 — Trade Evaluation Engine
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - **Deterministic Trade Evaluation Engine (`TradeEvaluationEngine`):**
+    * Evaluasi murni matematika berbasis rule tanpa campur tangan LLM.
+    * Pemrosesan candle 1-menit kanonikal secara kronologis strictly ascending.
+    * **Chronological cutoff**: seketika stop loss / exit terpenuhi, candle-candle setelahnya dibekukan dan diabaikan.
+    * **Initial Cut Loss (-3% min rule)**: stop loss awal dihitung dari harga entry; dipicu jika `low <= currentStopThreshold`.
+    * **Trailing Stop (-3% static drawdown from peak)**: stop loss dinamis mengikuti puncak harga tertinggi (`highestPrice`); jika harga membuat higher high, threshold bergeser naik ke `peak * (1 - trailingStopPct)`. Threshold tidak pernah turun.
+    * **Gap Down Open Handling (`ACTUAL_FIRST_VALID_LEVEL`)**: jika pembukaan candle memicu gap down di bawah stop threshold (`open <= threshold`), simulated exit dieksekusi tepat pada harga `open` (realistis bursa, bukan harga teoretis phantom).
+    * **Official IDX Price Fractions (`PriceFractionService`)**:
+      - Fraksi 1: Harga < Rp 200 (Tick Rp 1)
+      - Fraksi 2: Harga Rp 200 - Rp 500 (Tick Rp 2)
+      - Fraksi 3: Harga Rp 500 - Rp 2.000 (Tick Rp 5)
+      - Fraksi 4: Harga Rp 2.000 - Rp 5.000 (Tick Rp 10)
+      - Fraksi 5: Harga >= Rp 5.000 (Tick Rp 25)
+      - Pembulatan konservatif ke bawah (floor) untuk level stop loss agar tidak melanggar batas risiko minimal turnamen.
+    * **Fallback Market Close (`MARKET_CLOSE`)**: jika posisi bertahan hingga akhir sesi bursa tanpa menyentuh stop loss, exit dieksekusi pada harga `close` bar candle terakhir (menit ke-330 / 16:00 WIB).
+    * **Auditable Evidence Generation**: bukti evaluasi lengkap (`marketDataProvider`, `candleCount`, `triggerCandleIndex`, `triggerCandleTimestamp`, `triggerCandle OHLC`, `theoreticalThreshold`, `actualExitPrice`, `stepByStepTimeline`).
+    * **Admin Manual Override with Audit Log**: admin dapat melakukan penyesuaian exit price/return secara manual; menyimpan nilai asli, nilai penyesuaian, alasan wajib, dan audit log permanen.
+  - **Endpoints:**
+    * `POST /api/v1/tournaments/:id/evaluations/run`: Evaluasi deterministik seluruh stock pick turnamen pada tanggal tertentu (Admin only).
+    * `POST /api/v1/picks/:pickId/evaluate`: Evaluasi ulang satu stock pick individual (Admin only).
+    * `GET /api/v1/tournaments/:id/evaluations?tradingDate=...`: Daftar hasil evaluasi trade, exit price, realized return, status, dan alasan exit.
+    * `GET /api/v1/evaluations/:id`: Detail lengkap evaluasi beserta bukti audit (evidence) dan kronologi timeline.
+    * `POST /api/v1/evaluations/:id/override`: Penyesuaian manual evaluasi oleh Admin dengan mencatat alasan dan audit log.
+  - **Frontend Evaluation UI (`/tournaments/[id]`):**
+    * Tab 5: "Evaluasi Trade" dengan icon `Award`.
+    * Header form: Pemilihan tanggal perdagangan, tombol "Jalankan Evaluasi" dengan loading feedback, dan refresh button.
+    * Quick Metrics Summary: Total Dievaluasi, Rata-rata Return %, Initial Cut Loss count, Trailing Stop count, dan Market Close count.
+    * Evaluations Table: Peserta, Emiten, Entry Price, Highest Peak & Max Float %, Exit Price & Timestamp, Realized Return badge (hijau/merah), Alasan Exit badge (`INITIAL_CL`, `TRAILING_STOP`, `MARKET_CLOSE`, `MANUAL_OVERRIDE`), Status badge, dan tombol Aksi.
+    * Modal "Bukti Audit Evaluasi Trade (Evidence)":
+      - Header dengan identitas emiten, tanggal, peserta, dan versi kalkulasi.
+      - Alert banner jika trade telah disesuaikan (override) oleh Admin lengkap dengan nama dan alasan.
+      - Ringkasan 4 parameter kunci (Entry, Peak, Exit, Return).
+      - Trigger Candle Box (WIB timestamp, index candle / 330, Open, High, Low, Close).
+      - Threshold math comparison: Teoretis vs Fraksi Harga Aktual IDX.
+      - Kronologi Candle Intraday (Tabel step-by-step timeline hingga titik exit).
+    * Modal "Penyesuaian Manual (Override) Evaluasi":
+      - Tampilan nilai asli (Entry, Original Exit, Original Return).
+      - Input Exit Price baru (auto-compute return baru).
+      - Input Alasan Override (wajib untuk audit log).
+      - Feedback sukses dan auto-refresh.
+- **Verification:**
+  - Lint: PASS (Backend: 0 errors/warnings | Frontend: 0 errors/warnings)
+  - Backend Unit Tests: PASS (12/12 test suites, 74/74 tests passed)
+  - Backend E2E Tests: PASS (6/6 test suites, 31/31 tests passed)
+  - Backend Build: PASS (`nest build`, exit code 0)
+  - Frontend Build: PASS (`next build`, 9/9 routes compiled, exit code 0)
+  - Live REST Test: PASS (Evaluasi live, pembulatan fraksi bursa IDX, trigger candle evidence, dan manual override audit log terverifikasi)
+- **Decisions:**
+  - Evaluasi wajib 100% deterministik untuk menjamin keadilan turnamen, replikabilitas, dan compliance.
+  - Sifat fraksi harga IDX dipisahkan dalam service tersendiri (`PriceFractionService`) agar mudah disesuaikan bila bursa mengubah aturan tick.
+- **Next Milestone:** M6 — Points & Results Calculation (Leaderboard calculation rules, rank allocation, multi-day aggregate points)
+
 
 
