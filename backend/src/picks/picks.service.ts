@@ -42,9 +42,11 @@ export class PicksService {
         },
       },
     });
-    if (!membership) {
+    if (!membership || membership.status !== 'APPROVED') {
       throw new BadRequestException(
-        `Peserta '${participant.name}' belum terdaftar dalam turnamen ini`,
+        membership?.status === 'DISQUALIFIED'
+          ? `Peserta '${participant.name}' telah didiskualifikasi dari turnamen ini dan tidak dapat mengirim pick`
+          : `Peserta '${participant.name}' belum memiliki status APPROVED dalam turnamen ini`,
       );
     }
 

@@ -155,15 +155,28 @@ export class ParticipantsService {
       });
 
     if (existingMembership) {
-      throw new ConflictException(
-        `Peserta '${participant.name}' sudah terdaftar dalam turnamen ini`,
-      );
+      if (existingMembership.status === 'APPROVED') {
+        throw new ConflictException(
+          `Peserta '${participant.name}' sudah terdaftar aktif dalam turnamen ini`,
+        );
+      }
+      return this.prisma.tournamentParticipant.update({
+        where: { id: existingMembership.id },
+        data: {
+          status: 'APPROVED',
+          joinedAt: new Date(),
+        },
+        include: {
+          participant: true,
+        },
+      });
     }
 
     return this.prisma.tournamentParticipant.create({
       data: {
         tournamentId,
         participantId,
+        status: 'APPROVED',
       },
       include: {
         participant: true,
@@ -184,6 +197,13 @@ export class ParticipantsService {
     if (!existing) {
       throw new NotFoundException(`Peserta tidak terdaftar dalam turnamen ini`);
     }
+
+    await this.prisma.stockPick.deleteMany({
+      where: {
+        tournamentId,
+        participantId,
+      },
+    });
 
     return this.prisma.tournamentParticipant.delete({
       where: {
@@ -208,12 +228,21 @@ export class ParticipantsService {
     const memberships = await this.prisma.tournamentParticipant.findMany({
       where: {
         tournamentId,
-        status: 'APPROVED',
+        status: { in: ['APPROVED', 'DISQUALIFIED'] },
       },
       orderBy: { joinedAt: 'asc' },
       include: {
         participant: {
           include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                avatarUrl: true,
+              },
+            },
             _count: {
               select: {
                 picks: {
@@ -231,6 +260,10 @@ export class ParticipantsService {
       tournamentId: m.tournamentId,
       status: m.status,
       joinedAt: m.joinedAt,
+      registeredAt: m.registeredAt,
+      reviewedAt: m.reviewedAt,
+      reviewedBy: m.reviewedBy,
+      reviewNotes: m.reviewNotes,
       participant: m.participant,
       picksCount: m.participant._count.picks,
     }));
@@ -406,7 +439,7 @@ export class ParticipantsService {
   async reviewApplicant(
     tournamentId: string,
     participantId: string,
-    status: 'APPROVED' | 'REJECTED',
+    status: 'APPROVED' | 'REJECTED' | 'DISQUALIFIED',
     adminUserId: string,
     reviewNotes?: string,
   ) {

@@ -138,12 +138,24 @@ interface TournamentDetail {
 interface EnrolledParticipant {
   membershipId: string;
   tournamentId: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DISQUALIFIED';
   joinedAt: string;
+  registeredAt?: string;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  reviewNotes?: string | null;
   participant: {
     id: string;
     name: string;
     email: string | null;
     phoneNumber: string | null;
+    user?: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+      avatarUrl: string | null;
+    } | null;
   };
   picksCount: number;
 }
@@ -313,6 +325,12 @@ export default function TournamentDetailPage() {
   const [selectedParticipantToEnroll, setSelectedParticipantToEnroll] = useState('');
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [enrollError, setEnrollError] = useState('');
+  const [enrolledFilter, setEnrolledFilter] = useState<'ALL' | 'APPROVED' | 'DISQUALIFIED'>('ALL');
+  const [enrolledSearch, setEnrolledSearch] = useState('');
+  const [enrollMode, setEnrollMode] = useState<'SELECT' | 'NEW'>('SELECT');
+  const [newParticipantName, setNewParticipantName] = useState('');
+  const [newParticipantEmail, setNewParticipantEmail] = useState('');
+  const [newParticipantPhone, setNewParticipantPhone] = useState('');
 
   // Stock Picks state
   const [picks, setPicks] = useState<StockPick[]>([]);
@@ -542,7 +560,8 @@ export default function TournamentDetailPage() {
   // Review applicant (Admin)
   const handleReviewApplicant = async (
     participantId: string,
-    status: 'APPROVED' | 'REJECTED',
+    status: 'APPROVED' | 'REJECTED' | 'DISQUALIFIED',
+    reviewNotes?: string,
   ) => {
     if (!token) return;
     setReviewingParticipantId(participantId);
@@ -555,7 +574,7 @@ export default function TournamentDetailPage() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ status }),
+          body: JSON.stringify({ status, reviewNotes }),
         },
       );
       if (res.ok) {
@@ -961,27 +980,124 @@ export default function TournamentDetailPage() {
     setEnrollLoading(true);
 
     try {
+      let targetParticipantId = selectedParticipantToEnroll;
+
+      if (enrollMode === 'NEW') {
+        if (!newParticipantName.trim()) {
+          throw new Error('Nama peserta wajib diisi');
+        }
+        const createRes = await fetch(`${API_BASE}/participants`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({
+            name: newParticipantName.trim(),
+            email: newParticipantEmail.trim() || undefined,
+            phoneNumber: newParticipantPhone.trim() || undefined,
+          }),
+        });
+        const createData = await createRes.json();
+        if (!createRes.ok) {
+          throw new Error(createData.message || 'Gagal mendaftarkan peserta baru');
+        }
+        targetParticipantId = createData.id;
+      }
+
+      if (!targetParticipantId) {
+        throw new Error('Silakan pilih peserta yang ingin didaftarkan');
+      }
+
       const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/participants`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify({ participantId: selectedParticipantToEnroll }),
+        body: JSON.stringify({ participantId: targetParticipantId }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || 'Gagal mendaftarkan peserta');
+        throw new Error(data.message || 'Gagal mendaftarkan peserta ke turnamen');
       }
 
       setIsEnrollModalOpen(false);
       setSelectedParticipantToEnroll('');
+      setNewParticipantName('');
+      setNewParticipantEmail('');
+      setNewParticipantPhone('');
       fetchEnrolled();
+      fetchAllParticipants();
+      fetchApplicants(applicantStatusFilter);
     } catch (err: any) {
       setEnrollError(err.message || 'Terjadi kesalahan saat mendaftarkan');
     } finally {
       setEnrollLoading(false);
+    }
+  };
+
+  // Unenroll participant handler
+  const handleUnenrollParticipant = async (participantId: string, participantName: string) => {
+    if (!token) return;
+    if (
+      !confirm(
+        `Apakah Anda yakin ingin mengeluarkan "${participantName}" dari turnamen ini?\n\nPerhatian: Data keikutsertaan dan seluruh stock picks peserta ini pada turnamen ini akan dihapus.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${API_BASE}/tournaments/${tournamentId}/participants/${participantId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (res.ok) {
+        fetchEnrolled();
+        fetchAllParticipants();
+        fetchApplicants(applicantStatusFilter);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Gagal mengeluarkan peserta dari turnamen');
+      }
+    } catch {
+      alert('Terjadi kesalahan koneksi server');
+    }
+  };
+
+  // Toggle Disqualify handler
+  const handleToggleDisqualify = async (
+    participantId: string,
+    participantName: string,
+    currentStatus: string,
+  ) => {
+    if (!token) return;
+    if (currentStatus === 'DISQUALIFIED') {
+      if (
+        !confirm(
+          `Aktifkan dan pulihkan kembali status peserta "${participantName}" dalam turnamen ini?`,
+        )
+      ) {
+        return;
+      }
+      await handleReviewApplicant(participantId, 'APPROVED');
+    } else {
+      const reason = prompt(
+        `Masukkan alasan diskualifikasi untuk peserta "${participantName}":`,
+        'Pelanggaran aturan turnamen / Cut Loss',
+      );
+      if (reason === null) return;
+      await handleReviewApplicant(
+        participantId,
+        'DISQUALIFIED',
+        reason.trim() || 'Didiskualifikasi oleh Admin',
+      );
     }
   };
 
@@ -1185,6 +1301,22 @@ export default function TournamentDetailPage() {
   const unenrolledParticipants = allParticipants.filter(
     (ap) => !enrolled.some((ep) => ep.participant.id === ap.id),
   );
+
+  const filteredEnrolled = enrolled.filter((ep) => {
+    const matchesFilter =
+      enrolledFilter === 'ALL' || ep.status === enrolledFilter;
+    const q = enrolledSearch.toLowerCase().trim();
+    const matchesSearch =
+      !q ||
+      ep.participant.name.toLowerCase().includes(q) ||
+      (ep.participant.email && ep.participant.email.toLowerCase().includes(q)) ||
+      (ep.participant.phoneNumber && ep.participant.phoneNumber.includes(q));
+    return matchesFilter && matchesSearch;
+  });
+
+  const totalEnrolledCount = enrolled.length;
+  const totalApprovedCount = enrolled.filter((e) => e.status === 'APPROVED').length;
+  const totalDisqualifiedCount = enrolled.filter((e) => e.status === 'DISQUALIFIED').length;
 
   const filteredStocks = stocksList.filter(
     (s) =>
@@ -1609,12 +1741,15 @@ export default function TournamentDetailPage() {
 
       {/* TAB 2: PARTICIPANTS */}
       {activeTab === 'PARTICIPANTS' && (
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h3 className="text-lg font-bold text-white">Peserta Terdaftar</h3>
-              <p className="text-xs text-slate-400">
-                Peserta yang memiliki hak submit pick dalam turnamen ini
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                <span>Manajemen Peserta Turnamen</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Kelola peserta khusus turnamen ini: tambahkan peserta, diskualifikasi pelanggar, pulihkan, atau keluarkan.
               </p>
             </div>
 
@@ -1626,12 +1761,87 @@ export default function TournamentDetailPage() {
                   }
                   setIsEnrollModalOpen(true);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 self-start"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 self-start transition-all"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Daftarkan Peserta</span>
+                <Plus className="w-4 h-4" />
+                <span>+ Daftarkan Peserta</span>
               </button>
             )}
+          </div>
+
+          {/* Quick Stats Banner */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="glass-panel p-4 rounded-xl border border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] text-slate-400 font-medium block">Total Terdaftar</span>
+                <span className="text-2xl font-bold text-white font-mono mt-0.5 block">{totalEnrolledCount}</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+                <Users className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="glass-panel p-4 rounded-xl border border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] text-slate-400 font-medium block">Peserta Aktif (Sah)</span>
+                <span className="text-2xl font-bold text-emerald-400 font-mono mt-0.5 block">{totalApprovedCount}</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="glass-panel p-4 rounded-xl border border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] text-slate-400 font-medium block">Didiskualifikasi</span>
+                <span className="text-2xl font-bold text-rose-400 font-mono mt-0.5 block">{totalDisqualifiedCount}</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-rose-600/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Filter & Search Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 self-start">
+              {(['ALL', 'APPROVED', 'DISQUALIFIED'] as const).map((filterVal) => (
+                <button
+                  key={filterVal}
+                  onClick={() => setEnrolledFilter(filterVal)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    enrolledFilter === filterVal
+                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {filterVal === 'ALL'
+                    ? `Semua (${totalEnrolledCount})`
+                    : filterVal === 'APPROVED'
+                    ? `Aktif (${totalApprovedCount})`
+                    : `Didiskualifikasi (${totalDisqualifiedCount})`}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Cari nama atau email peserta..."
+                value={enrolledSearch}
+                onChange={(e) => setEnrolledSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-200 placeholder-slate-500 text-xs focus:outline-none focus:border-blue-500"
+              />
+              {enrolledSearch && (
+                <button
+                  onClick={() => setEnrolledSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           {loadingEnrolled ? (
@@ -1639,42 +1849,195 @@ export default function TournamentDetailPage() {
               <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
               <p className="text-sm text-slate-400">Memuat peserta turnamen...</p>
             </div>
-          ) : enrolled.length === 0 ? (
+          ) : filteredEnrolled.length === 0 ? (
             <div className="glass-panel p-12 text-center rounded-2xl border border-slate-800">
               <Users className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-base font-semibold text-slate-200">Belum Ada Peserta Terdaftar</h3>
+              <h3 className="text-base font-semibold text-slate-200">
+                {enrolledSearch || enrolledFilter !== 'ALL'
+                  ? 'Tidak Ada Peserta yang Sesuai Filter'
+                  : 'Belum Ada Peserta Terdaftar'}
+              </h3>
               <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-6">
-                Turnamen ini belum memiliki peserta terdaftar. Daftarkan trader dari daftar peserta.
+                {enrolledSearch || enrolledFilter !== 'ALL'
+                  ? 'Coba ganti kata kunci pencarian atau ubah filter status peserta.'
+                  : 'Turnamen ini belum memiliki peserta terdaftar. Daftarkan trader melalui tombol di atas.'}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {enrolled.map((ep) => (
-                <div
-                  key={ep.membershipId}
-                  className="glass-panel p-5 rounded-2xl border border-slate-800 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400 font-bold text-sm flex items-center justify-center uppercase">
-                      {ep.participant.name.substring(0, 2)}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">
-                        {ep.participant.name}
-                      </h4>
-                      <p className="text-xs text-slate-400">
-                        {ep.participant.email || ep.participant.phoneNumber || 'ID Peserta'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block">Picks Turnamen</span>
-                    <span className="text-sm font-bold text-emerald-400 font-mono">
-                      {ep.picksCount}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-800/80 bg-slate-900/60 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      <th className="py-3.5 px-6">Peserta Turnamen</th>
+                      <th className="py-3.5 px-6 text-center">Status Kepesertaan</th>
+                      <th className="py-3.5 px-6 text-center">Picks Turnamen</th>
+                      <th className="py-3.5 px-6">Tanggal Bergabung</th>
+                      <th className="py-3.5 px-6">Catatan / Status Review</th>
+                      {user?.role === 'ADMIN' && (
+                        <th className="py-3.5 px-6 text-right">Aksi Turnamen</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                    {filteredEnrolled.map((ep) => (
+                      <tr
+                        key={ep.membershipId}
+                        className={`hover:bg-slate-800/30 transition-colors ${
+                          ep.status === 'DISQUALIFIED' ? 'bg-rose-950/10' : ''
+                        }`}
+                      >
+                        {/* Profile & Name */}
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-9 h-9 rounded-xl font-bold text-xs flex items-center justify-center uppercase shrink-0 border ${
+                                ep.status === 'DISQUALIFIED'
+                                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                                  : 'bg-blue-600/10 border-blue-500/20 text-blue-400'
+                              }`}
+                            >
+                              {ep.participant.user?.avatarUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={ep.participant.user.avatarUrl}
+                                  alt={ep.participant.name}
+                                  className="w-full h-full rounded-xl object-cover"
+                                />
+                              ) : (
+                                ep.participant.name.substring(0, 2)
+                              )}
+                            </div>
+                            <div>
+                              <div
+                                className={`font-semibold ${
+                                  ep.status === 'DISQUALIFIED'
+                                    ? 'text-slate-400 line-through'
+                                    : 'text-slate-100'
+                                }`}
+                              >
+                                {ep.participant.name}
+                              </div>
+                              <div className="text-[11px] text-slate-400">
+                                {ep.participant.email || ep.participant.phoneNumber || 'ID Peserta'}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Status Badge */}
+                        <td className="py-4 px-6 text-center">
+                          {ep.status === 'DISQUALIFIED' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 shadow-sm shadow-rose-500/10">
+                              <ShieldAlert className="w-3.5 h-3.5" />
+                              DIDISKUALIFIKASI
+                            </span>
+                          ) : ep.status === 'APPROVED' ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              AKTIF (APPROVED)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                              {ep.status}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Total Picks */}
+                        <td className="py-4 px-6 text-center">
+                          <span className="inline-block px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono font-bold text-blue-400">
+                            {ep.picksCount} Picks
+                          </span>
+                        </td>
+
+                        {/* Joined Date */}
+                        <td className="py-4 px-6 text-slate-400 text-xs font-mono">
+                          {ep.joinedAt
+                            ? new Date(ep.joinedAt).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })
+                            : '-'}
+                        </td>
+
+                        {/* Notes / Reason */}
+                        <td className="py-4 px-6 text-xs">
+                          {ep.reviewNotes ? (
+                            <div className="text-[11px] text-rose-300/90 italic bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-lg">
+                              &quot;{ep.reviewNotes}&quot;
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 text-[11px]">Normal</span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        {user?.role === 'ADMIN' && (
+                          <td className="py-4 px-6 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              {reviewingParticipantId === ep.participant.id ? (
+                                <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  <span>Memproses...</span>
+                                </span>
+                              ) : (
+                                <>
+                                  {ep.status === 'DISQUALIFIED' ? (
+                                    <button
+                                      onClick={() =>
+                                        handleToggleDisqualify(
+                                          ep.participant.id,
+                                          ep.participant.name,
+                                          ep.status,
+                                        )
+                                      }
+                                      className="px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all"
+                                      title="Pulihkan & Aktifkan Peserta"
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5" />
+                                      <span>Pulihkan</span>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() =>
+                                        handleToggleDisqualify(
+                                          ep.participant.id,
+                                          ep.participant.name,
+                                          ep.status,
+                                        )
+                                      }
+                                      className="px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-rose-500/25 text-amber-300 hover:text-rose-300 border border-amber-500/30 hover:border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all"
+                                      title="Diskualifikasi dari Turnamen Ini"
+                                    >
+                                      <UserX className="w-3.5 h-3.5" />
+                                      <span>Diskualifikasi</span>
+                                    </button>
+                                  )}
+
+                                  <button
+                                    onClick={() =>
+                                      handleUnenrollParticipant(
+                                        ep.participant.id,
+                                        ep.participant.name,
+                                      )
+                                    }
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all"
+                                    title="Keluarkan dari Turnamen Ini"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
@@ -3771,9 +4134,35 @@ export default function TournamentDetailPage() {
             </button>
 
             <h3 className="text-lg font-bold text-white mb-1">Daftarkan Peserta ke Turnamen</h3>
-            <p className="text-xs text-slate-400 mb-6">
-              Pilih peserta dari master data untuk didaftarkan ke turnamen ini
+            <p className="text-xs text-slate-400 mb-5">
+              Kelola keikutsertaan peserta secara mandiri pada turnamen ini
             </p>
+
+            {/* Mode Switcher */}
+            <div className="flex rounded-xl bg-slate-900 border border-slate-800 p-1 mb-5">
+              <button
+                type="button"
+                onClick={() => setEnrollMode('SELECT')}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  enrollMode === 'SELECT'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Pilih User / Trader
+              </button>
+              <button
+                type="button"
+                onClick={() => setEnrollMode('NEW')}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  enrollMode === 'NEW'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Input Peserta Baru
+              </button>
+            </div>
 
             {enrollError && (
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs mb-4 flex items-center gap-2">
@@ -3782,55 +4171,93 @@ export default function TournamentDetailPage() {
               </div>
             )}
 
-            {unenrolledParticipants.length === 0 ? (
-              <div className="text-center py-6">
-                <p className="text-xs text-slate-400 mb-4">
-                  Semua peserta yang terdaftar di master sudah mengikuti turnamen ini.
-                </p>
-                <Link
-                  href="/participants"
-                  className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
-                >
-                  Tambah Peserta Baru di Master
-                </Link>
-              </div>
-            ) : (
-              <form onSubmit={handleEnroll} className="space-y-4">
+            <form onSubmit={handleEnroll} className="space-y-4">
+              {enrollMode === 'SELECT' ? (
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Pilih Peserta
+                    Pilih Peserta yang Belum Terdaftar
                   </label>
-                  <select
-                    value={selectedParticipantToEnroll}
-                    onChange={(e) => setSelectedParticipantToEnroll(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
-                  >
-                    {unenrolledParticipants.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
+                  {unenrolledParticipants.length === 0 ? (
+                    <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 text-center">
+                      Semua trader terdaftar sudah mengikuti turnamen ini. Gunakan tab <strong>Input Peserta Baru</strong> jika ingin mendaftarkan peserta tambahan.
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedParticipantToEnroll}
+                      onChange={(e) => setSelectedParticipantToEnroll(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="">-- Pilih Trader --</option>
+                      {unenrolledParticipants.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Nama Lengkap Peserta <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. John Doe"
+                      value={newParticipantName}
+                      onChange={(e) => setNewParticipantName(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Email (Opsional)
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="e.g. john@example.com"
+                      value={newParticipantEmail}
+                      onChange={(e) => setNewParticipantEmail(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Nomor Telepon / WA (Opsional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 08123456789"
+                      value={newParticipantPhone}
+                      onChange={(e) => setNewParticipantPhone(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              )}
 
-                <div className="flex gap-3 pt-4 border-t border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setIsEnrollModalOpen(false)}
-                    className="flex-1 py-2 rounded-xl border border-slate-700 text-slate-300 text-xs font-semibold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={enrollLoading}
-                    className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold disabled:opacity-50"
-                  >
-                    {enrollLoading ? 'Mendaftarkan...' : 'Daftarkan'}
-                  </button>
-                </div>
-              </form>
-            )}
+              <div className="flex gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsEnrollModalOpen(false)}
+                  className="flex-1 py-2 rounded-xl border border-slate-700 text-slate-300 text-xs font-semibold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={
+                    enrollLoading ||
+                    (enrollMode === 'SELECT' && (!selectedParticipantToEnroll || unenrolledParticipants.length === 0))
+                  }
+                  className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold disabled:opacity-50 transition-all shadow-md shadow-blue-600/20"
+                >
+                  {enrollLoading ? 'Mendaftarkan...' : 'Daftarkan ke Turnamen'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

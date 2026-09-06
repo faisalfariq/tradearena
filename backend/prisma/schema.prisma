@@ -16,6 +16,7 @@ enum ParticipantStatus {
   PENDING
   APPROVED
   REJECTED
+  DISQUALIFIED
 }
 
 enum AuthProvider {

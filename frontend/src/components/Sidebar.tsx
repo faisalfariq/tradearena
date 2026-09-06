@@ -8,7 +8,6 @@ import {
   TrendingUp,
   LayoutDashboard,
   Trophy,
-  Users,
   CandlestickChart,
   FileCode2,
   ArrowUpRight,
@@ -64,12 +63,6 @@ export default function Sidebar() {
           },
         ]
       : []),
-    {
-      label: 'Peserta',
-      href: '/participants',
-      icon: Users,
-      active: pathname.startsWith('/participants'),
-    },
     {
       label: 'Katalog Saham',
       href: '/stocks',

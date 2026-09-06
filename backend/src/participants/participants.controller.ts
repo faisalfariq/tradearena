@@ -195,7 +195,7 @@ export class ParticipantsController {
   async reviewApplicant(
     @Param('tournamentId') tournamentId: string,
     @Param('participantId') participantId: string,
-    @Body() body: { status: 'APPROVED' | 'REJECTED'; reviewNotes?: string },
+    @Body() body: { status: 'APPROVED' | 'REJECTED' | 'DISQUALIFIED'; reviewNotes?: string },
     @CurrentUser() user: { id: string },
   ) {
     return this.participantsService.reviewApplicant(
