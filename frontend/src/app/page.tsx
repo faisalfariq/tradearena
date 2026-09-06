@@ -7,7 +7,6 @@ import {
   ShieldCheck, 
   Cpu, 
   Award, 
-  ArrowRight, 
   BarChart3,
   CheckCircle2,
   Terminal,
@@ -479,16 +478,6 @@ export default function HomePage() {
             Mengeksekusi rule <strong>Initial Cut Loss</strong>, <strong>Dynamic Trailing Stop (dari Peak)</strong>,
             dan <strong>Market Close Exit</strong> secara presisi dan dinamis sesuai parameter konfigurasi turnamen dengan data kanonikal intraday 1 menit.
           </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-            <Link
-              href="/login"
-              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-all shadow-lg shadow-blue-600/25 flex items-center gap-2"
-            >
-              <span>Masuk Portal Admin</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <div className="px-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 text-xs font-medium flex items-center gap-2 shadow-sm">

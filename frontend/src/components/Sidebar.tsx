@@ -252,7 +252,7 @@ export default function Sidebar() {
               className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all shadow-md shadow-blue-600/20"
             >
               <LogIn className="w-4 h-4" />
-              <span>Admin Login</span>
+              <span>Login</span>
             </Link>
           )}
         </div>

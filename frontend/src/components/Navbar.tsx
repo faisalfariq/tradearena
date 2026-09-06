@@ -90,7 +90,7 @@ export default function Navbar() {
               className="text-xs font-semibold px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md shadow-blue-600/20 flex items-center gap-2 hover:scale-[1.02]"
             >
               <UserIcon className="w-3.5 h-3.5" />
-              <span>Admin Login</span>
+              <span>Login</span>
             </Link>
           )}
         </div>
