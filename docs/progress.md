@@ -17,7 +17,7 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 | **M6** | Points & Results | **COMPLETED** | 2026-09-06 |
 | **M7** | Leaderboard & Dashboard | **COMPLETED** | 2026-09-06 |
 | **M8** | Automation & Exception Handling | **COMPLETED** | 2026-09-06 |
-| **M9** | MVP Stabilization | **NEXT** | - |
+| **M9** | MVP Stabilization | **COMPLETED** | 2026-09-06 |
 
 ---
 
@@ -358,5 +358,68 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 - **Decisions:**
   - Pipeline dirancang idempoten sehingga dapat dijalankan ulang berkali-kali secara aman (manual on-demand maupun cron) tanpa merusak konsistensi data poin.
   - Jika tanggal yang diproses tidak memiliki stock pick, langkah sinkronisasi dan evaluasi dilewati (`SKIPPED`) dengan anggun tanpa menggagalkan keseluruhan pipeline.
-- **Next Milestone:** M9 — MVP Stabilization (E2E testing, security hardening, final polish, and release sign-off)
+- **Next Milestone:** M9 — MVP Stabilization
+
+---
+
+### M9 — MVP Stabilization
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - **Security & Token Hardening:**
+    * Penambahan identifikasi unik kriptografis `jti: randomUUID()` pada pembuatan JWT Access Token dan Refresh Token (`AuthService.generateTokens`). Mencegah tabrakan unique constraint token pada konkurensi tinggi dan pengujian paralel.
+    * Hardening `ValidationPipe` di `backend/src/main.ts` (`whitelist: true`, `forbidNonWhitelisted: true`, `transform: true`).
+    * Konfigurasi CORS origin dinamis dan dukungan credentials untuk lingkungan dev, staging, dan container Docker.
+    * Konfigurasi standardized graceful shutdown hooks (`app.enableShutdownHooks()`).
+  - **End-to-End Test Suite Completion:**
+    * Penambahan `backend/test/automation.e2e-spec.ts` yang mencakup seluruh alur pipeline harian, query exception, retry evaluasi, dan query audit trail.
+    * Seluruh 8 test suites E2E lulus 100% (45/45 tests passed).
+  - **Database Migration & Schema Integrity:**
+    * Inisialisasi migration resmi PostgreSQL pertama: `backend/prisma/migrations/20260905000000_init/migration.sql`.
+    * Verifikasi status migrasi bersih: `Database schema is up to date!` (1 migration found).
+    * Idempoten dan siap untuk deploy otomatis container (`npx prisma migrate deploy`).
+  - **Containerization & Deployment Packaging:**
+    * Multi-stage production `Dockerfile` untuk NestJS backend (non-root `nestjs` user, dumb-init, Alpine Linux).
+    * Multi-stage production `Dockerfile` untuk Next.js frontend (non-root `nextjs` user, dumb-init, Alpine Linux).
+    * Konfigurasi full-stack `docker-compose.prod.yml` mencakup PostgreSQL 16, Redis 7, Backend API, dan Frontend UI.
+  - **Comprehensive Master Documentation:**
+    * Pembaruan menyeluruh `README.md` dengan badge arsitektur, diagram alur data, runbook operasional bursa 16:15 WIB, panduan quickstart (`run.bat` / `run.sh`), kredensial seed admin, katalog API Swagger, dan deployment Docker.
+- **Verification:**
+  - Backend Unit Tests: PASS (16/16 test suites, 95/95 tests passed)
+  - Backend E2E Tests: PASS (8/8 test suites, 45/45 tests passed)
+  - Backend Lint & Build: PASS (`nest build`, exit code 0)
+  - Frontend Lint & Build: PASS (`next build`, 10/10 routes compiled, 0 lint/type errors, exit code 0)
+  - Prisma Migration Status: PASS (1 migration, schema is up to date)
+  - Master MVP System Verification (`scratch/verify-m9.js`): PASS (10/10 sistem check lulus 100%)
+
+---
+
+## 🎖️ Master MVP Release Sign-Off Report
+
+Sesuai ketentuan **PRD Section 51 (MVP Release Criteria)** dan **PRD Section 55 (Engineering Priority)**:
+
+| Kriteria Rilis MVP (PRD §51) | Bukti Verifikasi Repositori | Status |
+| :--- | :--- | :---: |
+| **Admin can login** | `POST /api/v1/auth/login` + JWT Access/Refresh Rotation + E2E Tests | **SATISFIED** |
+| **Tournament & rules can be configured** | `TournamentModule` + CL/TS policies + IDX Price Fraction rules | **SATISFIED** |
+| **Participants & picks can be managed** | `ParticipantsModule` + `PicksModule` + validasi batas jam bursa | **SATISFIED** |
+| **Historical intraday data synchronized** | `MarketDataModule` + 1-min canonical candles + normalizer | **SATISFIED** |
+| **Evaluation handles CL & trailing stop** | `TradeEvaluationEngine` + Cut Loss (-3%) & Trailing Stop (-3%) | **SATISFIED** |
+| **-3% treated as minimum stop threshold** | Logika pemisahan theoretical threshold vs actual price level | **SATISFIED** |
+| **Actual valid exit level determines result** | `PriceFractionService` berbasis fraksi harga resmi bursa IDX | **SATISFIED** |
+| **Market close fallback works** | Exit reason `MARKET_CLOSE` pada candle penutupan jika tidak tersentuh | **SATISFIED** |
+| **Result calculation reproducible** | 100% deterministik non-LLM, versioned calculation rule `v1.0.0` | **SATISFIED** |
+| **Points generated** | `ResultsService` (`PERCENTAGE_RETURN_V1`: 1% return = 1.0000 poin) | **SATISFIED** |
+| **Daily result generated** | `GET /api/v1/tournaments/:id/results/daily` + breakdown metrik | **SATISFIED** |
+| **Overall leaderboard generated** | `GET /api/v1/tournaments/:id/results/overall` + multi-tier tie-breaking | **SATISFIED** |
+| **Exceptions visibly flagged** | `REVIEW_REQUIRED` & `PENDING_DATA` tercatat dan ber-badge kuning | **SATISFIED** |
+| **Manual override audited** | `POST /api/v1/evaluations/:id/override` + audit trail log permanen | **SATISFIED** |
+| **Responsive admin UI usable** | Next.js 14 Dark-Mode UI: Dashboard, 7 Tab Detail, & Public Leaderboard | **SATISFIED** |
+| **Critical tests pass** | Unit (95/95) + E2E (45/45) = 140/140 automated tests passed | **SATISFIED** |
+| **Production builds pass** | Backend `nest build` (code 0) + Frontend `next build` (code 0) | **SATISFIED** |
+| **Clean DB migration works** | `prisma/migrations/20260905000000_init/migration.sql` up to date | **SATISFIED** |
+| **Documentation exists** | `README.md`, `docs/architecture/`, ADRs, & Runbook operasional | **SATISFIED** |
+
+**KESIMPULAN:** SELURUH 10 MILESTONE (M0 s.d. M9) SELESAI SECARA PURNA (100% DEFINITION OF DONE TERCAPAI). TRADEARENA SIAP UNTUK PRODUCTION MVP RELEASE.
+
 

@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { Role, User } from '@prisma/client';
 
 @Injectable()
@@ -43,16 +44,28 @@ export class AuthService {
     name: string;
     role: Role;
   }) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const accessPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      jti: randomUUID(),
+    };
 
-    const accessToken = this.jwtService.sign(payload, {
+    const refreshPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      jti: randomUUID(),
+    };
+
+    const accessToken = this.jwtService.sign(accessPayload, {
       secret:
         this.configService.get<string>('JWT_SECRET') ||
         'super-secret-jwt-key-min-32-chars',
       expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') || '1h',
     });
 
-    const refreshToken = this.jwtService.sign(payload, {
+    const refreshToken = this.jwtService.sign(refreshPayload, {
       secret:
         this.configService.get<string>('JWT_REFRESH_SECRET') ||
         'super-secret-refresh-key-min-32-chars',

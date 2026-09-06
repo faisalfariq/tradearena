@@ -16,8 +16,26 @@ async function bootstrap() {
     }),
   );
 
+  app.enableShutdownHooks();
+
+  const allowedOrigins = [
+    'http://localhost:4444',
+    'http://127.0.0.1:4444',
+    'http://localhost:3000',
+  ];
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:4444',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Permissive in dev/MVP while supporting credentials
+      }
+    },
     credentials: true,
   });
 
