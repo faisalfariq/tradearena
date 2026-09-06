@@ -61,48 +61,14 @@ export default function Navbar() {
             </span>
           </div>
 
-          {user && (
-            <Link
-              href="/"
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 transition-all flex items-center gap-1.5"
-            >
-              <span>Dashboard</span>
-            </Link>
-          )}
-
-          <Link
-            href="/tournaments"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1.5"
-          >
-            <span>Turnamen</span>
-          </Link>
-
-          <Link
-            href="/participants"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1.5"
-          >
-            <span>Peserta</span>
-          </Link>
-
-          <Link
-            href="/stocks"
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1.5"
-          >
-            <span>Saham</span>
-          </Link>
-
-          <a
-            href={process.env.NEXT_PUBLIC_SWAGGER_URL || 'http://localhost:3333/api/docs'}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden md:flex text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 text-slate-300 transition-all items-center gap-1.5"
-          >
-            <span>Docs</span>
-            <ArrowUpRight className="w-3 h-3" />
-          </a>
-
           {user ? (
             <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 transition-all flex items-center gap-1.5"
+              >
+                <span>Dashboard</span>
+              </Link>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg glass-panel border-blue-500/30">
                 <Shield className="w-3.5 h-3.5 text-blue-400" />
                 <span className="text-xs font-semibold text-slate-200">{user.name}</span>
@@ -121,7 +87,7 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="text-xs font-semibold px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5"
+              className="text-xs font-semibold px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-md shadow-blue-600/20 flex items-center gap-2 hover:scale-[1.02]"
             >
               <UserIcon className="w-3.5 h-3.5" />
               <span>Admin Login</span>

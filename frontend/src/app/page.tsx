@@ -490,14 +490,18 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <div className="px-5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-200 text-xs font-medium flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="px-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 text-xs font-medium flex items-center gap-2 shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Milestone M6: Results & Standings Active</span>
+              <span>IDX Price Fraction Tick Size (V1)</span>
             </div>
-            <div className="px-5 py-2.5 rounded-xl bg-blue-950/40 border border-blue-800/40 text-blue-300 text-xs font-medium flex items-center gap-2.5">
+            <div className="px-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 text-xs font-medium flex items-center gap-2 shadow-sm">
               <Terminal className="w-4 h-4 text-blue-400" />
-              <span>Milestone M7: Leaderboard & Dashboard</span>
+              <span>Post-Market Automation (16:15 WIB)</span>
+            </div>
+            <div className="px-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 text-xs font-medium flex items-center gap-2 shadow-sm">
+              <Activity className="w-4 h-4 text-purple-400" />
+              <span>Deterministic Standings & Evidence</span>
             </div>
           </div>
         </div>
