@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '../context/AuthContext';
-import Sidebar from '../components/Sidebar';
+import AppShell from '../components/AppShell';
 
 export const metadata: Metadata = {
   title: 'TradeArena — Stock-Picking Tournament Evaluation Platform',
@@ -17,12 +17,9 @@ export default function RootLayout({
     <html lang="id" className="dark">
       <body className="antialiased selection:bg-blue-600 selection:text-white bg-slate-950 text-slate-100">
         <AuthProvider>
-          <div className="min-h-screen flex">
-            <Sidebar />
-            <main className="flex-1 w-full md:pl-64 flex flex-col min-h-screen overflow-x-hidden">
-              {children}
-            </main>
-          </div>
+          <AppShell>
+            {children}
+          </AppShell>
         </AuthProvider>
       </body>
     </html>
