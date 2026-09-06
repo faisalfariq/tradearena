@@ -61,6 +61,15 @@ export default function Navbar() {
             </span>
           </div>
 
+          {user && (
+            <Link
+              href="/"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 transition-all flex items-center gap-1.5"
+            >
+              <span>Dashboard</span>
+            </Link>
+          )}
+
           <Link
             href="/tournaments"
             className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700/80 hover:bg-slate-800 text-slate-200 transition-all flex items-center gap-1.5"

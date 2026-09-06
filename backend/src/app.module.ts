@@ -11,6 +11,7 @@ import { PicksModule } from './picks/picks.module';
 import { MarketDataModule } from './market-data/market-data.module';
 import { EvaluationModule } from './evaluation/evaluation.module';
 import { ResultsModule } from './results/results.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ResultsModule } from './results/results.module';
     MarketDataModule,
     EvaluationModule,
     ResultsModule,
+    DashboardModule,
     HealthModule,
   ],
 })

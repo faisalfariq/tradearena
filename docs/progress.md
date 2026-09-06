@@ -287,4 +287,39 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
   - Live Database Verification (`verify-m6.js`): PASS (Admin auth, recalculate endpoint, query klasemen akumulasi, dan query hasil harian berhasil)
 - **Decisions:**
   - Ranking dihitung dinamis dari data evaluasi dan poin otoritatif tanpa menyimpan static rank di database.
-- **Next Milestone:** M7 — Leaderboard & Dashboard (Admin Overview Dashboard, Public Leaderboard View, Responsive Layouts)
+- **Next Milestone:** M7 — Leaderboard & Dashboard
+
+---
+
+### M7 — Leaderboard & Dashboard
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - **Backend Dashboard Module (`DashboardService` & `DashboardController`):**
+    * `GET /api/v1/dashboard/stats`: Endpoint statistik terpusat platform yang diamankan dengan `JwtAuthGuard` dan `Roles(Role.ADMIN)`.
+    * Agregasi real-time: jumlah turnamen aktif vs total, total peserta terdaftar, total pick, total evaluasi trade selesai, total review yang diperlukan (exceptions), dan total emiten aktif.
+    * Ringkasan turnamen aktif beserta jumlah pendaftar dan total pick.
+    * Feed evaluasi trade terkini lengkap dengan emiten, return %, alasan exit, dan peserta.
+  - **Frontend Admin Operations Dashboard (`/`):**
+    * Tampilan cerdas berbasis role: pengunjung umum melihat landing page edukatif, sementara Admin yang terautentikasi langsung disajikan Operations Dashboard.
+    * 4 Kartu Metrik Kunci: Turnamen Aktif (dengan indikator status real-time), Peserta Terdaftar, Evaluasi Trade Selesai, dan Status Review/Audit.
+    * Hub Turnamen Aktif: Kartu turnamen interaktif dengan rincian jadwal, status, jumlah peserta, serta tautan cepat ke Detail Turnamen dan Klasemen Publik.
+    * Panel Aksi Cepat: Akses satu klik ke pembuatan turnamen baru, master emiten saham, data peserta, dan Swagger API docs.
+    * Tabel Evaluasi Trade Terkini dengan indikator badge return hijau/merah dan status deterministik bursa IDX.
+  - **Broadcast-Ready Public Leaderboard (`/tournaments/[id]/leaderboard`):**
+    * Halaman khusus klasemen publik yang dirancang bersih untuk peserta turnamen, komunitas, dan proyektor/livestream.
+    * Podium Juara Top 3 (#1 Gold Trophy, #2 Silver Medal, #3 Bronze Medal) menampilkan poin akumulasi, win rate %, rekor W/L/B, dan trade terbaik.
+    * Tampilan dwimode yang responsif: Klasemen Akumulasi Turnamen dan Hasil Sesi Harian (dengan pemilih tanggal dan kartu sorotan Top Gainer).
+    * Modal inspeksi Bukti Audit Terbuka (OHLC candle pemicu bursa, perhitungan fraksi harga IDX, dan kronologi menit ke menit).
+  - **Navbar Enhancements (`Navbar.tsx`):**
+    * Tautan "Dashboard" dinamis untuk Admin yang sedang login dan status indikator API real-time.
+- **Verification:**
+  - Lint: PASS (Backend: 0 errors/warnings | Frontend: 0 errors/warnings)
+  - Backend Unit Tests: PASS (15/15 test suites, 91/91 tests passed)
+  - Backend Build: PASS (`nest build`, exit code 0)
+  - Frontend Build: PASS (`next build`, 10/10 routes compiled, 0 lint/type errors, exit code 0)
+  - Live Database Verification (`verify-m7.js`): PASS (Admin auth, dashboard stats, query leaderboard publik, dan pemeriksaan route HTTP 200)
+- **Decisions:**
+  - Halaman utama (root `/`) dibuat adaptif: menyajikan landing hero konversi untuk publik dan dashboard operasional real-time untuk admin.
+  - Halaman leaderboard publik (`/tournaments/[id]/leaderboard`) dipisahkan dari konsol admin agar bebas dari tombol manipulasi data saat disiarkan ke publik/peserta.
+- **Next Milestone:** M8 — Automation & Exception Handling (Scheduler, BullMQ jobs, retry mechanisms, REVIEW_REQUIRED handling)
