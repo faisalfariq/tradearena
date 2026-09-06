@@ -23,6 +23,11 @@ import {
   ChevronRight,
   Clock,
   Coins,
+  Database,
+  RefreshCw,
+  BarChart3,
+  Eye,
+  Play,
 } from 'lucide-react';
 
 interface TournamentRule {
@@ -88,6 +93,43 @@ interface StockPick {
   };
 }
 
+interface MarketSyncItem {
+  id: string;
+  symbol: string;
+  candleCount?: number;
+  candlesCount?: number;
+  status: 'SUCCESS' | 'FAILED';
+  errorMessage: string | null;
+  createdAt: string;
+}
+
+interface MarketSyncRun {
+  id: string;
+  tournamentId: string;
+  tradingDate: string;
+  provider: string;
+  status: 'RUNNING' | 'SUCCESS' | 'PARTIAL' | 'FAILED';
+  totalSymbols: number;
+  syncedSymbols?: number;
+  syncedCount?: number;
+  startedAt: string;
+  completedAt: string | null;
+  errorMessage: string | null;
+  items?: MarketSyncItem[];
+}
+
+interface CandleData {
+  id: string;
+  symbol: string;
+  tradingDate: string;
+  timestamp: string;
+  open: number | string;
+  high: number | string;
+  low: number | string;
+  close: number | string;
+  volume: number;
+}
+
 export default function TournamentDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -96,7 +138,7 @@ export default function TournamentDetailPage() {
 
   const [tournament, setTournament] = useState<TournamentDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'PARTICIPANTS' | 'PICKS'>('PICKS');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'PARTICIPANTS' | 'PICKS' | 'SYNC'>('PICKS');
 
   // Enrolled Participants state
   const [enrolled, setEnrolled] = useState<EnrolledParticipant[]>([]);
@@ -128,6 +170,27 @@ export default function TournamentDetailPage() {
   const [pickLoading, setPickLoading] = useState(false);
   const [pickError, setPickError] = useState('');
   const [pickSuccess, setPickSuccess] = useState('');
+
+  // Market Data Sync states
+  const [syncRuns, setSyncRuns] = useState<MarketSyncRun[]>([]);
+  const [loadingSyncRuns, setLoadingSyncRuns] = useState(false);
+  const [syncDate, setSyncDate] = useState('');
+  const [syncProvider, setSyncProvider] = useState<'mock' | 'http'>('mock');
+  const [triggeringSync, setTriggeringSync] = useState(false);
+  const [syncError, setSyncError] = useState('');
+  const [syncSuccess, setSyncSuccess] = useState('');
+
+  // Selected Sync Run for details modal
+  const [selectedSyncRun, setSelectedSyncRun] = useState<MarketSyncRun | null>(null);
+  const [loadingSyncDetail, setLoadingSyncDetail] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Candle preview state
+  const [previewSymbol, setPreviewSymbol] = useState<string | null>(null);
+  const [previewDate, setPreviewDate] = useState<string>('');
+  const [previewCandles, setPreviewCandles] = useState<CandleData[]>([]);
+  const [loadingCandles, setLoadingCandles] = useState(false);
+  const [isCandleModalOpen, setIsCandleModalOpen] = useState(false);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333/api/v1';
 
@@ -217,13 +280,105 @@ export default function TournamentDetailPage() {
     }
   }, [API_BASE, tournamentId, pickDateFilter]);
 
+  // Fetch sync runs for tournament
+  const fetchSyncRuns = useCallback(async () => {
+    setLoadingSyncRuns(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/market-sync`);
+      if (res.ok) {
+        const data = await res.json();
+        setSyncRuns(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingSyncRuns(false);
+    }
+  }, [API_BASE, tournamentId]);
+
   useEffect(() => {
     fetchTournament();
     fetchEnrolled();
     fetchAllParticipants();
     fetchStocks();
     fetchPicks();
-  }, [fetchTournament, fetchEnrolled, fetchAllParticipants, fetchStocks, fetchPicks]);
+    fetchSyncRuns();
+  }, [fetchTournament, fetchEnrolled, fetchAllParticipants, fetchStocks, fetchPicks, fetchSyncRuns]);
+
+  // Trigger sync run handler
+  const handleTriggerSync = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSyncError('');
+    setSyncSuccess('');
+    setTriggeringSync(true);
+
+    try {
+      const targetDate = syncDate || tournament?.startDate.substring(0, 10);
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/market-sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          tradingDate: targetDate,
+          provider: syncProvider,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal memulai penarikan market data');
+      }
+
+      setSyncSuccess(
+        `Sinkronisasi berhasil! ${data.syncedSymbols}/${data.totalSymbols} emiten berhasil diproses (${data.status}).`,
+      );
+      fetchSyncRuns();
+    } catch (err) {
+      setSyncError((err as Error).message);
+    } finally {
+      setTriggeringSync(false);
+    }
+  };
+
+  // View detail of a sync run
+  const handleViewRunDetails = async (runId: string) => {
+    setLoadingSyncDetail(true);
+    setIsDetailModalOpen(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/market-sync/${runId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedSyncRun(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingSyncDetail(false);
+    }
+  };
+
+  // Preview candle data
+  const handlePreviewCandles = async (symbol: string, tradingDate: string) => {
+    setPreviewSymbol(symbol);
+    setPreviewDate(tradingDate);
+    setIsCandleModalOpen(true);
+    setLoadingCandles(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/market-data/candles?symbol=${symbol}&tradingDate=${tradingDate}&limit=100`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setPreviewCandles(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingCandles(false);
+    }
+  };
 
   // Enroll participant handler
   const handleEnroll = async (e: React.FormEvent) => {
@@ -439,10 +594,10 @@ export default function TournamentDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-8">
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 mb-8 overflow-x-auto">
         <button
           onClick={() => setActiveTab('PICKS')}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'PICKS'
               ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -454,7 +609,7 @@ export default function TournamentDetailPage() {
 
         <button
           onClick={() => setActiveTab('PARTICIPANTS')}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'PARTICIPANTS'
               ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -465,8 +620,20 @@ export default function TournamentDetailPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('SYNC')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+            activeTab === 'SYNC'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          <Database className="w-3.5 h-3.5" />
+          <span>Data Pasar & Sync ({syncRuns.length})</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('OVERVIEW')}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
             activeTab === 'OVERVIEW'
               ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
               : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -772,6 +939,235 @@ export default function TournamentDetailPage() {
         </div>
       )}
 
+      {/* TAB 4: MARKET DATA & SYNC */}
+      {activeTab === 'SYNC' && (
+        <div className="space-y-6">
+          {/* Sync Trigger Card */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800 relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Database className="w-5 h-5 text-blue-400" />
+                  <h3 className="text-base font-bold text-white">
+                    Sinkronisasi Data Pasar Intraday 1-Menit
+                  </h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-600/20 text-blue-400 border border-blue-500/20">
+                    IDX Canonical
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 max-w-2xl">
+                  Tarik bar candle 1-menit kanonikal untuk seluruh emiten unik yang dipilih peserta turnamen pada tanggal yang ditentukan. Menghindari duplikasi emiten dan memvalidasi geometri OHLC serta jam bursa WIB.
+                </p>
+              </div>
+
+              {/* Action Form */}
+              <form
+                onSubmit={handleTriggerSync}
+                className="flex flex-wrap items-center gap-3 bg-slate-900/90 p-3 rounded-2xl border border-slate-800"
+              >
+                <div>
+                  <label className="block text-[10px] font-medium text-slate-400 mb-1">
+                    Tanggal Perdagangan
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={syncDate || (tournament ? tournament.startDate.substring(0, 10) : '')}
+                    onChange={(e) => setSyncDate(e.target.value)}
+                    min={tournament?.startDate.substring(0, 10)}
+                    max={tournament?.endDate.substring(0, 10)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-medium text-slate-400 mb-1">
+                    Provider
+                  </label>
+                  <select
+                    value={syncProvider}
+                    onChange={(e) => setSyncProvider(e.target.value as 'mock' | 'http')}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="mock">Mock IDX (Deterministik 330 Bar)</option>
+                    <option value="http">HTTP Provider (API Eksternal)</option>
+                  </select>
+                </div>
+
+                <div className="flex items-end">
+                  <button
+                    type="submit"
+                    disabled={triggeringSync}
+                    className="inline-flex items-center gap-2 px-4 py-2 mt-4 md:mt-0 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition-all disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${triggeringSync ? 'animate-spin' : ''}`} />
+                    <span>{triggeringSync ? 'Sinkronisasi...' : 'Tarik Data (Sync)'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Notification messages */}
+            {syncSuccess && (
+              <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{syncSuccess}</span>
+                </div>
+                <button
+                  onClick={() => setSyncSuccess('')}
+                  className="text-emerald-400 hover:text-emerald-300"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {syncError && (
+              <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{syncError}</span>
+                </div>
+                <button
+                  onClick={() => setSyncError('')}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Sync Runs History */}
+          <div className="glass-panel p-6 rounded-2xl border border-slate-800">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="text-sm font-bold text-white">Riwayat Eksekusi Sinkronisasi</h4>
+                <p className="text-xs text-slate-400">
+                  Daftar run market data yang pernah dijalankan untuk turnamen ini
+                </p>
+              </div>
+              <button
+                onClick={fetchSyncRuns}
+                disabled={loadingSyncRuns}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-slate-200 text-xs"
+              >
+                <RefreshCw className={`w-3 h-3 ${loadingSyncRuns ? 'animate-spin' : ''}`} />
+                <span>Segarkan</span>
+              </button>
+            </div>
+
+            {loadingSyncRuns ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 text-blue-500 animate-spin mb-2" />
+                <p className="text-xs text-slate-400">Memuat riwayat sync...</p>
+              </div>
+            ) : syncRuns.length === 0 ? (
+              <div className="p-8 text-center border border-dashed border-slate-800 rounded-xl">
+                <Database className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-slate-300">Belum Ada Data Pasar yang Di-sync</p>
+                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  Pilih tanggal trading dan klik tombol &quot;Tarik Data (Sync)&quot; di atas untuk menarik data candle intraday 1-menit.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] text-slate-400 uppercase bg-slate-900/60 border-b border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4 font-semibold">Tanggal Trading</th>
+                      <th className="py-3 px-4 font-semibold">Provider</th>
+                      <th className="py-3 px-4 font-semibold">Status</th>
+                      <th className="py-3 px-4 font-semibold">Emiten Ter-sync</th>
+                      <th className="py-3 px-4 font-semibold">Waktu Eksekusi</th>
+                      <th className="py-3 px-4 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {syncRuns.map((run) => (
+                      <tr key={run.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-medium text-slate-200">
+                          {run.tradingDate.substring(0, 10)}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-400 uppercase">
+                            {run.provider}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              run.status === 'SUCCESS'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : run.status === 'PARTIAL'
+                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                : run.status === 'RUNNING'
+                                ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                run.status === 'SUCCESS'
+                                  ? 'bg-emerald-400'
+                                  : run.status === 'PARTIAL'
+                                  ? 'bg-amber-400'
+                                  : run.status === 'RUNNING'
+                                  ? 'bg-blue-400 animate-pulse'
+                                  : 'bg-rose-400'
+                              }`}
+                            />
+                            {run.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 font-mono">
+                          <span className="text-white font-bold">
+                            {run.syncedCount ?? run.syncedSymbols ?? 0}
+                          </span>
+                          <span className="text-slate-500"> / {run.totalSymbols} Emiten</span>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
+                          {new Date(run.startedAt).toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })}{' '}
+                          WIB
+                          {run.completedAt && (
+                            <span className="text-slate-500 ml-1">
+                              (
+                              {Math.max(
+                                0,
+                                Math.round(
+                                  (new Date(run.completedAt).getTime() -
+                                    new Date(run.startedAt).getTime()) /
+                                    1000,
+                                ),
+                              )}
+                              s)
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            onClick={() => handleViewRunDetails(run.id)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all border border-slate-700"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-blue-400" />
+                            <span>Lihat Rincian</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* MODAL ENROLL PARTICIPANT */}
       {isEnrollModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -988,6 +1384,246 @@ export default function TournamentDetailPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SYNC RUN INGESTION DETAILS */}
+      {isDetailModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-3xl p-6 rounded-2xl border border-slate-700 shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button
+              onClick={() => setIsDetailModalOpen(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Database className="w-5 h-5 text-blue-400" />
+                <h3 className="text-lg font-bold text-white">
+                  Rincian Ingestion Market Data
+                </h3>
+              </div>
+              {selectedSyncRun && (
+                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-1">
+                  <span>
+                    Tanggal:{' '}
+                    <strong className="text-white font-mono">{selectedSyncRun.tradingDate}</strong>
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Provider:{' '}
+                    <strong className="text-cyan-400 font-mono uppercase">
+                      {selectedSyncRun.provider}
+                    </strong>
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Status:{' '}
+                    <strong
+                      className={
+                        selectedSyncRun.status === 'SUCCESS' ? 'text-emerald-400' : 'text-amber-400'
+                      }
+                    >
+                      {selectedSyncRun.status}
+                    </strong>
+                  </span>
+                  <span>•</span>
+                  <span>
+                    Total:{' '}
+                    <strong className="text-white">
+                      {selectedSyncRun.syncedCount ?? selectedSyncRun.syncedSymbols ?? 0}/
+                      {selectedSyncRun.totalSymbols} Emiten
+                    </strong>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {loadingSyncDetail ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                <p className="text-xs text-slate-400">Memuat rincian emiten...</p>
+              </div>
+            ) : !selectedSyncRun?.items || selectedSyncRun.items.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs border border-dashed border-slate-800 rounded-xl">
+                Tidak ada item emiten dalam run ini.
+              </div>
+            ) : (
+              <div className="overflow-y-auto flex-1 border border-slate-800 rounded-xl">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] text-slate-400 uppercase bg-slate-900/80 sticky top-0 border-b border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4 font-semibold">Simbol Emiten</th>
+                      <th className="py-3 px-4 font-semibold">Status Sync</th>
+                      <th className="py-3 px-4 font-semibold">Bar 1-Menit</th>
+                      <th className="py-3 px-4 font-semibold">Keterangan</th>
+                      <th className="py-3 px-4 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {selectedSyncRun.items.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-800/30">
+                        <td className="py-3 px-4 font-mono font-bold text-white text-sm">
+                          {item.symbol}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              item.status === 'SUCCESS'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-slate-300">
+                          {item.candlesCount ?? item.candleCount ?? 0} bar
+                        </td>
+                        <td className="py-3 px-4 text-slate-400 text-[11px]">
+                          {item.errorMessage || 'Data tersinkronisasi dan lolos validasi'}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() =>
+                              handlePreviewCandles(item.symbol, selectedSyncRun.tradingDate)
+                            }
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-semibold border border-blue-500/30 transition-all"
+                          >
+                            <BarChart3 className="w-3.5 h-3.5" />
+                            <span>Preview Candle</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="pt-4 mt-4 border-t border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsDetailModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 1-MINUTE CANDLE INSPECTOR */}
+      {isCandleModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-4xl p-6 rounded-2xl border border-slate-700 shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button
+              onClick={() => setIsCandleModalOpen(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-lg font-bold text-white">
+                  Inspeksi Candle Intraday 1-Menit ({previewSymbol})
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400">
+                Tanggal: <span className="text-white font-mono">{previewDate}</span> • Total Dimuat:{' '}
+                <span className="text-white font-mono">{previewCandles.length} bar</span> (Kanonikal
+                IDX)
+              </p>
+            </div>
+
+            {loadingCandles ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mb-3" />
+                <p className="text-xs text-slate-400">Memuat bar candle 1-menit...</p>
+              </div>
+            ) : previewCandles.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-xs border border-dashed border-slate-800 rounded-xl">
+                Tidak ada data candle tersimpan untuk emiten dan tanggal ini.
+              </div>
+            ) : (
+              <div className="overflow-y-auto flex-1 border border-slate-800 rounded-xl">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] text-slate-400 uppercase bg-slate-900/90 sticky top-0 border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3 font-semibold">Waktu (WIB)</th>
+                      <th className="py-2.5 px-3 font-semibold text-right">Open</th>
+                      <th className="py-2.5 px-3 font-semibold text-right">High</th>
+                      <th className="py-2.5 px-3 font-semibold text-right">Low</th>
+                      <th className="py-2.5 px-3 font-semibold text-right">Close</th>
+                      <th className="py-2.5 px-3 font-semibold text-center">Return</th>
+                      <th className="py-2.5 px-3 font-semibold text-right">Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-mono">
+                    {previewCandles.map((c) => {
+                      const o = Number(c.open);
+                      const cl = Number(c.close);
+                      const ret = ((cl - o) / o) * 100;
+                      const isUp = cl >= o;
+
+                      return (
+                        <tr key={c.id} className="hover:bg-slate-800/30">
+                          <td className="py-2 px-3 text-slate-300">
+                            {new Date(c.timestamp).toLocaleTimeString('id-ID', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                            })}
+                          </td>
+                          <td className="py-2 px-3 text-right text-slate-200">
+                            Rp {Number(c.open).toLocaleString('id-ID')}
+                          </td>
+                          <td className="py-2 px-3 text-right text-emerald-400">
+                            Rp {Number(c.high).toLocaleString('id-ID')}
+                          </td>
+                          <td className="py-2 px-3 text-right text-rose-400">
+                            Rp {Number(c.low).toLocaleString('id-ID')}
+                          </td>
+                          <td className="py-2 px-3 text-right font-bold text-white">
+                            Rp {Number(c.close).toLocaleString('id-ID')}
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            <span
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                isUp
+                                  ? 'bg-emerald-500/10 text-emerald-400'
+                                  : 'bg-rose-500/10 text-rose-400'
+                              }`}
+                            >
+                              {ret > 0 ? `+${ret.toFixed(2)}%` : `${ret.toFixed(2)}%`}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-right text-slate-400">
+                            {Number(c.volume).toLocaleString('id-ID')}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="pt-4 mt-4 border-t border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsCandleModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+              >
+                Tutup Preview
+              </button>
+            </div>
           </div>
         </div>
       )}

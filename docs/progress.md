@@ -12,8 +12,8 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 | **M1** | Authentication & User Management | **COMPLETED** | 2026-09-05 |
 | **M2** | Tournament Core & Rules | **COMPLETED** | 2026-09-05 |
 | **M3** | Participants, Stocks & Picks | **COMPLETED** | 2026-09-06 |
-| **M4** | Market Data Integration | **IN PROGRESS** / NEXT | - |
-| **M5** | Trade Evaluation Engine | NOT STARTED | - |
+| **M4** | Market Data Integration | **COMPLETED** | 2026-09-06 |
+| **M5** | Trade Evaluation Engine | **NEXT** | - |
 | **M6** | Points & Results | NOT STARTED | - |
 | **M7** | Leaderboard & Dashboard | NOT STARTED | - |
 | **M8** | Automation & Exception Handling | NOT STARTED | - |
@@ -154,5 +154,51 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 - **Decisions:**
   - Validasi duplikasi pick menghasilkan HTTP 409 Conflict yang jelas bagi client/UI.
   - Tanggal perdagangan diparsing secara konsisten pada format `YYYY-MM-DD` untuk menghindari pergeseran akibat timezone client.
-- **Next Milestone:** M4 — Market Data Integration (Canonical intraday data provider adapter, normalizer, candle ingestion & sync tracking)
+- **Next Milestone:** M4 — Market Data Integration
+
+---
+
+### M4 — Market Data Integration
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - Canonical Market Data Interface (`IMarketDataProvider`):
+    * Standardized contract for intraday candle feeds (`NormalizedCandle`).
+    * Provider abstraction supporting multiple data sources (`MockMarketDataProvider`, `HttpMarketDataProvider`).
+  - Candle Normalizer & Geometry Integrity Engine (`CandleNormalizer`):
+    * Enforces physical OHLC geometry (`high = Math.max(o, h, l, c)`, `low = Math.min(o, h, l, c)`).
+    * Filters non-positive / corrupted candle prices.
+    * Timestamps deduplication and chronological ascending order.
+  - Deterministic IDX Mock Provider:
+    * Generates authentic IDX trading sessions:
+      - Sesi 1: 09:00 - 12:00 WIB (180 bars)
+      - Sesi 2 & Pre-closing: 13:30 - 16:00 WIB (150 bars)
+      - Total: 330 1-minute bars per trading day.
+    * Deterministic seed: identic output for identical symbol and date.
+  - Market Data Service & Unique Symbol Synchronization:
+    * Ingests intraday 1-minute bars for all unique symbols picked in the tournament.
+    * Tracks synchronization runs (`MarketSyncRun`) and per-symbol ingestion status (`MarketSyncItem`).
+    * Prevents duplicate ingestion via database upsert logic.
+  - Endpoints:
+    * `POST /api/v1/tournaments/:id/market-sync`: Trigger sync run (Admin only).
+    * `GET /api/v1/tournaments/:id/market-sync`: List sync run history.
+    * `GET /api/v1/tournaments/:id/market-sync/:runId`: Detailed sync run status & per-symbol item metrics.
+    * `GET /api/v1/market-data/candles?symbol=...&tradingDate=...`: Retrieve stored 1-minute canonical candles.
+  - Frontend Market Data & Sync Interface (`/tournaments/[id]`):
+    * Tab 4: "Data Pasar & Sync".
+    * Sync trigger form with trading date picker, provider selector, and execution button with loading feedback.
+    * Real-time sync run history table with status badges (`SUCCESS`, `PARTIAL`, `RUNNING`, `FAILED`), synced vs total symbols, and timestamps.
+    * Detailed Ingestion Modal with per-symbol breakdown and status.
+    * 1-Minute Candle Inspector Modal displaying OHLCV table with WIB timestamps and return badges.
+- **Verification:**
+  - Lint: PASS (Backend: 0 errors/warnings | Frontend: 0 errors/warnings)
+  - Backend Unit Tests: PASS (9/9 test suites, 52/52 tests passed)
+  - Backend E2E Tests: PASS (5/5 test suites, 26/26 tests passed)
+  - Backend Build: PASS (`nest build`, exit code 0)
+  - Frontend Build: PASS (`next build`, 9/9 routes compiled, exit code 0)
+- **Decisions:**
+  - Menghindari duplikasi penarikan data: hanya emiten unik dari stock picks yang ditarik, tidak peduli berapa banyak peserta memilih emiten yang sama.
+  - Validasi integritas geometri bar candle dilakukan di backend sebelum persistensi.
+- **Next Milestone:** M5 — Trade Evaluation Engine (Deterministic trade evaluation, Initial Cut Loss -3%, Trailing Stop -3% from peak, IDX price fractions, and auditable trade logs)
+
 

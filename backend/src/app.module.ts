@@ -8,6 +8,7 @@ import { TournamentsModule } from './tournaments/tournaments.module';
 import { StocksModule } from './stocks/stocks.module';
 import { ParticipantsModule } from './participants/participants.module';
 import { PicksModule } from './picks/picks.module';
+import { MarketDataModule } from './market-data/market-data.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PicksModule } from './picks/picks.module';
     StocksModule,
     ParticipantsModule,
     PicksModule,
+    MarketDataModule,
     HealthModule,
   ],
 })
