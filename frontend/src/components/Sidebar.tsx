@@ -18,6 +18,7 @@ import {
   X,
   Activity,
   UserCog,
+  CheckSquare,
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -53,6 +54,16 @@ export default function Sidebar() {
       icon: Trophy,
       active: pathname.startsWith('/tournaments'),
     },
+    ...(user
+      ? [
+          {
+            label: 'Pick Saham Saya',
+            href: '/my-picks',
+            icon: CheckSquare,
+            active: pathname.startsWith('/my-picks'),
+          },
+        ]
+      : []),
     ...(user?.role === 'ADMIN'
       ? [
           {

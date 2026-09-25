@@ -18,6 +18,10 @@ Dokumen ini mencatat status setiap milestone development TradeArena sesuai PRD d
 | **M7** | Leaderboard & Dashboard | **COMPLETED** | 2026-09-06 |
 | **M8** | Automation & Exception Handling | **COMPLETED** | 2026-09-06 |
 | **M9** | MVP Stabilization | **COMPLETED** | 2026-09-06 |
+| **M10** | User Roles, Google SSO & Participant Approval | **COMPLETED** | 2026-09-06 |
+| **M11** | Participant Self-Service Portal & 08:45 WIB Lock | **COMPLETED** | 2026-09-25 |
+| **M12** | Cloud Deployment | **PENDING** | - |
+| **M13** | Live Market Dry Run & Backtesting | **PENDING** | - |
 
 ---
 
@@ -421,5 +425,47 @@ Sesuai ketentuan **PRD Section 51 (MVP Release Criteria)** dan **PRD Section 55 
 | **Documentation exists** | `README.md`, `docs/architecture/`, ADRs, & Runbook operasional | **SATISFIED** |
 
 **KESIMPULAN:** SELURUH 10 MILESTONE (M0 s.d. M9) SELESAI SECARA PURNA (100% DEFINITION OF DONE TERCAPAI). TRADEARENA SIAP UNTUK PRODUCTION MVP RELEASE.
+
+---
+
+### M10 — User Roles, Google SSO & Tournament Participant Approval
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-06
+- **Implemented Scope:**
+  - Refactoring Role Otorisasi Sistem: 2 Role baku (`ADMIN` & `USER`).
+  - Google SSO Integration (`POST /api/v1/auth/google`) dengan auto-provisioning role `USER`.
+  - Halaman Konsol Pengguna (`/users`) untuk manajemen role user oleh Super Admin.
+  - Alur Persetujuan Kepesertaan Turnamen (`apply`, `my-status`, `applicants`, `review` dengan status `PENDING`, `APPROVED`, `REJECTED`, `DISQUALIFIED`).
+  - Integrasi Manajemen Peserta Berlingkup Turnamen langsung di `/tournaments/[id]` (Tab Peserta Terdaftar: enroll multi-mode, diskualifikasi dengan input alasan, pulihkan, dan unenroll).
+  - Custom Glassmorphic Confirmation Modals menggantikan seluruh dialog browser bawaan (`confirm()` dan `prompt()`).
+
+---
+
+### M11 — Participant Self-Service Portal & 08:45 WIB Lock
+- **Status:** COMPLETED
+- **Completion Date:** 2026-09-25
+- **Implemented Scope:**
+  - Endpoint Mandiri Peserta:
+    - `GET /api/v1/tournaments/:id/my-pick`: Mengambil status kepesertaan, pick aktif hari ini, dan status kunci 08:45 WIB.
+    - `POST /api/v1/tournaments/:id/my-pick`: Submit atau update pick saham harian mandiri untuk peserta berstatus `APPROVED`.
+    - `DELETE /api/v1/tournaments/:id/my-pick/:pickId`: Membatalkan pick mandiri sebelum pukul 08:45 WIB.
+    - `GET /api/v1/my-tournaments/picks-overview`: Ringkasan seluruh turnamen aktif yang diikuti user beserta status pick hari ini.
+  - Penegakan Aturan Kunci Otomatis (08:45:00 WIB Lock Enforcement):
+    - Pengiriman, pengubahan, dan pembatalan pick untuk hari ini ditolak setelah pukul 08:45 WIB (`403 Forbidden`).
+    - Dukungan konfigurasi fleksibel `BYPASS_PICK_LOCK=true` untuk pengujian dev.
+  - Halaman Baru Portal Peserta (`/my-picks`):
+    - Jam Digital Real-time WIB (Asia/Jakarta).
+    - Banner Fase Pasar Dinamis (Prapasar buka sebelum 08:45, Sesi Bursa terkunci 08:45–16:00, Pascapasar evaluasi selesai 16:00+).
+    - Kartu Formulir Input Pick Saham Interaktif dengan pencarian kode emiten IDX dan kalkulator level Stop Loss otomatis (-3%).
+    - Kartu Status Pick Terkonfirmasi dengan ringkasan emiten, harga entry, level cut loss, dan tombol batal/ubah sebelum lock.
+    - Tabel Riwayat Pick & Hasil Trade Saya lengkap dengan hasil return realized, outcome, dan modal inspeksi bukti (*Evidence*).
+  - Integrasi Menu & Navigasi:
+    - Menu sidebar *"Pick Saham Saya"* (`/my-picks`) untuk role `USER` dan `ADMIN`.
+    - Tombol cepat prapasar pada halaman detail turnamen (`/tournaments/[id]`) untuk peserta `APPROVED`.
+- **Verification:**
+  - Unit Tests: 13/13 unit tests lolos (100% pass).
+  - Integration Script: `scratch/verify-self-service.js` pass (Login -> Apply -> Approve -> GET my-pick -> POST my-pick -> Overview).
+  - Next.js Build/Routing: `/my-picks` HTTP 200 pass.
+
 
 

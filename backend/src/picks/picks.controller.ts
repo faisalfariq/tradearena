@@ -21,9 +21,11 @@ import {
 import { PicksService } from './picks.service';
 import { CreatePickDto } from './dto/create-pick.dto';
 import { UpdatePickDto } from './dto/update-pick.dto';
+import { SubmitMyPickDto } from './dto/submit-my-pick.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Role, PickStatus } from '@prisma/client';
 
 @ApiTags('Stock Picks (Pilihan Saham Harian)')
@@ -125,4 +127,93 @@ export class PicksController {
   async delete(@Param('id') id: string) {
     return this.picksService.delete(id);
   }
+
+  // --- PARTICIPANT SELF-SERVICE ENDPOINTS ---
+
+  @Get('my-tournaments/picks-overview')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Ringkasan seluruh turnamen aktif yang diikuti user & status pick hari ini',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Daftar turnamen aktif peserta beserta status pick hari ini',
+  })
+  async getMyActiveTournamentsSummary(@CurrentUser() user: { id: string }) {
+    return this.picksService.getMyActiveTournamentsSummary(user.id);
+  }
+
+  @Get('tournaments/:tournamentId/my-pick')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary:
+      'Ambil pick saham peserta untuk turnamen & tanggal tertentu (termasuk status lock 08:45 WIB)',
+  })
+  @ApiQuery({
+    name: 'tradingDate',
+    required: false,
+    description: 'Tanggal perdagangan (YYYY-MM-DD), default hari ini WIB',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Status kepesertaan, lock status, dan data pick aktif peserta',
+  })
+  async getMyPickStatus(
+    @Param('tournamentId') tournamentId: string,
+    @CurrentUser() user: { id: string },
+    @Query('tradingDate') tradingDate?: string,
+  ) {
+    return this.picksService.getMyPickStatus(tournamentId, user.id, tradingDate);
+  }
+
+  @Post('tournaments/:tournamentId/my-pick')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary:
+      'Submit atau perbarui pick saham harian peserta mandiri (Kunci otomatis 08:45 WIB)',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Stock pick mandiri berhasil disimpan / diperbarui',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Peserta belum APPROVED atau tanggal di luar durasi turnamen',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Pick terkunci karena sudah melewati batas waktu 08:45 WIB',
+  })
+  async submitMyPick(
+    @Param('tournamentId') tournamentId: string,
+    @CurrentUser() user: { id: string },
+    @Body() dto: SubmitMyPickDto,
+  ) {
+    return this.picksService.submitMyPick(tournamentId, user.id, dto);
+  }
+
+  @Delete('tournaments/:tournamentId/my-pick/:pickId')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Batalkan pick saham mandiri sebelum batas waktu 08:45 WIB',
+  })
+  @ApiResponse({ status: 200, description: 'Stock pick mandiri berhasil dibatalkan' })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Tidak dapat membatalkan pick yang sudah terkunci (setelah 08:45 WIB) atau bukan milik user',
+  })
+  async cancelMyPick(
+    @Param('tournamentId') tournamentId: string,
+    @Param('pickId') pickId: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.picksService.cancelMyPick(tournamentId, user.id, pickId);
+  }
 }
+

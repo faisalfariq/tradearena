@@ -46,18 +46,40 @@ describe('PicksService', () => {
           return null;
         }),
       },
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'user-uuid-1',
+          name: 'Budi Santoso',
+          email: 'budi@example.com',
+          role: 'USER',
+        }),
+      },
       participant: {
         findUnique: jest.fn().mockImplementation(({ where }) => {
           if (where.id === mockParticipant.id) return mockParticipant;
           return null;
         }),
+        findFirst: jest.fn().mockResolvedValue(mockParticipant),
+        create: jest.fn().mockResolvedValue(mockParticipant),
+        update: jest.fn().mockResolvedValue(mockParticipant),
       },
       tournamentParticipant: {
         findUnique: jest.fn().mockResolvedValue({
           id: 'membership-uuid-1',
           tournamentId: mockTournament.id,
           participantId: mockParticipant.id,
+          status: 'APPROVED',
         }),
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'membership-uuid-1',
+            tournamentId: mockTournament.id,
+            participantId: mockParticipant.id,
+            status: 'APPROVED',
+            tournament: mockTournament,
+            joinedAt: new Date(),
+          },
+        ]),
       },
       stock: {
         findUnique: jest.fn().mockImplementation(({ where }) => {
@@ -67,6 +89,7 @@ describe('PicksService', () => {
       },
       stockPick: {
         findUnique: jest.fn().mockResolvedValue(null),
+        findFirst: jest.fn().mockResolvedValue(null),
         create: jest.fn().mockResolvedValue(mockPick),
         findMany: jest.fn().mockResolvedValue([mockPick]),
         update: jest.fn().mockImplementation(({ data }) => ({
@@ -169,4 +192,81 @@ describe('PicksService', () => {
       expect(prismaService.stockPick.findMany).toHaveBeenCalled();
     });
   });
+
+  describe('Participant Self-Service & 08:45 Lock', () => {
+    it('should return my pick status for enrolled participant', async () => {
+      const status = await service.getMyPickStatus(
+        mockTournament.id,
+        'user-uuid-1',
+        '2026-10-15',
+      );
+      expect(status.enrolled).toBe(true);
+      expect(status.isApproved).toBe(true);
+      expect(status.participant.id).toBe(mockParticipant.id);
+    });
+
+    it('should successfully submit my pick for upcoming tournament date', async () => {
+      process.env.BYPASS_PICK_LOCK = 'true';
+      const pick = await service.submitMyPick(
+        mockTournament.id,
+        'user-uuid-1',
+        {
+          stockId: mockStock.id,
+          tradingDate: '2026-10-15',
+          entryPrice: 9200,
+        },
+      );
+      expect(pick).toBeDefined();
+      expect(prismaService.stockPick.create).toHaveBeenCalled();
+      delete process.env.BYPASS_PICK_LOCK;
+    });
+
+    it('should reject submitMyPick if membership is not APPROVED', async () => {
+      prismaService.tournamentParticipant.findUnique.mockResolvedValueOnce({
+        id: 'mem-1',
+        tournamentId: mockTournament.id,
+        participantId: mockParticipant.id,
+        status: 'PENDING',
+      });
+
+      await expect(
+        service.submitMyPick(mockTournament.id, 'user-uuid-1', {
+          stockId: mockStock.id,
+          tradingDate: '2026-10-15',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject submitMyPick if trading date is in the past (locked)', async () => {
+      delete process.env.BYPASS_PICK_LOCK;
+      await expect(
+        service.submitMyPick(mockTournament.id, 'user-uuid-1', {
+          stockId: mockStock.id,
+          tradingDate: '2020-01-01', // definitely in the past
+        }),
+      ).rejects.toThrow();
+    });
+
+    it('should cancel my pick successfully when lock is bypassed', async () => {
+      process.env.BYPASS_PICK_LOCK = 'true';
+      prismaService.stockPick.findUnique.mockResolvedValueOnce(mockPick);
+      const res = await service.cancelMyPick(
+        mockTournament.id,
+        'user-uuid-1',
+        mockPick.id,
+      );
+      expect(res).toBeDefined();
+      expect(prismaService.stockPick.delete).toHaveBeenCalledWith({
+        where: { id: mockPick.id },
+      });
+      delete process.env.BYPASS_PICK_LOCK;
+    });
+
+    it('should get active tournaments summary for user', async () => {
+      const summary = await service.getMyActiveTournamentsSummary('user-uuid-1');
+      expect(summary).toHaveLength(1);
+      expect(summary[0].tournamentId).toBe(mockTournament.id);
+    });
+  });
 });
+

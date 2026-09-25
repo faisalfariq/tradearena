@@ -27,6 +27,7 @@ describe('ParticipantsService', () => {
     id: 'membership-uuid-1',
     tournamentId: mockTournament.id,
     participantId: mockParticipant.id,
+    status: 'APPROVED',
     joinedAt: new Date(),
     participant: mockParticipant,
   };
@@ -60,6 +61,7 @@ describe('ParticipantsService', () => {
       tournamentParticipant: {
         create: jest.fn().mockResolvedValue(mockMembership),
         findUnique: jest.fn().mockResolvedValue(null),
+        update: jest.fn().mockResolvedValue(mockMembership),
         findMany: jest.fn().mockResolvedValue([
           {
             ...mockMembership,
@@ -125,6 +127,7 @@ describe('ParticipantsService', () => {
         data: {
           tournamentId: mockTournament.id,
           participantId: mockParticipant.id,
+          status: 'APPROVED',
         },
         include: { participant: true },
       });

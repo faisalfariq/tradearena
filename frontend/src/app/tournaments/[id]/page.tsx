@@ -42,6 +42,7 @@ import {
   RotateCcw,
   UserCheck,
   UserX,
+  CheckSquare,
 } from 'lucide-react';
 
 interface DailyResultItem {
@@ -1526,6 +1527,19 @@ export default function TournamentDetailPage() {
                   </>
                 )}
               </button>
+            ) : myApplication?.status === 'APPROVED' ? (
+              <Link
+                href="/my-picks"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2"
+              >
+                <CheckSquare className="w-3.5 h-3.5" />
+                <span>Kirim / Cek Pick Saham Saya</span>
+              </Link>
+            ) : myApplication?.status === 'PENDING' ? (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Pendaftaran Menunggu Persetujuan Admin</span>
+              </span>
             ) : myApplication?.status === 'REJECTED' ? (
               <button
                 onClick={handleApplyTournament}
