@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter, NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as classValidator from 'class-validator';
+import * as classTransformer from 'class-transformer';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -17,6 +19,8 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+      validatorPackage: classValidator,
+      transformerPackage: classTransformer,
     }),
   );
 
