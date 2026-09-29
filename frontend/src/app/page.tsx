@@ -20,7 +20,12 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
+  CheckSquare,
+  CandlestickChart,
+  Calendar,
+  Shield,
+  ArrowRight,
 } from 'lucide-react';
 
 interface DashboardMetrics {
@@ -41,6 +46,11 @@ interface TournamentSummaryItem {
   status: string;
   participantsCount: number;
   picksCount: number;
+  description?: string;
+  rules?: {
+    initialStopPct: number | string;
+    trailingStopPct: number | string;
+  };
 }
 
 interface RecentEvaluationItem {
@@ -66,6 +76,7 @@ interface DashboardStatsResponse {
 export default function HomePage() {
   const { user, token } = useAuth();
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
+  const [tournaments, setTournaments] = useState<TournamentSummaryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,14 +101,34 @@ export default function HomePage() {
     }
   }, [token]);
 
-  useEffect(() => {
-    if (user && token) {
-      fetchStats();
+  const fetchTournaments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333/api/v1';
+      const res = await fetch(`${baseUrl}/tournaments`);
+      if (res.ok) {
+        const data = await res.json();
+        setTournaments(Array.isArray(data) ? data : []);
+      }
+    } catch {
+      setTournaments([]);
+    } finally {
+      setLoading(false);
     }
-  }, [user, token, fetchStats]);
+  }, []);
 
-  // Authenticated Admin Dashboard View
-  if (user) {
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'ADMIN' && token) {
+        fetchStats();
+      } else {
+        fetchTournaments();
+      }
+    }
+  }, [user, token, fetchStats, fetchTournaments]);
+
+  // 1. Authenticated Admin Dashboard View
+  if (user && user.role === 'ADMIN') {
     return (
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Welcome Header */}
@@ -451,7 +482,222 @@ export default function HomePage() {
     );
   }
 
-  // Public Guest Hero View
+  // 2. Authenticated Participant Dashboard View
+  if (user && user.role !== 'ADMIN') {
+    return (
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Welcome Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+              <Shield className="w-3.5 h-3.5" />
+              <span>Portal Peserta • Komunitas Saham IDX</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Selamat Datang, {user.name} 👋
+            </h1>
+            <p className="text-sm text-slate-400 mt-1">
+              Kelola pilihan saham harian Anda, ikuti kompetisi trading saham IDX, dan pantau papan klasemen secara transparan.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/my-picks"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all"
+            >
+              <CheckSquare className="w-4 h-4" />
+              <span>Pick Saham Saya</span>
+            </Link>
+            <Link
+              href="/tournaments"
+              className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-2 transition-all shadow-sm"
+            >
+              <Trophy className="w-3.5 h-3.5 text-blue-400" />
+              <span>Semua Turnamen</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* 3 Quick Navigation Feature Cards for Participant */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Card 1: My Picks */}
+          <Link
+            href="/my-picks"
+            className="p-6 rounded-2xl glass-panel border border-slate-800 hover:border-blue-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <CheckSquare className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                  Menu Utama
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors mb-1.5">
+                Pick Saham Harian
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Pilih atau perbarui saham jagoan Anda untuk turnamen aktif sebelum jam pembukaan bursa IDX (08:59 WIB).
+              </p>
+            </div>
+            <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-blue-400 group-hover:translate-x-1 transition-transform">
+              <span>Buka Form Pick</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+
+          {/* Card 2: Tournaments & Leaderboard */}
+          <Link
+            href="/tournaments"
+            className="p-6 rounded-2xl glass-panel border border-slate-800 hover:border-emerald-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <Trophy className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  Klasemen & Jadwal
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors mb-1.5">
+                Turnamen & Klasemen
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Pantau akumulasi poin, peringkat harian, dan evaluasi stop loss (-3% Cut Loss & -3% Trailing Stop).
+              </p>
+            </div>
+            <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-emerald-400 group-hover:translate-x-1 transition-transform">
+              <span>Jelajahi Turnamen</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+
+          {/* Card 3: Stock Catalog */}
+          <Link
+            href="/stocks"
+            className="p-6 rounded-2xl glass-panel border border-slate-800 hover:border-purple-500/40 transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <CandlestickChart className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                  Katalog IDX
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors mb-1.5">
+                Daftar Saham Terdaftar
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Cek daftar saham resmi IDX yang memenuhi kriteria fraksi harga dan diizinkan dalam turnamen.
+              </p>
+            </div>
+            <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-purple-400 group-hover:translate-x-1 transition-transform">
+              <span>Lihat Katalog Saham</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
+        </div>
+
+        {/* Active & Upcoming Tournaments */}
+        <div className="glass-panel p-6 rounded-2xl border border-slate-800">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                <Trophy className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Turnamen Saham Aktif & Mendatang
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Daftar kompetisi yang dapat Anda ikuti atau pantau klasemennya
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/tournaments"
+              className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+            >
+              <span>Lihat Semua</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs">
+              <RefreshCw className="w-5 h-5 animate-spin text-blue-400" />
+              <span>Memuat daftar turnamen...</span>
+            </div>
+          ) : tournaments.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tournaments.map((t) => (
+                <div
+                  key={t.id}
+                  className="p-5 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                        {t.status}
+                      </span>
+                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-slate-500" />
+                        {new Date(t.startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} — {new Date(t.endDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-white mb-1.5">{t.name}</h3>
+                    <p className="text-xs text-slate-400 line-clamp-2 mb-4">
+                      {t.description || 'Turnamen stock picking harian dengan evaluasi presisi IDX.'}
+                    </p>
+
+                    <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-4 pb-3 border-b border-slate-800/60">
+                      <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-medium">
+                        Cut Loss -{t.rules?.initialStopPct ? (Number(t.rules.initialStopPct) * 100).toFixed(0) : 3}%
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-medium">
+                        Trailing Stop -{t.rules?.trailingStopPct ? (Number(t.rules.trailingStopPct) * 100).toFixed(0) : 3}% dari Peak
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <Link
+                      href={`/tournaments/${t.id}/leaderboard`}
+                      className="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1 transition-colors"
+                    >
+                      <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Live Leaderboard</span>
+                    </Link>
+
+                    <Link
+                      href={`/my-picks`}
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+                    >
+                      <CheckSquare className="w-3.5 h-3.5" />
+                      <span>Pick Saham</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-10 text-center text-slate-400 text-xs">
+              Belum ada turnamen yang tersedia saat ini.
+            </div>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  // 3. Public Guest Hero View
   return (
     <main className="flex-1 flex flex-col relative overflow-hidden">
       {/* Dynamic Background Elements */}

@@ -175,22 +175,26 @@ export default function Sidebar() {
               );
             })}
 
-            <div className="px-3 pt-5 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-              Developer & API
-            </div>
+            {user?.role === 'ADMIN' && (
+              <>
+                <div className="px-3 pt-5 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  Developer & API
+                </div>
 
-            <a
-              href={process.env.NEXT_PUBLIC_SWAGGER_URL || 'http://localhost:3333/api/docs'}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-slate-900/60 border border-transparent transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <FileCode2 className="w-4 h-4 text-slate-400" />
-                <span>Swagger Docs</span>
-              </div>
-              <ArrowUpRight className="w-3.5 h-3.5 text-slate-500" />
-            </a>
+                <a
+                  href={process.env.NEXT_PUBLIC_SWAGGER_URL || 'http://localhost:3333/api/docs'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-slate-900/60 border border-transparent transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileCode2 className="w-4 h-4 text-slate-400" />
+                    <span>Swagger Docs</span>
+                  </div>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-500" />
+                </a>
+              </>
+            )}
           </div>
         </div>
 

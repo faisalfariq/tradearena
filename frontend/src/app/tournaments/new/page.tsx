@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
@@ -41,12 +41,19 @@ export default function NewTournamentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Protect route: Admin only
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN') {
+      router.push('/tournaments');
+    }
+  }, [user, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!token) {
-      setErrorMsg('Anda harus masuk sebagai Admin untuk membuat turnamen.');
+    if (!token || user?.role !== 'ADMIN') {
+      setErrorMsg('Akses ditolak: Hanya Administrator yang berhak membuat turnamen.');
       return;
     }
 
