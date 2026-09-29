@@ -49,30 +49,37 @@ export class TournamentsService {
     const calculationRuleVersion =
       dto.rules?.calculationRuleVersion ?? 'v1.0.0';
 
-    return this.prisma.tournament.create({
-      data: {
-        name: dto.name,
-        description: dto.description,
-        startDate: new Date(dto.startDate),
-        endDate: new Date(dto.endDate),
-        timezone: dto.timezone || 'Asia/Jakarta',
-        status: dto.status || TournamentStatus.UPCOMING,
-        rules: {
-          create: {
-            initialStopPct,
-            trailingStopPct,
-            candleAmbiguityPolicy,
-            gapPolicy,
-            priceFractionPolicy,
-            pointsRule,
-            calculationRuleVersion,
+    try {
+      return await this.prisma.tournament.create({
+        data: {
+          name: dto.name,
+          description: dto.description,
+          startDate: new Date(dto.startDate),
+          endDate: new Date(dto.endDate),
+          timezone: dto.timezone || 'Asia/Jakarta',
+          status: dto.status || TournamentStatus.UPCOMING,
+          rules: {
+            create: {
+              initialStopPct,
+              trailingStopPct,
+              candleAmbiguityPolicy,
+              gapPolicy,
+              priceFractionPolicy,
+              pointsRule,
+              calculationRuleVersion,
+            },
           },
         },
-      },
-      include: {
-        rules: true,
-      },
-    });
+        include: {
+          rules: true,
+        },
+      });
+    } catch (err: any) {
+      console.error('[TournamentsService.create] Error creating tournament:', err);
+      throw new BadRequestException(
+        err.message || 'Gagal menyimpan data turnamen ke database',
+      );
+    }
   }
 
   async findAll(status?: TournamentStatus) {

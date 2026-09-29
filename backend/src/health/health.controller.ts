@@ -34,6 +34,13 @@ export class HealthController {
       const stockCount = await this.prisma.stock.count();
       const tournamentCount = await this.prisma.tournament.count();
 
+      const ruleColumns = await this.prisma.$queryRawUnsafe(
+        "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tournament_rules' ORDER BY ordinal_position;"
+      );
+      const tournamentColumns = await this.prisma.$queryRawUnsafe(
+        "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tournaments' ORDER BY ordinal_position;"
+      );
+
       return {
         database: 'connected',
         userCount,
@@ -41,6 +48,8 @@ export class HealthController {
         tournamentCount,
         adminFound: !!admin,
         admin,
+        ruleColumns,
+        tournamentColumns,
       };
     } catch (err: any) {
       return {
