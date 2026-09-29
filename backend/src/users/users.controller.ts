@@ -16,7 +16,9 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiProperty,
 } from '@nestjs/swagger';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -24,6 +26,9 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 
 export class UpdateUserRoleDto {
+  @ApiProperty({ enum: Role, description: 'Role baru pengguna' })
+  @IsNotEmpty({ message: 'Role tidak boleh kosong' })
+  @IsEnum(Role, { message: 'Role harus ADMIN atau USER' })
   role: Role;
 }
 
