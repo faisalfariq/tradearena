@@ -59,6 +59,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('tradearena_access_token');
     localStorage.removeItem('tradearena_refresh_token');
     localStorage.removeItem('tradearena_user');
+
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   }, []);
 
   // Restore session from localStorage on client mount

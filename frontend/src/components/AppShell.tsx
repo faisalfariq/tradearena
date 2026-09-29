@@ -1,17 +1,27 @@
 'use client';
 
-import React from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
 
   const isLoginPage = pathname === '/login';
   const isLeaderboardBroadcast = pathname.includes('/leaderboard');
+  const isPublicLanding = pathname === '/';
+  const isPublicRoute = isLoginPage || isLeaderboardBroadcast || isPublicLanding;
+
+  // Protect internal/management routes from unauthenticated direct visits
+  useEffect(() => {
+    if (!isLoading && !user && !isPublicRoute) {
+      router.push('/login');
+    }
+  }, [isLoading, user, isPublicRoute, router]);
 
   // 1. Dedicated Login Page: Clean, focused, centered with no sidebar
   if (isLoginPage) {
@@ -31,8 +41,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // 3. Unauthenticated Visitors (Home / Landing): Show top Navbar with Login button, NO admin sidebar
+  // 3. Unauthenticated Visitors on Landing Page: Show top Navbar with Login button, NO admin sidebar
   if (!user) {
+    if (!isPublicRoute) {
+      // While redirecting to login, render a sleek loader
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-medium">Mengarahkan ke halaman login...</span>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
         <Navbar />
