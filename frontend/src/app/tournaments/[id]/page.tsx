@@ -817,6 +817,16 @@ export default function TournamentDetailPage() {
     fetchApplicants,
   ]);
 
+  // Non-admin participants can only access PICKS, RESULTS, and OVERVIEW
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN') {
+      const allowedParticipantTabs = ['PICKS', 'RESULTS', 'OVERVIEW'];
+      if (!allowedParticipantTabs.includes(activeTab)) {
+        setActiveTab('PICKS');
+      }
+    }
+  }, [user, activeTab]);
+
   // Trigger sync run handler
   const handleTriggerSync = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1593,17 +1603,19 @@ export default function TournamentDetailPage() {
           <span>Stock Picks Harian ({picks.length})</span>
         </button>
 
-        <button
-          onClick={() => setActiveTab('PARTICIPANTS')}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
-            activeTab === 'PARTICIPANTS'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
-        >
-          <Users className="w-3.5 h-3.5" />
-          <span>Peserta Terdaftar ({enrolled.length})</span>
-        </button>
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => setActiveTab('PARTICIPANTS')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              activeTab === 'PARTICIPANTS'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Peserta Terdaftar ({enrolled.length})</span>
+          </button>
+        )}
 
         {user?.role === 'ADMIN' && (
           <button
@@ -1627,29 +1639,33 @@ export default function TournamentDetailPage() {
           </button>
         )}
 
-        <button
-          onClick={() => setActiveTab('SYNC')}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
-            activeTab === 'SYNC'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
-        >
-          <Database className="w-3.5 h-3.5" />
-          <span>Data Pasar & Sync ({syncRuns.length})</span>
-        </button>
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => setActiveTab('SYNC')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              activeTab === 'SYNC'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Data Pasar & Sync ({syncRuns.length})</span>
+          </button>
+        )}
 
-        <button
-          onClick={() => setActiveTab('EVALUATION')}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
-            activeTab === 'EVALUATION'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
-        >
-          <Award className="w-3.5 h-3.5" />
-          <span>Evaluasi Trade ({evaluations.length})</span>
-        </button>
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => setActiveTab('EVALUATION')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              activeTab === 'EVALUATION'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5" />
+            <span>Evaluasi Trade ({evaluations.length})</span>
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('RESULTS')}
@@ -1663,24 +1679,26 @@ export default function TournamentDetailPage() {
           <span>Hasil & Klasemen</span>
         </button>
 
-        <button
-          onClick={() => {
-            setActiveTab('AUTOMATION');
-            fetchExceptions(automationDate);
-            fetchAuditTrail();
-          }}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
-            activeTab === 'AUTOMATION'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
-        >
-          <Zap className="w-3.5 h-3.5" />
-          <span>Otomasi & Exceptions</span>
-          {exceptionsList.length > 0 && (
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-          )}
-        </button>
+        {user?.role === 'ADMIN' && (
+          <button
+            onClick={() => {
+              setActiveTab('AUTOMATION');
+              fetchExceptions(automationDate);
+              fetchAuditTrail();
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              activeTab === 'AUTOMATION'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>Otomasi & Exceptions</span>
+            {exceptionsList.length > 0 && (
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            )}
+          </button>
+        )}
 
         <button
           onClick={() => setActiveTab('OVERVIEW')}
@@ -1721,7 +1739,7 @@ export default function TournamentDetailPage() {
               )}
             </div>
 
-            {user && (
+            {user?.role === 'ADMIN' ? (
               <button
                 onClick={() => {
                   if (enrolled.length === 0) {
@@ -1742,9 +1760,17 @@ export default function TournamentDetailPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Submit Stock Pick</span>
+                <span>Submit Stock Pick (Admin)</span>
               </button>
-            )}
+            ) : user && myApplication?.status === 'APPROVED' ? (
+              <Link
+                href="/my-picks"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/20"
+              >
+                <CheckSquare className="w-3.5 h-3.5" />
+                <span>Kirim Pick Saham Saya</span>
+              </Link>
+            ) : null}
           </div>
 
           {/* Picks Table */}
@@ -1762,7 +1788,7 @@ export default function TournamentDetailPage() {
                   ? `Tidak ada stock pick pada tanggal ${pickDateFilter}.`
                   : 'Peserta belum memasukkan pilihan saham untuk turnamen ini.'}
               </p>
-              {user && (
+              {user?.role === 'ADMIN' ? (
                 <button
                   onClick={() => {
                     if (enrolled.length === 0) {
@@ -1777,9 +1803,17 @@ export default function TournamentDetailPage() {
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Submit Pick Pertama</span>
+                  <span>Submit Pick Pertama (Admin)</span>
                 </button>
-              )}
+              ) : user && myApplication?.status === 'APPROVED' ? (
+                <Link
+                  href="/my-picks"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
+                >
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  <span>Kirim Pick Saham Saya</span>
+                </Link>
+              ) : null}
             </div>
           ) : (
             <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
@@ -1852,7 +1886,7 @@ export default function TournamentDetailPage() {
       )}
 
       {/* TAB 2: PARTICIPANTS */}
-      {activeTab === 'PARTICIPANTS' && (
+      {activeTab === 'PARTICIPANTS' && user?.role === 'ADMIN' && (
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -2455,7 +2489,7 @@ export default function TournamentDetailPage() {
       )}
 
       {/* TAB 4: MARKET DATA & SYNC */}
-      {activeTab === 'SYNC' && (
+      {activeTab === 'SYNC' && user?.role === 'ADMIN' && (
         <div className="space-y-6">
           {/* Sync Trigger Card */}
           <div className="glass-panel p-6 rounded-2xl border border-slate-800 relative overflow-hidden">
@@ -2684,7 +2718,7 @@ export default function TournamentDetailPage() {
       )}
 
       {/* TAB 5: TRADE EVALUATION & AUDIT */}
-      {activeTab === 'EVALUATION' && (
+      {activeTab === 'EVALUATION' && user?.role === 'ADMIN' && (
         <div className="space-y-6">
           {/* Action Header Card */}
           <div className="glass-panel p-6 rounded-2xl border border-slate-800 relative overflow-hidden">
@@ -3913,7 +3947,7 @@ export default function TournamentDetailPage() {
       )}
 
       {/* TAB 7: AUTOMATION & EXCEPTION HANDLING (Milestone M8) */}
-      {activeTab === 'AUTOMATION' && (
+      {activeTab === 'AUTOMATION' && user?.role === 'ADMIN' && (
         <div className="space-y-8">
           {/* Header Action Toolbar */}
           <div className="p-6 rounded-2xl glass-panel border border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
