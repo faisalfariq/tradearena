@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
+import { useToast } from '../../../context/ToastContext';
 import {
   Trophy,
   Users,
@@ -312,6 +313,7 @@ export default function TournamentDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user, token } = useAuth();
+  const { toast } = useToast();
   const tournamentId = params?.id as string;
 
   const [tournament, setTournament] = useState<TournamentDetail | null>(null);
@@ -575,14 +577,20 @@ export default function TournamentDetailPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert(data.message || 'Pendaftaran berhasil diajukan!');
+        toast.success(
+          data.message || 'Pendaftaran turnamen berhasil diajukan, menunggu persetujuan admin',
+          'Permohonan Terkirim',
+        );
         fetchMyApplication();
         fetchApplicants();
       } else {
-        alert(data.message || 'Gagal mengajukan pendaftaran turnamen');
+        toast.error(
+          data.message || 'Gagal mengajukan pendaftaran turnamen',
+          'Pendaftaran Gagal',
+        );
       }
     } catch {
-      alert('Gagal menghubungi server API');
+      toast.error('Gagal menghubungi server API', 'Koneksi Terputus');
     } finally {
       setApplyingTournament(false);
     }
@@ -609,14 +617,21 @@ export default function TournamentDetailPage() {
         },
       );
       if (res.ok) {
+        toast.success(
+          `Status pendaftaran peserta berhasil diubah menjadi ${status}`,
+          'Verifikasi Peserta',
+        );
         fetchApplicants(applicantStatusFilter);
         fetchEnrolled();
       } else {
         const err = await res.json();
-        alert(err.message || 'Gagal memperbarui status pendaftaran');
+        toast.error(
+          err.message || 'Gagal memperbarui status pendaftaran',
+          'Verifikasi Gagal',
+        );
       }
     } catch {
-      alert('Gagal menghubungi server API');
+      toast.error('Gagal menghubungi server API', 'Koneksi Terputus');
     } finally {
       setReviewingParticipantId(null);
     }
@@ -932,7 +947,7 @@ export default function TournamentDetailPage() {
       }
       fetchEvaluations();
     } catch (err: any) {
-      alert(err.message || 'Gagal mengevaluasi pick');
+      toast.error(err.message || 'Gagal mengevaluasi pick', 'Evaluasi Gagal');
     } finally {
       setEvaluatingPickId(null);
     }
@@ -1098,16 +1113,17 @@ export default function TournamentDetailPage() {
             },
           );
           if (res.ok) {
+            toast.success('Peserta berhasil dikeluarkan dari turnamen', 'Peserta Dikeluarkan');
             closeConfirmDialog();
             fetchEnrolled();
             fetchAllParticipants();
             fetchApplicants(applicantStatusFilter);
           } else {
             const err = await res.json().catch(() => ({}));
-            alert(err.message || 'Gagal mengeluarkan peserta dari turnamen');
+            toast.error(err.message || 'Gagal mengeluarkan peserta dari turnamen', 'Gagal');
           }
         } catch {
-          alert('Terjadi kesalahan koneksi server');
+          toast.error('Terjadi kesalahan koneksi server', 'Koneksi Terputus');
         }
       },
     });
@@ -1329,12 +1345,12 @@ export default function TournamentDetailPage() {
       if (!res.ok) {
         throw new Error(data.message || 'Gagal mencoba ulang evaluasi');
       }
-      alert(data.message || 'Evaluasi berhasil dicoba ulang');
+      toast.success(data.message || 'Evaluasi berhasil dicoba ulang', 'Retry Berhasil');
       fetchExceptions(automationDate);
       fetchAuditTrail();
       fetchEvaluations(automationDate);
     } catch (err: any) {
-      alert(err.message || 'Gagal melakukan retry');
+      toast.error(err.message || 'Gagal melakukan retry', 'Retry Gagal');
     } finally {
       setRetryingEvalId(null);
     }
@@ -1709,7 +1725,10 @@ export default function TournamentDetailPage() {
               <button
                 onClick={() => {
                   if (enrolled.length === 0) {
-                    alert('Daftarkan minimal satu peserta terlebih dahulu di tab Peserta Terdaftar.');
+                    toast.warning(
+                      'Daftarkan minimal satu peserta terlebih dahulu di tab Peserta Terdaftar.',
+                      'Belum Ada Peserta',
+                    );
                     return;
                   }
                   if (!pickParticipantId && enrolled[0]) {
@@ -1747,7 +1766,10 @@ export default function TournamentDetailPage() {
                 <button
                   onClick={() => {
                     if (enrolled.length === 0) {
-                      alert('Daftarkan peserta terlebih dahulu!');
+                      toast.warning(
+                        'Daftarkan peserta terlebih dahulu di tab Peserta Terdaftar!',
+                        'Belum Ada Peserta',
+                      );
                       return;
                     }
                     setIsPickModalOpen(true);

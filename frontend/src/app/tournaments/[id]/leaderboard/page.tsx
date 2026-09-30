@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useToast } from '@/context/ToastContext';
 import {
   Trophy,
   Medal,
@@ -102,6 +103,7 @@ interface DailyResultsResponse {
 export default function TournamentLeaderboardPage() {
   const params = useParams();
   const tournamentId = params?.id as string;
+  const toast = useToast();
 
   const [viewMode, setViewMode] = useState<'overall' | 'daily'>('overall');
   const [overallData, setOverallData] = useState<OverallStandingsResponse | null>(null);
@@ -161,7 +163,7 @@ export default function TournamentLeaderboardPage() {
       const data = await res.json();
       setEvidenceDetail(data);
     } catch (err: any) {
-      alert(err.message || 'Gagal memuat bukti audit');
+      toast.error(err.message || 'Gagal memuat bukti audit');
     } finally {
       setEvidenceLoading(false);
     }

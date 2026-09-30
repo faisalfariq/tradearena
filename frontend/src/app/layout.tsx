@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '../context/AuthContext';
+import { ToastProvider } from '../context/ToastContext';
 import AppShell from '../components/AppShell';
 
 export const metadata: Metadata = {
@@ -17,9 +18,11 @@ export default function RootLayout({
     <html lang="id" className="dark">
       <body className="antialiased selection:bg-blue-600 selection:text-white bg-slate-950 text-slate-100">
         <AuthProvider>
-          <AppShell>
-            {children}
-          </AppShell>
+          <ToastProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
