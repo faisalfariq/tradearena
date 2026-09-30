@@ -1418,7 +1418,7 @@ export default function TournamentDetailPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1">
       {/* Back Button */}
       <Link
         href="/tournaments"
@@ -1715,9 +1715,9 @@ export default function TournamentDetailPage() {
 
       {/* TAB 1: STOCK PICKS */}
       {activeTab === 'PICKS' && (
-        <div>
+        <div className="w-full space-y-6">
           {/* Pick actions toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-xs text-slate-300">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -2418,7 +2418,7 @@ export default function TournamentDetailPage() {
 
       {/* TAB 3: OVERVIEW & RULES */}
       {activeTab === 'OVERVIEW' && tournament.rules && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           <div className="glass-panel p-6 rounded-2xl border border-slate-800">
             <div className="flex items-center gap-2 mb-4">
               <ShieldAlert className="w-5 h-5 text-rose-400" />
@@ -3109,7 +3109,7 @@ export default function TournamentDetailPage() {
 
       {/* TAB 6: RESULTS & STANDINGS (MILESTONE M6) */}
       {activeTab === 'RESULTS' && (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
           {/* Header Controls Toolbar */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 glass-panel p-5 rounded-2xl border border-slate-800">
             <div className="flex flex-wrap items-center gap-3">
