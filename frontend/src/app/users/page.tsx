@@ -147,7 +147,7 @@ export default function UserManagementPage() {
   const googleCount = users.filter((u) => u.provider === 'GOOGLE').length;
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6 flex-1 w-full">
       {/* Toast Notification */}
       {toastMessage && (
         <div
