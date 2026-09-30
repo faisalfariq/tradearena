@@ -15,7 +15,8 @@ import {
   CheckCircle2, 
   AlertCircle,
   ArrowRight,
-  Filter
+  Filter,
+  Edit,
 } from 'lucide-react';
 
 interface TournamentRule {
@@ -262,13 +263,25 @@ export default function TournamentsPage() {
                   </div>
                 </div>
 
-                <Link
-                  href={`/tournaments/${t.id}`}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  <span>Detail & Picks</span>
-                  <span>→</span>
-                </Link>
+                <div className="flex items-center gap-2">
+                  {user?.role === 'ADMIN' && (
+                    <Link
+                      href={`/tournaments/${t.id}/edit`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700/80 hover:border-slate-500 text-[11px] font-semibold text-slate-300 hover:text-white transition-colors"
+                      title="Edit Konfigurasi Turnamen"
+                    >
+                      <Edit className="w-3 h-3 text-blue-400" />
+                      <span>Edit</span>
+                    </Link>
+                  )}
+                  <Link
+                    href={`/tournaments/${t.id}`}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    <span>Detail & Picks</span>
+                    <span>→</span>
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

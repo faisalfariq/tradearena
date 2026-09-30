@@ -1423,6 +1423,16 @@ export default function TournamentDetailPage() {
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                 {tournament.timezone}
               </span>
+
+              {user?.role === 'ADMIN' && (
+                <Link
+                  href={`/tournaments/${tournament.id}/edit`}
+                  className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-600/15 text-blue-400 border border-blue-500/30 hover:bg-blue-600/25 text-[10px] font-bold uppercase tracking-wider transition-colors ml-1"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>Edit Turnamen</span>
+                </Link>
+              )}
             </div>
 
             <h1 className="text-3xl font-extrabold text-white tracking-tight">

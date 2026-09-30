@@ -128,49 +128,56 @@ export class TournamentsService {
     const endDate = dto.endDate ? dto.endDate : existing.endDate.toISOString();
     this.validateDates(startDate, endDate);
 
-    return this.prisma.tournament.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        description: dto.description,
-        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
-        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
-        timezone: dto.timezone,
-        status: dto.status,
-        rules: dto.rules
-          ? {
-              upsert: {
-                create: {
-                  initialStopPct: dto.rules.initialStopPct ?? 0.03,
-                  trailingStopPct: dto.rules.trailingStopPct ?? 0.03,
-                  candleAmbiguityPolicy:
-                    dto.rules.candleAmbiguityPolicy ??
-                    CandleAmbiguityPolicy.CONSERVATIVE_LOSS_FIRST,
-                  gapPolicy:
-                    dto.rules.gapPolicy ?? GapPolicy.ACTUAL_FIRST_VALID_LEVEL,
-                  priceFractionPolicy:
-                    dto.rules.priceFractionPolicy ?? 'IDX_STANDARD_V1',
-                  pointsRule: dto.rules.pointsRule ?? 'PERCENTAGE_RETURN_V1',
-                  calculationRuleVersion:
-                    dto.rules.calculationRuleVersion ?? 'v1.0.0',
+    try {
+      return await this.prisma.tournament.update({
+        where: { id },
+        data: {
+          name: dto.name,
+          description: dto.description,
+          startDate: dto.startDate ? new Date(dto.startDate) : undefined,
+          endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+          timezone: dto.timezone,
+          status: dto.status,
+          rules: dto.rules
+            ? {
+                upsert: {
+                  create: {
+                    initialStopPct: dto.rules.initialStopPct ?? 0.03,
+                    trailingStopPct: dto.rules.trailingStopPct ?? 0.03,
+                    candleAmbiguityPolicy:
+                      dto.rules.candleAmbiguityPolicy ??
+                      CandleAmbiguityPolicy.CONSERVATIVE_LOSS_FIRST,
+                    gapPolicy:
+                      dto.rules.gapPolicy ?? GapPolicy.ACTUAL_FIRST_VALID_LEVEL,
+                    priceFractionPolicy:
+                      dto.rules.priceFractionPolicy ?? 'IDX_STANDARD_V1',
+                    pointsRule: dto.rules.pointsRule ?? 'PERCENTAGE_RETURN_V1',
+                    calculationRuleVersion:
+                      dto.rules.calculationRuleVersion ?? 'v1.0.0',
+                  },
+                  update: {
+                    initialStopPct: dto.rules.initialStopPct,
+                    trailingStopPct: dto.rules.trailingStopPct,
+                    candleAmbiguityPolicy: dto.rules.candleAmbiguityPolicy,
+                    gapPolicy: dto.rules.gapPolicy,
+                    priceFractionPolicy: dto.rules.priceFractionPolicy,
+                    pointsRule: dto.rules.pointsRule,
+                    calculationRuleVersion: dto.rules.calculationRuleVersion,
+                  },
                 },
-                update: {
-                  initialStopPct: dto.rules.initialStopPct,
-                  trailingStopPct: dto.rules.trailingStopPct,
-                  candleAmbiguityPolicy: dto.rules.candleAmbiguityPolicy,
-                  gapPolicy: dto.rules.gapPolicy,
-                  priceFractionPolicy: dto.rules.priceFractionPolicy,
-                  pointsRule: dto.rules.pointsRule,
-                  calculationRuleVersion: dto.rules.calculationRuleVersion,
-                },
-              },
-            }
-          : undefined,
-      },
-      include: {
-        rules: true,
-      },
-    });
+              }
+            : undefined,
+        },
+        include: {
+          rules: true,
+        },
+      });
+    } catch (err: any) {
+      console.error('[TournamentsService.update] Error updating tournament:', err);
+      throw new BadRequestException(
+        err.message || 'Gagal memperbarui data turnamen',
+      );
+    }
   }
 
   async updateStatus(id: string, status: TournamentStatus) {
