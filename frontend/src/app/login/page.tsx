@@ -31,8 +31,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, loginWithGoogle, user } = useAuth();
 
-  const [email, setEmail] = useState('admin@tradearena.local');
-  const [password, setPassword] = useState('AdminSecurePass123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -175,16 +175,6 @@ export default function LoginPage() {
                 <span>Memproses autentikasi Google...</span>
               </div>
             )}
-            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-              <span>Pendaftar Google otomatis menjadi <strong>User peserta</strong>.</span>
-              <button
-                type="button"
-                onClick={() => setShowGoogleModal(true)}
-                className="text-slate-400 hover:text-slate-300 underline underline-offset-2"
-              >
-                Simulasi (Dev)
-              </button>
-            </div>
           </div>
 
           {/* Divider */}
@@ -250,14 +240,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Development quick helper */}
-          <div className="mt-6 pt-6 border-t border-slate-800/80">
-            <div className="text-[11px] text-slate-400 text-center">
-              <span className="font-semibold text-slate-300">Default Dev Admin:</span>{' '}
-              <code>admin@tradearena.local</code> / <code>AdminSecurePass123!</code>
-            </div>
-          </div>
         </div>
       </div>
 
