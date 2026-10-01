@@ -406,9 +406,35 @@ export class ResultsService {
       stat.rank = index + 1;
     });
 
+    // Check if tournament has TARGET_POINTS completion criteria and a participant reached target
+    let targetReachedWinner: any = null;
+    if (
+      tournament.completionType === 'TARGET_POINTS' &&
+      tournament.targetPoints &&
+      tournament.status === 'ACTIVE'
+    ) {
+      const target = Number(tournament.targetPoints);
+      const winner = statsList.find((s) => s.totalPoints >= target);
+      if (winner) {
+        targetReachedWinner = winner;
+        await this.prisma.tournament.update({
+          where: { id: tournamentId },
+          data: {
+            status: 'COMPLETED',
+            winnerParticipantId: winner.participantId,
+          },
+        });
+      }
+    }
+
     return {
       tournamentId,
       tournamentName: tournament.name,
+      tournamentStatus: targetReachedWinner ? 'COMPLETED' : tournament.status,
+      completionType: tournament.completionType,
+      targetPoints: tournament.targetPoints ? Number(tournament.targetPoints) : null,
+      winnerParticipantId: targetReachedWinner ? targetReachedWinner.participantId : tournament.winnerParticipantId,
+      winnerParticipantName: targetReachedWinner ? targetReachedWinner.participantName : null,
       totalParticipants: tournament.participants.length,
       totalEvaluatedPicks: evaluations.filter(
         (e) => e.status === EvaluationStatus.COMPLETED,

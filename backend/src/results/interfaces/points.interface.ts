@@ -100,6 +100,11 @@ export interface ParticipantOverallStats {
 export interface OverallResultsResponse {
   tournamentId: string;
   tournamentName: string;
+  tournamentStatus?: string;
+  completionType?: string;
+  targetPoints?: number | null;
+  winnerParticipantId?: string | null;
+  winnerParticipantName?: string | null;
   totalParticipants: number;
   totalEvaluatedPicks: number;
   standings: ParticipantOverallStats[];

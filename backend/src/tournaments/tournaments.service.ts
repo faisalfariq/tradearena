@@ -58,6 +58,12 @@ export class TournamentsService {
           endDate: new Date(dto.endDate),
           timezone: dto.timezone || 'Asia/Jakarta',
           status: dto.status || TournamentStatus.UPCOMING,
+          completionType: dto.completionType || 'DATE_PERIOD',
+          targetPoints: dto.targetPoints ? Number(dto.targetPoints) : null,
+          minPicksPerDay: dto.minPicksPerDay ?? 2,
+          maxPicksPerDay: dto.maxPicksPerDay ?? 3,
+          pickWindowStart: dto.pickWindowStart || '17:00',
+          pickWindowEnd: dto.pickWindowEnd || '21:00',
           rules: {
             create: {
               initialStopPct,
@@ -138,6 +144,17 @@ export class TournamentsService {
           endDate: dto.endDate ? new Date(dto.endDate) : undefined,
           timezone: dto.timezone,
           status: dto.status,
+          completionType: dto.completionType !== undefined ? dto.completionType : undefined,
+          targetPoints:
+            dto.targetPoints !== undefined
+              ? dto.targetPoints
+                ? Number(dto.targetPoints)
+                : null
+              : undefined,
+          minPicksPerDay: dto.minPicksPerDay !== undefined ? dto.minPicksPerDay : undefined,
+          maxPicksPerDay: dto.maxPicksPerDay !== undefined ? dto.maxPicksPerDay : undefined,
+          pickWindowStart: dto.pickWindowStart !== undefined ? dto.pickWindowStart : undefined,
+          pickWindowEnd: dto.pickWindowEnd !== undefined ? dto.pickWindowEnd : undefined,
           rules: dto.rules
             ? {
                 upsert: {

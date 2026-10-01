@@ -134,6 +134,14 @@ interface TournamentDetail {
   endDate: string;
   timezone: string;
   status: 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  completionType?: 'DATE_PERIOD' | 'TARGET_POINTS';
+  targetPoints?: number | null;
+  minPicksPerDay?: number;
+  maxPicksPerDay?: number;
+  pickWindowStart?: string;
+  pickWindowEnd?: string;
+  winnerParticipantId?: string | null;
+  winnerParticipant?: { id: string; name: string } | null;
   rules: TournamentRule | null;
 }
 
@@ -1450,6 +1458,21 @@ export default function TournamentDetailPage() {
                 {tournament.timezone}
               </span>
 
+              {tournament.completionType === 'TARGET_POINTS' ? (
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                  <Crown className="w-3 h-3 text-purple-400" />
+                  <span>Target Juara: {tournament.targetPoints || 300} Poin</span>
+                </span>
+              ) : (
+                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                  Periode Waktu
+                </span>
+              )}
+
+              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                {tournament.minPicksPerDay ?? 2}–{tournament.maxPicksPerDay ?? 3} Emiten/Hari ({tournament.pickWindowStart || '17:00'}–{tournament.pickWindowEnd || '21:00'} WIB)
+              </span>
+
               {user?.role === 'ADMIN' && (
                 <Link
                   href={`/tournaments/${tournament.id}/edit`}
@@ -1509,6 +1532,24 @@ export default function TournamentDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Winner Celebration Banner (Poin 5) */}
+        {tournament.status === 'COMPLETED' && (tournament.winnerParticipant || tournament.winnerParticipantId) && (
+          <div className="mt-5 p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-blue-500/15 border border-amber-500/30 text-amber-200 flex items-center gap-3.5 shadow-xl">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+              <Crown className="w-6 h-6 animate-bounce" />
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider font-bold text-amber-400 flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5" />
+                <span>Turnamen Selesai — Juara Resmi Ditetapkan</span>
+              </div>
+              <div className="text-sm font-semibold text-white mt-0.5">
+                Selamat kepada <strong className="text-amber-300 font-bold">{tournament.winnerParticipant?.name || 'Pemenang Utama'}</strong> yang telah berhasil mencapai target dan dinobatkan sebagai Juara Turnamen {tournament.name}!
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* User Application Status / CTA (Milestone M10) */}
         <div className="mt-5 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">

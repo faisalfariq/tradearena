@@ -66,6 +66,56 @@ export class CreateTournamentDto {
   status?: TournamentStatus;
 
   @ApiPropertyOptional({
+    example: 'DATE_PERIOD',
+    default: 'DATE_PERIOD',
+    description: 'Completion type: DATE_PERIOD or TARGET_POINTS',
+  })
+  @IsOptional()
+  @IsString()
+  completionType?: string;
+
+  @ApiPropertyOptional({
+    example: 300,
+    description: 'Target points for completion if completionType is TARGET_POINTS',
+  })
+  @IsOptional()
+  targetPoints?: number;
+
+  @ApiPropertyOptional({
+    example: 2,
+    default: 2,
+    description: 'Minimum picks required per day',
+  })
+  @IsOptional()
+  minPicksPerDay?: number;
+
+  @ApiPropertyOptional({
+    example: 3,
+    default: 3,
+    description: 'Maximum picks allowed per day',
+  })
+  @IsOptional()
+  maxPicksPerDay?: number;
+
+  @ApiPropertyOptional({
+    example: '17:00',
+    default: '17:00',
+    description: 'Pick submission window start time (WIB)',
+  })
+  @IsOptional()
+  @IsString()
+  pickWindowStart?: string;
+
+  @ApiPropertyOptional({
+    example: '21:00',
+    default: '21:00',
+    description: 'Pick submission window end / lock time (WIB)',
+  })
+  @IsOptional()
+  @IsString()
+  pickWindowEnd?: string;
+
+  @ApiPropertyOptional({
     type: TournamentRuleDto,
     description: 'Tournament trading rules',
   })

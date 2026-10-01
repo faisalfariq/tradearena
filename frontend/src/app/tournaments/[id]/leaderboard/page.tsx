@@ -18,7 +18,9 @@ import {
   FileText,
   Clock,
   CheckCircle2,
-  Users
+  Users,
+  Crown,
+  Target,
 } from 'lucide-react';
 
 interface OverallResultItem {
@@ -54,6 +56,14 @@ interface OverallResultItem {
 interface OverallStandingsResponse {
   tournamentId: string;
   tournamentName: string;
+  completionType?: 'DATE_PERIOD' | 'TARGET_POINTS';
+  targetPoints?: number | null;
+  isCompletedByTargetPoints?: boolean;
+  winner?: {
+    participantId: string;
+    participantName: string;
+    totalPoints: number;
+  } | null;
   totalParticipants: number;
   totalEvaluatedPicks: number;
   standings: OverallResultItem[];
@@ -196,6 +206,15 @@ export default function TournamentLeaderboardPage() {
             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider">
               Public Broadcast Leaderboard
             </span>
+            {overallData?.completionType === 'TARGET_POINTS' && (
+              <>
+                <span className="text-slate-600">•</span>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                  <Target className="w-3 h-3 text-purple-400" />
+                  <span>Target: {overallData.targetPoints || 300} Poin</span>
+                </span>
+              </>
+            )}
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
@@ -246,6 +265,24 @@ export default function TournamentLeaderboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Winner Celebration Banner (Poin 5) */}
+      {(overallData?.isCompletedByTargetPoints || overallData?.winner) && (
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-blue-500/20 border border-amber-500/40 text-amber-200 flex items-center gap-4 shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/25 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
+            <Crown className="w-7 h-7 animate-bounce" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider font-extrabold text-amber-400 flex items-center gap-1.5">
+              <Trophy className="w-4 h-4" />
+              <span>Turnamen Selesai — Juara Resmi Ditetapkan</span>
+            </div>
+            <div className="text-sm sm:text-base font-bold text-white mt-1">
+              Selamat kepada <strong className="text-amber-300 font-extrabold">{overallData?.winner?.participantName || 'Peserta Teratas'}</strong> yang telah berhasil menembus target {overallData?.targetPoints || 300} Poin dengan akumulasi <strong className="text-emerald-400">+{overallData?.winner?.totalPoints.toFixed(2)} Poin</strong> dan dinobatkan sebagai Juara Resmi!
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-400">

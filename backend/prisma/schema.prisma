@@ -35,6 +35,8 @@ enum TournamentStatus {
 enum EntrySource {
   MANUAL
   MARKET_OPEN
+  CLOSING_PRICE
+  MARKET_CLOSE
   SUBMISSION_PRICE
   OTHER_TOURNAMENT_RULE
 }
@@ -113,19 +115,27 @@ model RefreshToken {
 }
 
 model Tournament {
-  id           String                   @id @default(uuid())
-  name         String
-  description  String?
-  startDate    DateTime                 @map("start_date")
-  endDate      DateTime                 @map("end_date")
-  status       TournamentStatus         @default(UPCOMING)
-  timezone     String                   @default("Asia/Jakarta")
-  createdAt    DateTime                 @default(now()) @map("created_at")
-  updatedAt    DateTime                 @updatedAt @map("updated_at")
-  rules        TournamentRule?
-  participants TournamentParticipant[]
-  picks        StockPick[]
-  syncRuns     MarketSyncRun[]
+  id                   String                   @id @default(uuid())
+  name                 String
+  description          String?
+  startDate            DateTime                 @map("start_date")
+  endDate              DateTime                 @map("end_date")
+  status               TournamentStatus         @default(UPCOMING)
+  timezone             String                   @default("Asia/Jakarta")
+  completionType       String                   @default("DATE_PERIOD") @map("completion_type")
+  targetPoints         Decimal?                 @map("target_points") @db.Decimal(10, 2)
+  minPicksPerDay       Int                      @default(2) @map("min_picks_per_day")
+  maxPicksPerDay       Int                      @default(3) @map("max_picks_per_day")
+  pickWindowStart      String                   @default("17:00") @map("pick_window_start")
+  pickWindowEnd        String                   @default("21:00") @map("pick_window_end")
+  winnerParticipantId  String?                  @map("winner_participant_id")
+  winnerParticipant    Participant?             @relation("TournamentWinner", fields: [winnerParticipantId], references: [id], onDelete: SetNull)
+  createdAt            DateTime                 @default(now()) @map("created_at")
+  updatedAt            DateTime                 @updatedAt @map("updated_at")
+  rules                TournamentRule?
+  participants         TournamentParticipant[]
+  picks                StockPick[]
+  syncRuns             MarketSyncRun[]
 
   @@map("tournaments")
 }
@@ -148,16 +158,17 @@ model TournamentRule {
 }
 
 model Participant {
-  id          String                   @id @default(uuid())
-  userId      String?                  @unique @map("user_id")
-  user        User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  name        String
-  email       String?                  @unique
-  phoneNumber String?                  @map("phone_number")
-  createdAt   DateTime                 @default(now()) @map("created_at")
-  updatedAt   DateTime                 @updatedAt @map("updated_at")
-  tournaments TournamentParticipant[]
-  picks       StockPick[]
+  id             String                   @id @default(uuid())
+  userId         String?                  @unique @map("user_id")
+  user           User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name           String
+  email          String?                  @unique
+  phoneNumber    String?                  @map("phone_number")
+  createdAt      DateTime                 @default(now()) @map("created_at")
+  updatedAt      DateTime                 @updatedAt @map("updated_at")
+  tournaments    TournamentParticipant[]
+  picks          StockPick[]
+  wonTournaments Tournament[]             @relation("TournamentWinner")
 
   @@map("participants")
 }

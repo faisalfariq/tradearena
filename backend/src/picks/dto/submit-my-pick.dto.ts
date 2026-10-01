@@ -6,19 +6,35 @@ import {
   IsPositive,
   IsOptional,
   IsEnum,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EntrySource } from '@prisma/client';
 
 export class SubmitMyPickDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'c2a07384-d113-4672-8f92-56de29d892d5',
     description: 'Stock ID yang dipilih (Emiten IDX)',
   })
+  @IsOptional()
   @IsUUID('4', { message: 'ID Saham harus berformat UUID v4' })
-  @IsNotEmpty({ message: 'ID Saham wajib diisi' })
-  stockId: string;
+  stockId?: string;
+
+  @ApiPropertyOptional({
+    example: ['c2a07384-d113-4672-8f92-56de29d892d5', 'd3b18495-e224-5783-9a03-67ef30e903e6'],
+    description: 'Daftar ID Saham yang dipilih (2-3 emiten per hari)',
+  })
+  @IsOptional()
+  @IsArray({ message: 'Daftar ID Saham harus berupa array' })
+  stockIds?: string[];
+
+  @ApiPropertyOptional({
+    description: 'ID Pick yang ingin diganti (opsional)',
+  })
+  @IsOptional()
+  @IsUUID('4')
+  replacePickId?: string;
 
   @ApiPropertyOptional({
     example: '2026-10-15',

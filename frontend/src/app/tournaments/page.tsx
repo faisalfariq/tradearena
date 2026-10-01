@@ -37,6 +37,12 @@ interface Tournament {
   endDate: string;
   timezone: string;
   status: 'DRAFT' | 'UPCOMING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  completionType?: 'DATE_PERIOD' | 'TARGET_POINTS';
+  targetPoints?: number | null;
+  minPicksPerDay?: number;
+  maxPicksPerDay?: number;
+  pickWindowStart?: string;
+  pickWindowEnd?: string;
   rules?: TournamentRule;
   _count?: {
     participants: number;
@@ -202,10 +208,17 @@ export default function TournamentsPage() {
               className="glass-panel p-6 rounded-2xl border border-slate-800/80 hover:border-blue-500/30 transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  {getStatusBadge(t.status)}
-                  <span className="text-[11px] text-slate-500 font-mono">
-                    {t.timezone}
+                <div className="flex items-center justify-between mb-3 gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {getStatusBadge(t.status)}
+                    {t.completionType === 'TARGET_POINTS' && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                        Target {t.targetPoints || 300} Pts
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-cyan-400 font-mono bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40">
+                    {t.minPicksPerDay ?? 2}–{t.maxPicksPerDay ?? 3} Pick/Hari
                   </span>
                 </div>
 

@@ -27,6 +27,10 @@ import {
   AlertTriangle,
   ChevronRight,
   Sparkles,
+  Layers,
+  Plus,
+  Trash2,
+  Info,
 } from 'lucide-react';
 
 interface Stock {
@@ -69,6 +73,8 @@ interface TournamentOverviewItem {
   tournamentStatus: string;
   startDate: string;
   endDate: string;
+  completionType?: string;
+  targetPoints?: number;
   rules: {
     initialStopPct: number | string;
     trailingStopPct: number | string;
@@ -101,7 +107,6 @@ export default function MyPicksPage() {
   // Form states
   const [stockSearchQuery, setStockSearchQuery] = useState('');
   const [selectedStockId, setSelectedStockId] = useState('');
-  const [entryPrice, setEntryPrice] = useState<number | string>(1000);
   const [submittingPick, setSubmittingPick] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -112,6 +117,7 @@ export default function MyPicksPage() {
 
   // Modals
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [pickToCancel, setPickToCancel] = useState<{ id: string; symbol: string } | null>(null);
   const [cancellingPick, setCancellingPick] = useState(false);
   const [evidenceModalOpen, setEvidenceModalOpen] = useState(false);
   const [selectedEvidenceEval, setSelectedEvidenceEval] = useState<any | null>(null);
@@ -152,9 +158,10 @@ export default function MyPicksPage() {
       const res = await fetch(`${API_BASE}/stocks`);
       if (res.ok) {
         const data = await res.json();
-        setStocks(data.filter((s: Stock) => s.isActive));
-        if (data.length > 0 && !selectedStockId) {
-          setSelectedStockId(data[0].id);
+        const active = data.filter((s: Stock) => s.isActive);
+        setStocks(active);
+        if (active.length > 0 && !selectedStockId) {
+          setSelectedStockId(active[0].id);
         }
       }
     } catch {
@@ -198,10 +205,6 @@ export default function MyPicksPage() {
       if (res.ok) {
         const data = await res.json();
         setPickStatus(data);
-        if (data.pick) {
-          setSelectedStockId(data.pick.stockId);
-          setEntryPrice(data.pick.entryPrice);
-        }
       }
     } catch {
       // ignore
@@ -227,74 +230,107 @@ export default function MyPicksPage() {
     }
   }, [selectedTournamentId, fetchPickStatus]);
 
-  // Filter stocks by query
+  // Filter stocks by query (exclude stocks already picked in today's active picks)
+  const currentPickedStockIds = useMemo(() => {
+    if (!pickStatus?.picks) return new Set<string>();
+    return new Set<string>(pickStatus.picks.map((p: any) => p.stockId));
+  }, [pickStatus?.picks]);
+
   const filteredStocks = useMemo(() => {
-    if (!stockSearchQuery.trim()) return stocks;
+    const available = stocks.filter((s) => !currentPickedStockIds.has(s.id));
+    if (!stockSearchQuery.trim()) return available;
     const q = stockSearchQuery.toLowerCase();
-    return stocks.filter(
+    return available.filter(
       (s) => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
     );
-  }, [stocks, stockSearchQuery]);
+  }, [stocks, currentPickedStockIds, stockSearchQuery]);
+
+  // Ensure selectedStockId defaults to first available
+  useEffect(() => {
+    if (filteredStocks.length > 0) {
+      if (!filteredStocks.some((s) => s.id === selectedStockId)) {
+        setSelectedStockId(filteredStocks[0].id);
+      }
+    }
+  }, [filteredStocks, selectedStockId]);
 
   // Selected tournament item
   const activeTournament = useMemo(() => {
     return tournaments.find((t) => t.tournamentId === selectedTournamentId) || null;
   }, [tournaments, selectedTournamentId]);
 
-  // Selected stock object
+  // Selected stock object in dropdown
   const chosenStock = useMemo(() => {
     return stocks.find((s) => s.id === selectedStockId) || null;
   }, [stocks, selectedStockId]);
 
-  // Calculated Stop Loss level
+  // Limits & Rules
+  const minPicks = pickStatus?.pickLimits?.minPicks ?? 2;
+  const maxPicks = pickStatus?.pickLimits?.maxPicks ?? 3;
+  const activePicks: StockPick[] = pickStatus?.picks || (pickStatus?.pick ? [pickStatus.pick] : []);
+  const currentCount = activePicks.length;
+  const remainingSlots = Math.max(0, maxPicks - currentCount);
+
   const stopLossPct = Number(activeTournament?.rules?.initialStopPct ?? 0.03);
   const trailingStopPct = Number(activeTournament?.rules?.trailingStopPct ?? 0.03);
-  const calcStopLossPrice = useMemo(() => {
-    const p = Number(entryPrice) || 0;
-    if (p <= 0) return 0;
-    return Math.round(p * (1 - stopLossPct));
-  }, [entryPrice, stopLossPct]);
 
-  // Determine current market phase
+  const pickWindowStart = pickStatus?.pickWindow?.start || '17:00';
+  const pickWindowEnd = pickStatus?.pickWindow?.end || '21:00';
+
+  // Determine current market phase for Evening Pick Window (17:00 - 21:00 WIB)
   const marketPhase = useMemo(() => {
-    if (!currentWibTime) return { label: 'Memuat...', type: 'neutral', icon: Clock };
+    if (!currentWibTime) return { label: 'Memuat...', type: 'neutral', icon: Clock, description: '' };
     const timeMatch = currentWibTime.match(/(\d{2}):(\d{2})/);
-    if (!timeMatch) return { label: 'Memuat...', type: 'neutral', icon: Clock };
+    if (!timeMatch) return { label: 'Memuat...', type: 'neutral', icon: Clock, description: '' };
     const h = parseInt(timeMatch[1], 10);
     const m = parseInt(timeMatch[2], 10);
     const totalMinutes = h * 60 + m;
 
-    const lockMinutes = 8 * 60 + 45; // 08:45
-    const closeMinutes = 16 * 60; // 16:00
+    const [startH, startM] = pickWindowStart.split(':').map((v: string) => parseInt(v, 10));
+    const [endH, endM] = pickWindowEnd.split(':').map((v: string) => parseInt(v, 10));
+    const startMin = startH * 60 + startM;
+    const endMin = endH * 60 + endM;
 
-    if (totalMinutes < lockMinutes) {
+    if (totalMinutes >= startMin && totalMinutes <= endMin) {
       return {
-        label: 'Fase Prapasar (Pengiriman Pick Dibuka)',
-        description: 'Tentukan 1 saham terbaik Anda hari ini sebelum batas akhir 08:45 WIB.',
+        label: `Window Pick Dibuka (${pickWindowStart} – ${pickWindowEnd} WIB)`,
+        description: `Pilih 2–3 emiten untuk sesi besok. Harga Closing hari ini otomatis dikunci sebagai harga Entry resmi.`,
         type: 'open',
         icon: Unlock,
       };
-    } else if (totalMinutes < closeMinutes) {
+    } else if (totalMinutes < startMin && totalMinutes >= 16 * 60) {
       return {
-        label: 'Fase Sesi Bursa (Pick Terkunci)',
-        description: 'Pasar IDX sedang aktif. Evaluasi trade otomatis dilakukan saat market close (16:00 WIB).',
+        label: 'Pascapasar IDX (Persiapan Window Pick)',
+        description: `Market IDX telah tutup. Window pemilihan pick dibuka pukul ${pickWindowStart} WIB.`,
+        type: 'post',
+        icon: Clock,
+      };
+    } else if (totalMinutes >= 9 * 60 && totalMinutes < 16 * 60) {
+      return {
+        label: 'Sesi Bursa IDX Berlangsung (Pick Terkunci)',
+        description: 'Sesi trading aktif. Stop Loss (-3%) & Trailing Stop dievaluasi otomatis.',
         type: 'locked',
         icon: Lock,
       };
     } else {
       return {
-        label: 'Fase Pascapasar (Evaluasi & Hasil Selesai)',
-        description: 'Bursa telah tutup. Seluruh trade dievaluasi dan peringkat leaderboard diperbarui.',
-        type: 'post',
-        icon: Trophy,
+        label: `Window Pick Ditutup (Batas ${pickWindowEnd} WIB)`,
+        description: `Pilihan saham untuk sesi berikutnya telah dikunci. Window pick dibuka kembali pukul ${pickWindowStart} WIB.`,
+        type: 'closed',
+        icon: Lock,
       };
     }
-  }, [currentWibTime]);
+  }, [currentWibTime, pickWindowStart, pickWindowEnd]);
 
-  // Handle submit pick
-  const handleSubmitPick = async (e: React.FormEvent) => {
+  // Handle submit pick (adding 1 stock to the picklist, locks closing price automatically)
+  const handleAddStockPick = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTournamentId || !selectedStockId) return;
+
+    if (currentCount >= maxPicks) {
+      setErrorMessage(`Batas maksimum ${maxPicks} emiten per hari telah tercapai.`);
+      return;
+    }
 
     setSubmittingPick(true);
     setErrorMessage('');
@@ -309,14 +345,13 @@ export default function MyPicksPage() {
         },
         body: JSON.stringify({
           stockId: selectedStockId,
-          entryPrice: Number(entryPrice) || 1000,
-          entrySource: 'MARKET_OPEN',
+          entrySource: 'CLOSING_PRICE',
         }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        setSuccessMessage('Pick saham harian Anda berhasil disimpan dan dikonfirmasi!');
+        setSuccessMessage(`Emiten ${chosenStock?.symbol || 'saham'} berhasil ditambahkan ke picklist harian!`);
         await fetchPickStatus(selectedTournamentId);
         await fetchTournamentsOverview();
       } else {
@@ -329,14 +364,20 @@ export default function MyPicksPage() {
     }
   };
 
+  // Open modal to cancel specific pick
+  const promptCancelPick = (p: StockPick) => {
+    setPickToCancel({ id: p.id, symbol: p.stock?.symbol || 'saham' });
+    setConfirmCancelOpen(true);
+  };
+
   // Handle cancel pick
-  const handleCancelPick = async () => {
-    if (!selectedTournamentId || !pickStatus?.pick?.id) return;
+  const handleConfirmCancelPick = async () => {
+    if (!selectedTournamentId || !pickToCancel) return;
 
     setCancellingPick(true);
     try {
       const res = await fetch(
-        `${API_BASE}/tournaments/${selectedTournamentId}/my-pick/${pickStatus.pick.id}`,
+        `${API_BASE}/tournaments/${selectedTournamentId}/my-pick/${pickToCancel.id}`,
         {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` },
@@ -344,8 +385,9 @@ export default function MyPicksPage() {
       );
 
       if (res.ok) {
-        setSuccessMessage('Pick saham harian Anda berhasil dibatalkan.');
+        setSuccessMessage(`Pilihan emiten ${pickToCancel.symbol} berhasil dibatalkan.`);
         setConfirmCancelOpen(false);
+        setPickToCancel(null);
         await fetchPickStatus(selectedTournamentId);
         await fetchTournamentsOverview();
       } else {
@@ -365,6 +407,36 @@ export default function MyPicksPage() {
     setEvidenceModalOpen(true);
   };
 
+  // Group past picks by tradingDate with daily accumulated return / points
+  const groupedPastPicks = useMemo(() => {
+    if (!pickStatus?.pastPicks) return [];
+    const map = new Map<string, any[]>();
+    for (const p of pickStatus.pastPicks) {
+      const d = p.tradingDate ? p.tradingDate.split('T')[0] : 'Unknown';
+      if (!map.has(d)) {
+        map.set(d, []);
+      }
+      map.get(d)!.push(p);
+    }
+
+    return Array.from(map.entries()).map(([dateStr, picksList]) => {
+      let totalReturn = 0;
+      let evaluatedCount = 0;
+      for (const p of picksList) {
+        if (p.evaluations && p.evaluations.length > 0) {
+          totalReturn += Number(p.evaluations[0].realizedReturn || 0);
+          evaluatedCount++;
+        }
+      }
+      return {
+        dateStr,
+        picks: picksList,
+        totalReturn,
+        evaluatedCount,
+      };
+    });
+  }, [pickStatus?.pastPicks]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 pb-16 flex-1 w-full">
       {/* Top Header & WIB Digital Clock */}
@@ -378,11 +450,11 @@ export default function MyPicksPage() {
               Pick Saham Harian Saya
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-              Portal Peserta
+              Multi-Pick (2–3 Emiten)
             </span>
           </div>
           <p className="text-xs text-slate-400 max-w-2xl">
-            Pilih 1 emiten saham terbaik Anda setiap pagi. Evaluasi Stop Loss (-3%) &amp; Trailing Stop dihitung otomatis saat pasar tutup.
+            Pilih 2 sampai 3 emiten terbaik Anda pada window sore (17:00 – 21:00 WIB). Harga Closing pasar hari ini otomatis dikunci sebagai harga Entry sesi besok. Poin harian adalah akumulasi hasil seluruh emiten.
           </p>
         </div>
 
@@ -410,7 +482,7 @@ export default function MyPicksPage() {
         className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg ${
           marketPhase.type === 'open'
             ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
-            : marketPhase.type === 'locked'
+            : marketPhase.type === 'locked' || marketPhase.type === 'closed'
             ? 'bg-amber-950/20 border-amber-500/30 text-amber-300'
             : 'bg-blue-950/20 border-blue-500/30 text-blue-300'
         }`}
@@ -420,7 +492,7 @@ export default function MyPicksPage() {
             className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
               marketPhase.type === 'open'
                 ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                : marketPhase.type === 'locked'
+                : marketPhase.type === 'locked' || marketPhase.type === 'closed'
                 ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
                 : 'bg-blue-500/15 border-blue-500/30 text-blue-400'
             }`}
@@ -438,10 +510,14 @@ export default function MyPicksPage() {
           </div>
         </div>
 
-        <div className="text-right shrink-0">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-slate-900/60 border border-slate-700/60 text-slate-200">
-            <Lock className="w-3 h-3 text-amber-400" />
-            <span>Kunci Harian: 08:45 WIB</span>
+        <div className="text-right shrink-0 flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900/80 border border-slate-700/60 text-slate-200">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Sesi Target: {pickStatus?.tradingDate ? new Date(pickStatus.tradingDate).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }) : 'D+1'}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900/80 border border-slate-700/60 text-amber-300">
+            <Lock className="w-3.5 h-3.5 text-amber-400" />
+            <span>Cut-off: {pickWindowEnd} WIB</span>
           </span>
         </div>
       </div>
@@ -490,7 +566,7 @@ export default function MyPicksPage() {
           </div>
           <h3 className="text-lg font-bold text-white mb-2">Anda Belum Mengikuti Turnamen Apapun</h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto mb-6">
-            Daftarkan diri Anda ke turnamen aktif untuk dapat mulai mengirimkan pilihan saham harian Anda dan bertanding di papan peringkat.
+            Daftarkan diri Anda ke turnamen aktif untuk dapat mulai mengirimkan 2–3 pilihan saham harian Anda dan bertanding di papan peringkat.
           </p>
           <Link
             href="/tournaments"
@@ -521,16 +597,16 @@ export default function MyPicksPage() {
                   <Trophy className="w-3.5 h-3.5" />
                   <span>{t.tournamentName}</span>
                   {t.todayPick ? (
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" title="Sudah submit pick" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" title="Sudah ada pick tersimpan" />
                   ) : (
-                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Belum submit pick" />
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Belum ada pick" />
                   )}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Grid Layout: Active Pick Hero + Rule Summary */}
+          {/* Grid Layout: Active Multi-Pick Slots + Rules & Quota Summary */}
           {loadingPickStatus ? (
             <div className="flex flex-col items-center justify-center py-20 glass-panel rounded-2xl border border-slate-800">
               <Loader2 className="w-6 h-6 text-blue-500 animate-spin mb-2" />
@@ -538,150 +614,164 @@ export default function MyPicksPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column (2 Cols): Pick Submission / Confirmed Card */}
+              {/* Left Column (2 Cols): Multi-Pick Slots & Add Stock Form */}
               <div className="lg:col-span-2 space-y-6">
-                {pickStatus?.pick ? (
-                  /* STATE A: PICK SUDAH DIKIRIM (CONFIRMED) */
-                  <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-700/80 bg-gradient-to-br from-slate-900/90 via-slate-950/80 to-blue-950/20 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-                      <div>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 mb-1">
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Pilihan Saham Anda Hari Ini Telah Terkonfirmasi</span>
-                        </div>
-                        <h2 className="text-xl font-bold text-white">
-                          Status Pick Hari Ini ({pickStatus.tradingDate})
-                        </h2>
+                {/* Status Header & Quota Progress */}
+                <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/70 shadow-xl space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                    <div>
+                      <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 mb-1">
+                        <Layers className="w-4 h-4" />
+                        <span>Picklist Sesi: {pickStatus?.tradingDate || 'Sesi Berikutnya'}</span>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        {pickStatus.isLocked ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm">
-                            <Lock className="w-3.5 h-3.5" />
-                            <span>Terkunci (08:45 WIB)</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm">
-                            <Unlock className="w-3.5 h-3.5" />
-                            <span>Dapat Diubah Sebelum 08:45 WIB</span>
-                          </span>
-                        )}
-                      </div>
+                      <h2 className="text-xl font-bold text-white">
+                        Daftar Pilihan Saham Harian ({currentCount}/{maxPicks} Emiten)
+                      </h2>
                     </div>
 
-                    {/* Stock Hero Display */}
-                    <div className="py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center font-mono font-extrabold text-2xl text-white shadow-xl shadow-blue-500/20 shrink-0">
-                          {pickStatus.pick.stock.symbol}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl font-bold text-white font-mono">
-                              {pickStatus.pick.stock.symbol}
-                            </span>
-                            <span className="text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-semibold border border-slate-700">
-                              IDX
-                            </span>
-                          </div>
-                          <div className="text-xs text-slate-400 font-medium mt-0.5">
-                            {pickStatus.pick.stock.name}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-mono">
-                        <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
-                          <div className="text-[10px] text-slate-500 font-sans font-semibold uppercase mb-1">
-                            Harga Entry
-                          </div>
-                          <div className="text-sm font-bold text-white">
-                            Rp {Number(pickStatus.pick.entryPrice).toLocaleString('id-ID')}
-                          </div>
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-rose-950/20 border border-rose-500/30">
-                          <div className="text-[10px] text-rose-400 font-sans font-semibold uppercase mb-1">
-                            Stop Loss (-{(stopLossPct * 100).toFixed(0)}%)
-                          </div>
-                          <div className="text-sm font-bold text-rose-400">
-                            Rp {calcStopLossPrice.toLocaleString('id-ID')}
-                          </div>
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 col-span-2 sm:col-span-1">
-                          <div className="text-[10px] text-slate-500 font-sans font-semibold uppercase mb-1">
-                            Trailing Stop
-                          </div>
-                          <div className="text-sm font-bold text-amber-400">
-                            -{(trailingStopPct * 100).toFixed(0)}% Peak
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom Action Footer */}
-                    <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-                      <div className="text-slate-400 flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-slate-500" />
-                        <span>
-                          Dikirim pada:{' '}
-                          <strong className="text-slate-200">
-                            {new Date(pickStatus.pick.createdAt).toLocaleTimeString('id-ID', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}{' '}
-                            WIB
-                          </strong>
+                    <div className="flex items-center gap-2">
+                      {currentCount < minPicks ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Kurang {minPicks - currentCount} Emiten (Wajib Min. {minPicks})</span>
                         </span>
-                      </div>
-
-                      {!pickStatus.isLocked && (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setConfirmCancelOpen(true)}
-                            className="px-3.5 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold transition-all"
-                          >
-                            Batalkan Pick
-                          </button>
-                        </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Kuota Terpenuhi ({currentCount} Emiten)</span>
+                        </span>
                       )}
                     </div>
                   </div>
-                ) : (
-                  /* STATE B: BELUM MEMILIH SAHAM (FORMULIR INPUT PICK) */
-                  <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-700/80 bg-slate-900/70 shadow-2xl relative">
-                    <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
-                      <div>
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-400 mb-1">
-                          <Sparkles className="w-4 h-4" />
-                          <span>Pilih 1 Saham Terbaik Anda Hari Ini</span>
-                        </div>
-                        <h2 className="text-lg font-bold text-white">
-                          Formulir Pengiriman Pick ({pickStatus?.tradingDate || 'Hari Ini'})
-                        </h2>
-                      </div>
 
-                      <div className="text-right">
-                        <span className="text-[11px] font-mono text-slate-400">
-                          Batas: <strong className="text-amber-400 font-bold">08:45 WIB</strong>
-                        </span>
+                  {/* Info notice about Closing Price locking */}
+                  <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-start gap-2.5">
+                    <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Sistem Otomatisasi Harga Closing:</strong> Setiap emiten yang Anda submit otomatis mengunci harga Closing hari ini sebagai harga Entry sesi besok. Picklist dapat diubah atau dibatalkan bebas sebelum pukul {pickWindowEnd} WIB.
+                    </span>
+                  </div>
+
+                  {/* Slots Cards List */}
+                  <div className="space-y-3 pt-2">
+                    {Array.from({ length: maxPicks }).map((_, idx) => {
+                      const pick = activePicks[idx];
+                      const slotNum = idx + 1;
+
+                      if (pick) {
+                        const entry = Number(pick.entryPrice) || 0;
+                        const slPrice = Math.round(entry * (1 - stopLossPct));
+
+                        return (
+                          <div
+                            key={pick.id}
+                            className="p-4 rounded-2xl border border-slate-700/80 bg-slate-950/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-slate-600"
+                          >
+                            <div className="flex items-center gap-3.5">
+                              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center font-mono font-bold text-lg text-white shadow-md shadow-blue-500/20 shrink-0">
+                                {pick.stock?.symbol}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 uppercase">
+                                    Slot {slotNum}
+                                  </span>
+                                  <span className="text-base font-bold text-white font-mono">
+                                    {pick.stock?.symbol}
+                                  </span>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-semibold">
+                                    IDX
+                                  </span>
+                                </div>
+                                <div className="text-xs text-slate-400 mt-0.5 max-w-xs truncate">
+                                  {pick.stock?.name}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 sm:gap-6 justify-between sm:justify-end">
+                              <div className="text-right font-mono text-xs">
+                                <div className="text-[10px] text-slate-400 font-sans">Harga Closing (Entry)</div>
+                                <div className="text-sm font-bold text-white">
+                                  Rp {entry.toLocaleString('id-ID')}
+                                </div>
+                              </div>
+
+                              <div className="text-right font-mono text-xs">
+                                <div className="text-[10px] text-rose-400 font-sans">Cut Loss (-{(stopLossPct * 100).toFixed(0)}%)</div>
+                                <div className="text-sm font-bold text-rose-400">
+                                  Rp {slPrice.toLocaleString('id-ID')}
+                                </div>
+                              </div>
+
+                              {!pickStatus?.isLocked && (
+                                <button
+                                  type="button"
+                                  onClick={() => promptCancelPick(pick)}
+                                  className="p-2 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all"
+                                  title="Batalkan slot emiten ini"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Empty Slot
+                      return (
+                        <div
+                          key={`empty-slot-${idx}`}
+                          className="p-4 rounded-2xl border border-dashed border-slate-800 bg-slate-950/20 flex items-center justify-between text-xs text-slate-500"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-6 h-6 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center font-bold text-[11px] text-slate-400">
+                              {slotNum}
+                            </span>
+                            <span>Slot Kosong {slotNum <= minPicks ? '(Wajib Diisi)' : '(Opsional)'}</span>
+                          </div>
+                          <span className="text-[11px] text-slate-600">
+                            {pickStatus?.isLocked ? 'Terkunci' : 'Menunggu Pilihan'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Add Stock to Picklist Form (Only visible if remaining slots > 0 and pick window not locked) */}
+                {remainingSlots > 0 && !pickStatus?.isLocked && (
+                  <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-blue-500/30 bg-slate-900/80 shadow-2xl space-y-5">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center">
+                          <Plus className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-white">
+                            Tambah Emiten ke Slot {currentCount + 1}
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            Tersedia sisa {remainingSlots} slot pick emiten untuk sesi besok
+                          </p>
+                        </div>
                       </div>
+                      <span className="text-xs font-mono text-cyan-400 font-bold">
+                        Batas {pickWindowEnd} WIB
+                      </span>
                     </div>
 
-                    <form onSubmit={handleSubmitPick} className="space-y-6">
-                      {/* Search & Stock Dropdown */}
+                    <form onSubmit={handleAddStockPick} className="space-y-4">
                       <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-2">
-                          Pilih Kode Emiten Saham IDX *
+                          Cari &amp; Pilih Kode Saham IDX *
                         </label>
                         <div className="relative mb-2">
                           <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                           <input
                             type="text"
-                            placeholder="Ketik kode ticker atau nama (misal: BBCA, BBRI, ASII)..."
+                            placeholder="Cari ticker atau nama (misal: BBCA, TLKM, ASII)..."
                             value={stockSearchQuery}
                             onChange={(e) => setStockSearchQuery(e.target.value)}
                             className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
@@ -694,79 +784,53 @@ export default function MyPicksPage() {
                           onChange={(e) => setSelectedStockId(e.target.value)}
                           className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:border-blue-500 font-mono"
                         >
-                          {filteredStocks.map((s) => (
-                            <option key={s.id} value={s.id}>
-                              {s.symbol} — {s.name}
-                            </option>
-                          ))}
+                          {filteredStocks.length === 0 ? (
+                            <option value="">Semua saham telah dipilih atau tidak ditemukan</option>
+                          ) : (
+                            filteredStocks.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.symbol} — {s.name}
+                              </option>
+                            ))
+                          )}
                         </select>
                       </div>
 
-                      {/* Entry Price & Stop Loss Preview */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Stock Rules & Preview */}
+                      <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 grid grid-cols-2 gap-3 text-xs">
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-2">
-                            Estimasi Harga Entry (Rp) *
-                          </label>
-                          <input
-                            type="number"
-                            required
-                            min={1}
-                            value={entryPrice}
-                            onChange={(e) => setEntryPrice(e.target.value)}
-                            placeholder="Contoh: 9200"
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm font-mono focus:outline-none focus:border-blue-500"
-                          />
-                          <p className="text-[10px] text-slate-500 mt-1">
-                            Harga pembukaan pasar (Market Open 09:00 WIB).
-                          </p>
+                          <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                            Metode Entry
+                          </span>
+                          <span className="text-cyan-400 font-bold">
+                            Closing Price Hari Ini
+                          </span>
                         </div>
-
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-2">
-                            Level Stop Loss Otomatis (-{(stopLossPct * 100).toFixed(0)}%)
-                          </label>
-                          <div className="w-full px-4 py-2.5 rounded-xl bg-rose-950/20 border border-rose-500/30 text-rose-300 text-sm font-mono font-bold flex items-center justify-between">
-                            <span>Rp {calcStopLossPrice.toLocaleString('id-ID')}</span>
-                            <span className="text-[10px] font-sans font-normal text-rose-400">
-                              Cut Loss Level
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 mt-1">
-                            Jika harga turun ke level ini, posisi otomatis di-cut loss.
-                          </p>
+                          <span className="text-slate-400 block text-[10px] uppercase font-semibold">
+                            Aturan Stop Loss
+                          </span>
+                          <span className="text-rose-400 font-bold">
+                            -{(stopLossPct * 100).toFixed(0)}% Initial / -{(trailingStopPct * 100).toFixed(0)}% Trailing
+                          </span>
                         </div>
                       </div>
 
-                      {/* Rule Reminder Pill */}
-                      <div className="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/20 text-blue-300 text-xs flex items-center gap-2.5">
-                        <HelpCircle className="w-4 h-4 shrink-0 text-blue-400" />
-                        <span>
-                          Trailing Stop aktif jika floating return positif melampaui ambang batas. Evaluasi dilakukan secara akurat dari bar 1-menit setelah bursa tutup.
-                        </span>
-                      </div>
-
-                      {/* Submit Button */}
                       <button
                         type="submit"
-                        disabled={submittingPick || pickStatus?.isLocked}
+                        disabled={submittingPick || !selectedStockId || filteredStocks.length === 0}
                         className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-sm font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {submittingPick ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Mengonfirmasi Pilihan Saham...</span>
-                          </>
-                        ) : pickStatus?.isLocked ? (
-                          <>
-                            <Lock className="w-4 h-4" />
-                            <span>Pengiriman Pick Ditutup (Sudah Lewat 08:45 WIB)</span>
+                            <span>Mengunci Emiten...</span>
                           </>
                         ) : (
                           <>
-                            <CheckSquare className="w-4 h-4" />
+                            <Plus className="w-4 h-4" />
                             <span>
-                              Konfirmasi &amp; Kirim Pick {chosenStock ? chosenStock.symbol : ''} Hari Ini
+                              Tambahkan {chosenStock ? chosenStock.symbol : ''} ke Picklist Saya
                             </span>
                           </>
                         )}
@@ -776,25 +840,43 @@ export default function MyPicksPage() {
                 )}
               </div>
 
-              {/* Right Column (1 Col): Tournament & Rules Summary Card */}
+              {/* Right Column (1 Col): Rules Summary & Target Points Info */}
               <div className="space-y-6">
                 <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl space-y-4">
                   <div className="flex items-center gap-2 pb-3 border-b border-slate-800">
                     <Shield className="w-4 h-4 text-blue-400" />
-                    <h3 className="text-sm font-bold text-white">Aturan Trading Turnamen</h3>
+                    <h3 className="text-sm font-bold text-white">Ketentuan Turnamen</h3>
                   </div>
 
                   <div className="space-y-3 text-xs">
                     <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
-                      <span className="text-slate-400">Nama Turnamen</span>
-                      <span className="font-semibold text-white text-right">
+                      <span className="text-slate-400">Turnamen</span>
+                      <span className="font-semibold text-white text-right max-w-[170px] truncate">
                         {activeTournament?.tournamentName}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
-                      <span className="text-slate-400">Kapasitas Pick</span>
-                      <span className="font-semibold text-emerald-400">1 Saham / Hari</span>
+                      <span className="text-slate-400">Kriteria Selesai</span>
+                      <span className="font-semibold text-purple-400 font-mono">
+                        {activeTournament?.completionType === 'TARGET_POINTS'
+                          ? `Target ${activeTournament.targetPoints || 300} Poin`
+                          : 'Periode Waktu'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
+                      <span className="text-slate-400">Kuota Pick Harian</span>
+                      <span className="font-semibold text-cyan-400 font-mono">
+                        {minPicks} – {maxPicks} Emiten / Hari
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
+                      <span className="text-slate-400">Window Pick Sore</span>
+                      <span className="font-semibold text-white font-mono">
+                        {pickWindowStart} – {pickWindowEnd} WIB
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
@@ -807,18 +889,15 @@ export default function MyPicksPage() {
                     <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
                       <span className="text-slate-400">Trailing Stop</span>
                       <span className="font-semibold text-amber-400 font-mono">
-                        -{(trailingStopPct * 100).toFixed(0)}% dari Peak
+                        -{(trailingStopPct * 100).toFixed(0)}% Peak
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
-                      <span className="text-slate-400">Batas Waktu Penguncian</span>
-                      <span className="font-semibold text-white font-mono">08:45 WIB</span>
-                    </div>
-
                     <div className="flex items-center justify-between py-1.5">
-                      <span className="text-slate-400">Waktu Evaluasi</span>
-                      <span className="font-semibold text-cyan-400 font-mono">16:00 WIB</span>
+                      <span className="text-slate-400">Akumulasi Poin</span>
+                      <span className="font-semibold text-emerald-400">
+                        Sum Realized Semua Pick
+                      </span>
                     </div>
                   </div>
 
@@ -837,147 +916,184 @@ export default function MyPicksPage() {
             </div>
           )}
 
-          {/* Past Picks & Results History Table */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          {/* Past Picks & Results History Table (Grouped by Trading Date with Daily Accumulation) */}
+          <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-blue-400" />
-                  <span>Riwayat Pick &amp; Hasil Trade Saya</span>
+                  <span>Riwayat Pick &amp; Akumulasi Hasil Trade Harian</span>
                 </h3>
-                <p className="text-xs text-slate-400">
-                  Daftar seluruh saham yang pernah Anda pilih pada turnamen ini beserta hasil evaluasi pascapasar
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Daftar seluruh pilihan emiten Anda per sesi perdagangan beserta total akumulasi poin harian (+3% + 3% - 3% = +3 poin)
                 </p>
               </div>
 
               <button
                 onClick={() => fetchPickStatus(selectedTournamentId)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-slate-200 text-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-slate-200 text-xs self-start sm:self-auto"
               >
                 <RefreshCw className="w-3 h-3" />
-                <span>Segarkan</span>
+                <span>Segarkan Data</span>
               </button>
             </div>
 
-            {!pickStatus?.pastPicks || pickStatus.pastPicks.length === 0 ? (
+            {groupedPastPicks.length === 0 ? (
               <div className="py-12 text-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl">
                 Belum ada riwayat pick tersimpan pada turnamen ini.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-800 bg-slate-900/80 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                      <th className="py-3 px-4">Tanggal Trading</th>
-                      <th className="py-3 px-4">Emiten Saham</th>
-                      <th className="py-3 px-4 text-right">Harga Entry</th>
-                      <th className="py-3 px-4 text-right">Harga Exit</th>
-                      <th className="py-3 px-4 text-center">Realized Return</th>
-                      <th className="py-3 px-4 text-center">Status / Outcome</th>
-                      <th className="py-3 px-4 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                    {pickStatus.pastPicks.map((p: any) => {
-                      const ev = p.evaluations && p.evaluations[0];
-                      const realized = ev ? Number(ev.realizedReturn) : 0;
-                      const isUp = realized >= 0;
+              <div className="space-y-6">
+                {groupedPastPicks.map((group) => {
+                  const isDayPositive = group.totalReturn >= 0;
 
-                      return (
-                        <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="py-3.5 px-4 font-mono text-slate-400">
-                            {new Date(p.tradingDate).toLocaleDateString('id-ID', {
+                  return (
+                    <div
+                      key={group.dateStr}
+                      className="rounded-2xl border border-slate-800 bg-slate-950/40 overflow-hidden shadow-lg"
+                    >
+                      {/* Daily Header Summary */}
+                      <div className="px-4 py-3 bg-slate-900/80 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-bold text-xs text-white">
+                            Sesi: {new Date(group.dateStr).toLocaleDateString('id-ID', {
+                              weekday: 'long',
                               day: 'numeric',
-                              month: 'short',
+                              month: 'long',
                               year: 'numeric',
                             })}
-                          </td>
+                          </span>
+                          <span className="text-[10px] text-slate-400 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+                            {group.picks.length} Emiten
+                          </span>
+                        </div>
 
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-white font-mono">{p.stock.symbol}</span>
-                              <span className="text-[11px] text-slate-500 truncate max-w-[180px]">
-                                {p.stock.name}
-                              </span>
-                            </div>
-                          </td>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-400 font-sans">
+                            Total Akumulasi Poin Sesi:
+                          </span>
+                          <span
+                            className={`px-3 py-1 rounded-xl text-xs font-bold font-mono border ${
+                              isDayPositive
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                            }`}
+                          >
+                            {isDayPositive ? `+${group.totalReturn.toFixed(2)}` : group.totalReturn.toFixed(2)} Poin ({isDayPositive ? '+' : ''}{group.totalReturn.toFixed(2)}%)
+                          </span>
+                        </div>
+                      </div>
 
-                          <td className="py-3.5 px-4 text-right font-mono">
-                            Rp {Number(p.entryPrice).toLocaleString('id-ID')}
-                          </td>
+                      {/* Picks Table for This Date */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-800/80 bg-slate-900/40 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                              <th className="py-2.5 px-4">Emiten</th>
+                              <th className="py-2.5 px-4 text-right">Harga Entry</th>
+                              <th className="py-2.5 px-4 text-right">Harga Exit</th>
+                              <th className="py-2.5 px-4 text-center">Realized Return</th>
+                              <th className="py-2.5 px-4 text-center">Outcome / Alasan</th>
+                              <th className="py-2.5 px-4 text-right">Detail</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-800/50 text-slate-300">
+                            {group.picks.map((p: any) => {
+                              const ev = p.evaluations && p.evaluations[0];
+                              const realized = ev ? Number(ev.realizedReturn) : 0;
+                              const isUp = realized >= 0;
 
-                          <td className="py-3.5 px-4 text-right font-mono">
-                            {ev ? `Rp ${Number(ev.exitPrice).toLocaleString('id-ID')}` : '-'}
-                          </td>
+                              return (
+                                <tr key={p.id} className="hover:bg-slate-800/20 transition-colors">
+                                  <td className="py-3 px-4">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-white font-mono">{p.stock?.symbol}</span>
+                                      <span className="text-[11px] text-slate-500 truncate max-w-[180px]">
+                                        {p.stock?.name}
+                                      </span>
+                                    </div>
+                                  </td>
 
-                          <td className="py-3.5 px-4 text-center font-mono">
-                            {ev ? (
-                              <span
-                                className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-bold ${
-                                  isUp
-                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                }`}
-                              >
-                                {isUp ? (
-                                  <ArrowUpRight className="w-3 h-3" />
-                                ) : (
-                                  <ArrowDownRight className="w-3 h-3" />
-                                )}
-                                <span>{isUp ? `+${realized.toFixed(2)}%` : `${realized.toFixed(2)}%`}</span>
-                              </span>
-                            ) : (
-                              <span className="text-slate-500 text-[11px]">Menunggu Pasar</span>
-                            )}
-                          </td>
+                                  <td className="py-3 px-4 text-right font-mono">
+                                    Rp {Number(p.entryPrice).toLocaleString('id-ID')}
+                                  </td>
 
-                          <td className="py-3.5 px-4 text-center">
-                            {ev ? (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                                {ev.exitReason}
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                                CONFIRMED
-                              </span>
-                            )}
-                          </td>
+                                  <td className="py-3 px-4 text-right font-mono">
+                                    {ev ? `Rp ${Number(ev.exitPrice).toLocaleString('id-ID')}` : '-'}
+                                  </td>
 
-                          <td className="py-3.5 px-4 text-right">
-                            {ev ? (
-                              <button
-                                onClick={() => handleShowEvidence(ev)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-all"
-                              >
-                                <Eye className="w-3 h-3 text-blue-400" />
-                                <span>Bukti</span>
-                              </button>
-                            ) : (
-                              <span className="text-slate-600 text-xs">-</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                                  <td className="py-3 px-4 text-center font-mono">
+                                    {ev ? (
+                                      <span
+                                        className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-bold ${
+                                          isUp
+                                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                        }`}
+                                      >
+                                        {isUp ? (
+                                          <ArrowUpRight className="w-3 h-3" />
+                                        ) : (
+                                          <ArrowDownRight className="w-3 h-3" />
+                                        )}
+                                        <span>{isUp ? `+${realized.toFixed(2)}%` : `${realized.toFixed(2)}%`}</span>
+                                      </span>
+                                    ) : (
+                                      <span className="text-slate-500 text-[11px]">Menunggu Pasar</span>
+                                    )}
+                                  </td>
+
+                                  <td className="py-3 px-4 text-center">
+                                    {ev ? (
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                        {ev.exitReason}
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                        TERKONFIRMASI
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  <td className="py-3 px-4 text-right">
+                                    {ev ? (
+                                      <button
+                                        onClick={() => handleShowEvidence(ev)}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-all"
+                                      >
+                                        <Eye className="w-3 h-3 text-blue-400" />
+                                        <span>Bukti</span>
+                                      </button>
+                                    ) : (
+                                      <span className="text-slate-600 text-xs">-</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* CUSTOM CONFIRMATION MODAL: BATALKAN PICK */}
-      {confirmCancelOpen && (
+      {/* CUSTOM CONFIRMATION MODAL: BATALKAN PICK INDIVIDUAL */}
+      {confirmCancelOpen && pickToCancel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
           <div className="glass-panel w-full max-w-md p-6 rounded-3xl border border-rose-500/30 bg-slate-950 shadow-2xl relative">
             <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 mb-4">
               <AlertTriangle className="w-6 h-6" />
             </div>
 
-            <h3 className="text-base font-bold text-white mb-1">Batalkan Pick Saham Hari Ini?</h3>
+            <h3 className="text-base font-bold text-white mb-1">Batalkan Pick Emiten {pickToCancel.symbol}?</h3>
             <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-              Anda akan membatalkan pilihan saham <strong>{pickStatus?.pick?.stock?.symbol}</strong>. Anda dapat memilih kembali emiten lain sebelum pukul 08:45 WIB.
+              Pilihan emiten <strong className="text-white">{pickToCancel.symbol}</strong> akan dihapus dari picklist harian Anda. Anda dapat memilih kembali emiten pengganti sebelum batas akhir pukul {pickWindowEnd} WIB.
             </p>
 
             <div className="flex gap-3">
@@ -991,10 +1107,10 @@ export default function MyPicksPage() {
               <button
                 type="button"
                 disabled={cancellingPick}
-                onClick={handleCancelPick}
+                onClick={handleConfirmCancelPick}
                 className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-lg shadow-rose-600/30 transition-all disabled:opacity-50"
               >
-                {cancellingPick ? 'Membatalkan...' : 'Ya, Batalkan Pick'}
+                {cancellingPick ? 'Membatalkan...' : 'Ya, Batalkan Emiten'}
               </button>
             </div>
           </div>
