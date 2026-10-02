@@ -453,6 +453,12 @@ export class PicksService {
     let pastPicks: any[] = [];
 
     if (membership && membership.status === 'APPROVED') {
+      try {
+        await this.prisma.$executeRawUnsafe(
+          `ALTER TABLE "stock_picks" ADD COLUMN IF NOT EXISTS "entry_timestamp" TIMESTAMP(3);`
+        );
+      } catch {}
+
       picks = await this.prisma.stockPick.findMany({
         where: {
           tournamentId,
@@ -530,6 +536,13 @@ export class PicksService {
     dto: SubmitMyPickDto,
   ) {
     try {
+      // Ensure entry_timestamp exists on stock_picks table
+      try {
+        await this.prisma.$executeRawUnsafe(
+          `ALTER TABLE "stock_picks" ADD COLUMN IF NOT EXISTS "entry_timestamp" TIMESTAMP(3);`
+        );
+      } catch {}
+
       const tournament = await this.prisma.tournament.findUnique({
         where: { id: tournamentId },
         include: { rules: true },
@@ -628,6 +641,23 @@ export class PicksService {
           });
         } catch (createErr: any) {
           const errMsg = createErr?.message || '';
+          if (errMsg.includes('entry_timestamp')) {
+            try {
+              await this.prisma.$executeRawUnsafe(
+                `ALTER TABLE "stock_picks" ADD COLUMN IF NOT EXISTS "entry_timestamp" TIMESTAMP(3);`
+              );
+              return await this.prisma.stockPick.create({
+                data,
+                include: {
+                  participant: true,
+                  stock: true,
+                  tournament: {
+                    select: { id: true, name: true, status: true },
+                  },
+                },
+              });
+            } catch {}
+          }
           if (errMsg.includes('EntrySource') || errMsg.includes('CLOSING_PRICE') || errMsg.includes('invalid input value for enum')) {
             return await this.prisma.stockPick.create({
               data: {
@@ -661,7 +691,7 @@ export class PicksService {
           throw new BadRequestException('Saham tidak valid atau sedang tidak aktif');
         }
 
-        // Check duplicate on the same date using findFirst for robust type comparison
+        // Check duplicate on the same date using findFirst with explicit select to avoid missing column issues
         const duplicatePick = await this.prisma.stockPick.findFirst({
           where: {
             tournamentId,
@@ -669,6 +699,10 @@ export class PicksService {
             tradingDate: tradingDateObj,
             stockId: stock.id,
             id: { not: dto.replacePickId },
+          },
+          select: {
+            id: true,
+            stockId: true,
           },
         });
         if (duplicatePick) {
@@ -774,13 +808,17 @@ export class PicksService {
         throw new BadRequestException('Saham tidak valid atau sedang tidak aktif');
       }
 
-      // Robust duplicate check using findFirst to avoid compound unique @db.Date serialization issues
+      // Robust duplicate check using findFirst with explicit select to avoid missing column issues
       const duplicatePick = await this.prisma.stockPick.findFirst({
         where: {
           tournamentId,
           participantId: participant.id,
           tradingDate: tradingDateObj,
           stockId: stock.id,
+        },
+        select: {
+          id: true,
+          stockId: true,
         },
       });
       if (duplicatePick) {

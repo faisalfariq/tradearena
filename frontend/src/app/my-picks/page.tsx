@@ -642,9 +642,9 @@ export default function MyPicksPage() {
               <p className="text-xs text-slate-400">Memuat status pick turnamen...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-30">
               {/* Left Column (2 Cols): Multi-Pick Slots & Add Stock Form */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-6 relative z-30">
                 {/* Status Header & Quota Progress */}
                 <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/70 shadow-xl space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
@@ -771,7 +771,7 @@ export default function MyPicksPage() {
 
                 {/* Add Stock to Picklist Form (Only visible if remaining slots > 0 and pick window not locked) */}
                 {remainingSlots > 0 && !pickStatus?.isLocked && (
-                  <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-blue-500/30 bg-slate-900/80 shadow-2xl space-y-5">
+                  <div className="glass-panel relative z-40 p-6 sm:p-8 rounded-3xl border border-blue-500/30 bg-slate-900/80 shadow-2xl space-y-5">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center">
@@ -792,7 +792,7 @@ export default function MyPicksPage() {
                     </div>
 
                     <form onSubmit={handleAddStockPick} className="space-y-4">
-                      <div className="relative" ref={stockDropdownRef}>
+                      <div className="relative z-50" ref={stockDropdownRef}>
                         <label className="block text-xs font-semibold text-slate-300 mb-2">
                           Pilih Kode Saham IDX (950+ Emiten) *
                         </label>
@@ -1025,7 +1025,7 @@ export default function MyPicksPage() {
           )}
 
           {/* Past Picks & Results History Table (Grouped by Trading Date with Daily Accumulation) */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl space-y-6">
+          <div className="glass-panel relative z-10 p-6 rounded-3xl border border-slate-800 bg-slate-900/60 shadow-xl space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
