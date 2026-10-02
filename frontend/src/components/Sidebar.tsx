@@ -85,7 +85,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Topbar with Hamburger */}
-      <div className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
+      <div className="md:hidden sticky top-0 z-40 w-full flex items-center justify-between px-4 py-3 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shrink-0">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/25">
             <TrendingUp className="w-4 h-4 text-white" />

@@ -65,13 +65,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // 4. Authenticated Admin: Full operations environment with Admin Sidebar
+  // 4. Authenticated: Full operations environment with Sidebar
   return (
-    <div className="min-h-screen flex bg-slate-950 text-slate-100">
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-slate-100">
       <Sidebar />
-      <main className="flex-1 w-full md:pl-64 flex flex-col min-h-screen overflow-x-hidden">
+      <div className="flex-1 w-full md:pl-64 flex flex-col min-h-screen overflow-x-hidden">
         {children}
-      </main>
+      </div>
     </div>
   );
 }

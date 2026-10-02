@@ -146,18 +146,18 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <button
               onClick={fetchStats}
               disabled={loading}
-              className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-2 transition-all shadow-sm"
+              className="flex-1 sm:flex-none justify-center px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-2 transition-all shadow-sm"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-400' : ''}`} />
               <span>Segarkan Data</span>
             </button>
             <Link
               href="/tournaments/new"
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all"
+              className="flex-1 sm:flex-none justify-center px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all whitespace-nowrap"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Buat Turnamen</span>
@@ -501,17 +501,17 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <Link
               href="/my-picks"
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all"
+              className="flex-1 sm:flex-none justify-center px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all whitespace-nowrap"
             >
               <CheckSquare className="w-4 h-4" />
               <span>Pick Saham Saya</span>
             </Link>
             <Link
               href="/tournaments"
-              className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-2 transition-all shadow-sm"
+              className="flex-1 sm:flex-none justify-center px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-2 transition-all shadow-sm whitespace-nowrap"
             >
               <Trophy className="w-3.5 h-3.5 text-blue-400" />
               <span>Semua Turnamen</span>
