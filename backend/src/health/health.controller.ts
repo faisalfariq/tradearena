@@ -133,20 +133,24 @@ export class HealthController {
         select: { id: true, email: true, name: true, role: true },
       });
 
-      // Seed 5 core IDX stocks
-      const initialStocks = [
-        { symbol: 'BBCA', name: 'Bank Central Asia Tbk', exchange: 'IDX' },
-        { symbol: 'BBRI', name: 'Bank Rakyat Indonesia (Persero) Tbk', exchange: 'IDX' },
-        { symbol: 'BMRI', name: 'Bank Mandiri (Persero) Tbk', exchange: 'IDX' },
-        { symbol: 'TLKM', name: 'Telkom Indonesia (Persero) Tbk', exchange: 'IDX' },
-        { symbol: 'ASII', name: 'Astra International Tbk', exchange: 'IDX' },
-      ];
-      for (const s of initialStocks) {
-        await this.prisma.stock.upsert({
-          where: { symbol: s.symbol },
-          update: { name: s.name, exchange: s.exchange, isActive: true },
-          create: { ...s, isActive: true },
-        });
+      // Seed full official IDX stock universe (~950+ stocks)
+      try {
+        const idxStocks = require('../stocks/data/idx-stocks.json');
+        const chunkSize = 50;
+        for (let i = 0; i < idxStocks.length; i += chunkSize) {
+          const chunk = idxStocks.slice(i, i + chunkSize);
+          await Promise.all(
+            chunk.map((s: any) =>
+              this.prisma.stock.upsert({
+                where: { symbol: s.symbol },
+                update: { name: s.name, exchange: s.exchange || 'IDX', isActive: true },
+                create: { symbol: s.symbol, name: s.name, exchange: s.exchange || 'IDX', isActive: true },
+              }),
+            ),
+          );
+        }
+      } catch (e) {
+        console.warn('[HealthController] Failed to seed IDX stocks:', (e as Error).message);
       }
 
       // Seed demo tournament if none exists

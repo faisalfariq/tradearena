@@ -123,4 +123,100 @@ export class StocksService {
       where: { id },
     });
   }
+
+  async syncIdxStocks() {
+    let stockList: Array<{ symbol: string; name: string; exchange: string; isActive?: boolean }> = [];
+
+    // 1. Try to fetch live list from official/open dataset
+    try {
+      const response = await fetch(
+        'https://raw.githubusercontent.com/wildangunawan/Dataset-Saham-IDX/master/List%20Emiten/all.csv',
+        { headers: { 'User-Agent': 'TradeArena' } },
+      );
+      if (response.ok) {
+        const csv = await response.text();
+        const lines = csv.trim().split('\n');
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const parts = line.split(',');
+          if (parts.length >= 2) {
+            const code = parts[0].trim().toUpperCase();
+            let name = parts.slice(1, parts.length - 3).join(',').trim();
+            if (!name) name = parts[1].trim();
+            name = name.replace(/^"|"$/g, '').trim();
+            if (code && code.length >= 4) {
+              stockList.push({
+                symbol: code,
+                name: name || code,
+                exchange: 'IDX',
+                isActive: true,
+              });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[StocksService] Failed to fetch live IDX stock list, falling back to local dataset:', err);
+    }
+
+    // 2. Fallback to local bundled idx-stocks.json if network fetch empty
+    if (stockList.length === 0) {
+      try {
+        const localData = require('./data/idx-stocks.json');
+        stockList = localData;
+      } catch (e) {
+        console.error('[StocksService] Failed to load local idx-stocks.json:', e);
+      }
+    }
+
+    if (stockList.length === 0) {
+      throw new Error('Data master emiten IDX tidak tersedia');
+    }
+
+    // 3. Batch upsert into database in chunks of 50
+    let inserted = 0;
+    let updated = 0;
+
+    const chunkSize = 50;
+    for (let i = 0; i < stockList.length; i += chunkSize) {
+      const chunk = stockList.slice(i, i + chunkSize);
+      await Promise.all(
+        chunk.map(async (s) => {
+          const existing = await this.prisma.stock.findUnique({
+            where: { symbol: s.symbol },
+          });
+          if (existing) {
+            await this.prisma.stock.update({
+              where: { id: existing.id },
+              data: {
+                name: s.name,
+                exchange: s.exchange || 'IDX',
+                isActive: true,
+              },
+            });
+            updated++;
+          } else {
+            await this.prisma.stock.create({
+              data: {
+                symbol: s.symbol,
+                name: s.name,
+                exchange: s.exchange || 'IDX',
+                isActive: true,
+              },
+            });
+            inserted++;
+          }
+        }),
+      );
+    }
+
+    return {
+      success: true,
+      total: stockList.length,
+      inserted,
+      updated,
+      message: `Sinkronisasi berhasil: ${inserted} emiten baru ditambahkan, ${updated} emiten diperbarui (Total: ${stockList.length} emiten IDX aktif)`,
+    };
+  }
 }

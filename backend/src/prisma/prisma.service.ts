@@ -88,6 +88,30 @@ export class PrismaService
         });
         console.log(`[PrismaService] Initial admin created: ${adminEmail}`);
       }
+
+      const stockCount = await this.stock.count();
+      if (stockCount < 100) {
+        console.log('[PrismaService] Less than 100 stocks found in database. Auto-populating master IDX stock universe...');
+        try {
+          const idxStocks = require('../stocks/data/idx-stocks.json');
+          const chunkSize = 50;
+          for (let i = 0; i < idxStocks.length; i += chunkSize) {
+            const chunk = idxStocks.slice(i, i + chunkSize);
+            await Promise.all(
+              chunk.map((s: any) =>
+                this.stock.upsert({
+                  where: { symbol: s.symbol },
+                  update: { name: s.name, exchange: s.exchange || 'IDX', isActive: true },
+                  create: { symbol: s.symbol, name: s.name, exchange: s.exchange || 'IDX', isActive: true },
+                }),
+              ),
+            );
+          }
+          console.log(`[PrismaService] Master IDX stock universe populated (${idxStocks.length} stocks).`);
+        } catch (e) {
+          console.warn('[PrismaService] Failed to auto-populate IDX stocks:', (e as Error).message);
+        }
+      }
     } catch (err) {
       console.warn(
         '[PrismaService] Database connection or init issue:',

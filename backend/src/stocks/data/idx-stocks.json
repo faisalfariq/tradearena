@@ -1,0 +1,6659 @@
+[
+  {
+    "symbol": "AALI",
+    "name": "Astra Agro Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ABBA",
+    "name": "Mahaka Media Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ABDA",
+    "name": "Asuransi Bina Dana Arta Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ABMM",
+    "name": "ABM Investama Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ACES",
+    "name": "Aspirasi Hidup Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ACST",
+    "name": "Acset Indonusa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ADES",
+    "name": "Akasha Wira International Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ADHI",
+    "name": "Adhi Karya (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ADMF",
+    "name": "Adira Dinamika Multi Finance T",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ADMG",
+    "name": "Polychem Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ADRO",
+    "name": "Alamtri Resources Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "AGII",
+    "name": "Samator Indo Gas Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AGRO",
+    "name": "Bank Raya Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "AGRS",
+    "name": "Bank IBK Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AHAP",
+    "name": "Asuransi Harta Aman Pratama Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AIMS",
+    "name": "Artha Mahiya Investama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AISA",
+    "name": "FKS Food Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "AKKU",
+    "name": "Anugerah Kagum Karya Utama Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "AKPI",
+    "name": "Argha Karya Prima Industry Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AKRA",
+    "name": "AKR Corporindo Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "AKSI",
+    "name": "Mineral Sumberdaya Mandiri Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ALDO",
+    "name": "Alkindo Naratama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ALKA",
+    "name": "Alakasa Industrindo Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ALMI",
+    "name": "Alumindo Light Metal Industry",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ALTO",
+    "name": "Tri Banyan Tirta Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "AMAG",
+    "name": "Asuransi Multi Artha Guna Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AMFG",
+    "name": "Asahimas Flat Glass Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "AMIN",
+    "name": "Ateliers Mecaniques D Indonesi",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AMRT",
+    "name": "Sumber Alfaria Trijaya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ANJT",
+    "name": "Austindo Nusantara Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ANTM",
+    "name": "Aneka Tambang Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "APEX",
+    "name": "Apexindo Pratama Duta Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "APIC",
+    "name": "Pacific Strategic Financial Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "APII",
+    "name": "Arita Prima Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "APLI",
+    "name": "Asiaplast Industries Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "APLN",
+    "name": "Agung Podomoro Land Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ARGO",
+    "name": "Argo Pantes Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ARII",
+    "name": "Atlas Resources Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ARNA",
+    "name": "Arwana Citramulia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ARTA",
+    "name": "Arthavest Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ARTI",
+    "name": "Ratu Prabu Energi Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ARTO",
+    "name": "Bank Jago Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ASBI",
+    "name": "Asuransi Bintang Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ASDM",
+    "name": "Asuransi Dayin Mitra Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ASGR",
+    "name": "Astra Graphia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ASII",
+    "name": "Astra International Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ASJT",
+    "name": "Asuransi Jasa Tania Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ASMI",
+    "name": "Asuransi Maximus Graha Persada",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ASRI",
+    "name": "Alam Sutera Realty Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ASRM",
+    "name": "Asuransi Ramayana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ASSA",
+    "name": "Adi Sarana Armada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ATIC",
+    "name": "Anabatic Technologies Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AUTO",
+    "name": "Astra Otoparts Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BABP",
+    "name": "Bank MNC Internasional Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BACA",
+    "name": "Bank Capital Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BAJA",
+    "name": "Saranacentral Bajatama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BALI",
+    "name": "Bali Towerindo Sentra Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BAPA",
+    "name": "Bekasi Asri Pemula Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BATA",
+    "name": "Sepatu Bata Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BAYU",
+    "name": "Bayu Buana Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BBCA",
+    "name": "Bank Central Asia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BBHI",
+    "name": "Allo Bank Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BBKP",
+    "name": "Bank KB Bukopin Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BBLD",
+    "name": "Buana Finance Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BBMD",
+    "name": "Bank Mestika Dharma Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BBNI",
+    "name": "Bank Negara Indonesia (Persero",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BBRI",
+    "name": "Bank Rakyat Indonesia (Persero",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BBRM",
+    "name": "Pelayaran Nasional Bina Buana",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BBTN",
+    "name": "Bank Tabungan Negara (Persero)",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BBYB",
+    "name": "Bank Neo Commerce Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BCAP",
+    "name": "MNC Kapital Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BCIC",
+    "name": "Bank JTrust Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BCIP",
+    "name": "Bumi Citra Permai Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BDMN",
+    "name": "Bank Danamon Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BEKS",
+    "name": "Bank Pembangunan Daerah Banten",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BEST",
+    "name": "Bekasi Fajar Industrial Estate",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BFIN",
+    "name": "BFI Finance  Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BGTG",
+    "name": "Bank Ganesha Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BHIT",
+    "name": "MNC Asia Holding Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BIKA",
+    "name": "Binakarya Jaya Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BIMA",
+    "name": "Primarindo Asia Infrastructure",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BINA",
+    "name": "Bank Ina Perdana Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BIPI",
+    "name": "Astrindo Nusantara Infrastrukt",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BIPP",
+    "name": "Bhuwanatala Indah Permai Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BIRD",
+    "name": "Blue Bird Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BISI",
+    "name": "BISI International Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BJBR",
+    "name": "Bank Pembangunan Daerah Jawa B",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BJTM",
+    "name": "Bank Pembangunan Daerah Jawa T",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BKDP",
+    "name": "Bukit Darmo Property Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BKSL",
+    "name": "Sentul City Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BKSW",
+    "name": "Bank QNB Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BLTA",
+    "name": "Berlian Laju Tanker Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BLTZ",
+    "name": "Graha Layar Prima Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BMAS",
+    "name": "Bank Maspion Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BMRI",
+    "name": "Bank Mandiri (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BMSR",
+    "name": "Bintang Mitra Semestaraya Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BMTR",
+    "name": "Global Mediacom Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BNBA",
+    "name": "Bank Bumi Arta Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BNBR",
+    "name": "Bakrie & Brothers Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BNGA",
+    "name": "Bank CIMB Niaga Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BNII",
+    "name": "Bank Maybank Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BNLI",
+    "name": "Bank Permata Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BOLT",
+    "name": "Garuda Metalindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BPFI",
+    "name": "Woori Finance Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BPII",
+    "name": "Batavia Prosperindo Internasio",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BRAM",
+    "name": "Indo Kordsa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BRMS",
+    "name": "Bumi Resources Minerals Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BRNA",
+    "name": "Berlina Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BRPT",
+    "name": "Barito Pacific Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BSDE",
+    "name": "Bumi Serpong Damai Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BSIM",
+    "name": "Bank Sinarmas Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BSSR",
+    "name": "Baramulti Suksessarana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BSWD",
+    "name": "Bank Of India Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BTEK",
+    "name": "Bumi Teknokultura Unggul Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BTEL",
+    "name": "Bakrie Telecom Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BTON",
+    "name": "Betonjaya Manunggal Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BTPN",
+    "name": "Bank SMBC Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BUDI",
+    "name": "Budi Starch & Sweetener Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BUKK",
+    "name": "Bukaka Teknik Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BULL",
+    "name": "Buana Lintas Lautan Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BUMI",
+    "name": "Bumi Resources Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BUVA",
+    "name": "Bukit Uluwatu Villa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BVIC",
+    "name": "Bank Victoria International Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BWPT",
+    "name": "Eagle High Plantations Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BYAN",
+    "name": "Bayan Resources Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CANI",
+    "name": "Capitol Nusantara Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CASS",
+    "name": "Cardig Aero Services Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CEKA",
+    "name": "Wilmar Cahaya Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CENT",
+    "name": "Centratama Telekomunikasi Indo",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CFIN",
+    "name": "Clipan Finance Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CINT",
+    "name": "Chitose Internasional Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CITA",
+    "name": "Cita Mineral Investindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CLPI",
+    "name": "Colorpak Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CMNP",
+    "name": "Citra Marga Nusaphala Persada",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CMPP",
+    "name": "AirAsia Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CNKO",
+    "name": "Exploitasi Energi Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CNTX",
+    "name": "Century Textile Industry Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "COWL",
+    "name": "Cowell Development Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CPIN",
+    "name": "Charoen Pokphand Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CPRO",
+    "name": "Central Proteina Prima Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CSAP",
+    "name": "Catur Sentosa Adiprana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CTBN",
+    "name": "Citra Tubindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CTRA",
+    "name": "Ciputra Development Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CTTH",
+    "name": "Citatah Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "DART",
+    "name": "Duta Anggada Realty Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DEFI",
+    "name": "Danasupra Erapacific Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "DEWA",
+    "name": "Darma Henwa Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DGIK",
+    "name": "Nusa Konstruksi Enjiniring Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DILD",
+    "name": "Intiland Development Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DKFT",
+    "name": "Central Omega Resources Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DLTA",
+    "name": "Delta Djakarta Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DMAS",
+    "name": "Puradelta Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DNAR",
+    "name": "Bank Oke Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DNET",
+    "name": "Indoritel Makmur Internasional",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DOID",
+    "name": "Delta Dunia Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DPNS",
+    "name": "Duta Pertiwi Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DSFI",
+    "name": "Dharma Samudera Fishing Indust",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DSNG",
+    "name": "Dharma Satya Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DSSA",
+    "name": "Dian Swastatika Sentosa Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DUTI",
+    "name": "Duta Pertiwi Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "DVLA",
+    "name": "Darya-Varia Laboratoria Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DYAN",
+    "name": "Dyandra Media International Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ECII",
+    "name": "Electronic City Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "EKAD",
+    "name": "Ekadharma International Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ELSA",
+    "name": "Elnusa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ELTY",
+    "name": "Bakrieland Development Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "EMDE",
+    "name": "Megapolitan Developments Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "EMTK",
+    "name": "Elang Mahkota Teknologi Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ENRG",
+    "name": "Energi Mega Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "EPMT",
+    "name": "Enseval Putera Megatrading Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ERAA",
+    "name": "Erajaya Swasembada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ERTX",
+    "name": "Eratex Djaja Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ESSA",
+    "name": "ESSA Industries Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ESTI",
+    "name": "Ever Shine Tex Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ETWA",
+    "name": "Eterindo Wahanatama Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "EXCL",
+    "name": "XL Axiata Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "FAST",
+    "name": "Fast Food Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FASW",
+    "name": "Fajar Surya Wisesa Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "FISH",
+    "name": "FKS Multi Agro Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "FMII",
+    "name": "Fortune Mate Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FORU",
+    "name": "Fortune Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FPNI",
+    "name": "Lotte Chemical Titan Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FREN",
+    "name": "Smartfren Telecom Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "GAMA",
+    "name": "Aksara Global Development Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "GDST",
+    "name": "Gunawan Dianjaya Steel Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "GDYR",
+    "name": "Goodyear Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GEMA",
+    "name": "Gema Grahasarana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GEMS",
+    "name": "Golden Energy Mines Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "GGRM",
+    "name": "Gudang Garam Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "GIAA",
+    "name": "Garuda Indonesia (Persero) Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "GJTL",
+    "name": "Gajah Tunggal Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "GLOB",
+    "name": "Globe Kita Terang Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "GMTD",
+    "name": "Gowa Makassar Tourism Developm",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GOLD",
+    "name": "Visi Telekomunikasi Infrastruk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GOLL",
+    "name": "Golden Plantation Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "GPRA",
+    "name": "Perdana Gapuraprima Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GSMF",
+    "name": "Equity Development Investment",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GTBO",
+    "name": "Garda Tujuh Buana Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GWSA",
+    "name": "Greenwood Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GZCO",
+    "name": "Gozco Plantations Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HADE",
+    "name": "Himalaya Energi Perkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "HDFA",
+    "name": "Radana Bhaskara Finance Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HDTX",
+    "name": "Panasia Indo Resources Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "HERO",
+    "name": "DFI Retail Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HEXA",
+    "name": "Hexindo Adiperkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "HITS",
+    "name": "Humpuss Intermoda Transportasi",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "HMSP",
+    "name": "H.M. Sampoerna Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HOME",
+    "name": "Hotel Mandarine Regency Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "HOTL",
+    "name": "Saraswati Griya Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "HRUM",
+    "name": "Harum Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "IATA",
+    "name": "MNC Energy Investments Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IBFN",
+    "name": "Intan Baru Prana Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IBST",
+    "name": "Inti Bangun Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ICBP",
+    "name": "Indofood CBP Sukses Makmur Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ICON",
+    "name": "Island Concepts Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IGAR",
+    "name": "Champion Pacific Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IIKP",
+    "name": "Inti Agri Resources Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IKAI",
+    "name": "Intikeramik Alamasri Industri",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IKBI",
+    "name": "Sumi Indo Kabel Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IMAS",
+    "name": "Indomobil Sukses Internasional",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "IMJS",
+    "name": "Indomobil Multi Jasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IMPC",
+    "name": "Impack Pratama Industri Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "INAF",
+    "name": "Indofarma Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "INAI",
+    "name": "Indal Aluminium Industry Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INCI",
+    "name": "Intanwijaya Internasional Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INCO",
+    "name": "Vale Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "INDF",
+    "name": "Indofood Sukses Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "INDR",
+    "name": "Indo-Rama Synthetics Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INDS",
+    "name": "Indospring Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INDX",
+    "name": "Tanah Laut Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INDY",
+    "name": "Indika Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "INKP",
+    "name": "Indah Kiat Pulp & Paper Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "INPC",
+    "name": "Bank Artha Graha Internasional",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "INPP",
+    "name": "Indonesian Paradise Property T",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INRU",
+    "name": "Toba Pulp Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INTA",
+    "name": "Intraco Penta Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "INTD",
+    "name": "Inter Delta Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INTP",
+    "name": "Indocement Tunggal Prakarsa Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "IPOL",
+    "name": "Indopoly Swakarsa Industry Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ISAT",
+    "name": "Indosat Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ISSP",
+    "name": "Steel Pipe Industry of Indones",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ITMA",
+    "name": "Sumber Energi Andalan Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ITMG",
+    "name": "Indo Tambangraya Megah Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "JAWA",
+    "name": "Jaya Agra Wattie Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JECC",
+    "name": "Jembo Cable Company Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JIHD",
+    "name": "Jakarta International Hotels &",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JKON",
+    "name": "Jaya Konstruksi Manggala Prata",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "JKSW",
+    "name": "Jakarta Kyoei Steel Works Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "JPFA",
+    "name": "Japfa Comfeed Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "JRPT",
+    "name": "Jaya Real Property Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JSMR",
+    "name": "Jasa Marga (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "JSPT",
+    "name": "Jakarta Setiabudi Internasiona",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JTPE",
+    "name": "Jasuindo Tiga Perkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KAEF",
+    "name": "Kimia Farma Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KARW",
+    "name": "Meratus Jasa Prima Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KBLI",
+    "name": "KMI Wire & Cable Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KBLM",
+    "name": "Kabelindo Murni Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KBLV",
+    "name": "First Media Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KBRI",
+    "name": "Kertas Basuki Rachmat Indonesi",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KDSI",
+    "name": "Kedawung Setia Industrial Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KIAS",
+    "name": "Keramika Indonesia Assosiasi T",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KICI",
+    "name": "Kedaung Indah Can Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KIJA",
+    "name": "Kawasan Industri Jababeka Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KKGI",
+    "name": "Resource Alam Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KLBF",
+    "name": "Kalbe Farma Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KOBX",
+    "name": "Kobexindo Tractors Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KOIN",
+    "name": "Kokoh Inti Arebama Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KONI",
+    "name": "Perdana Bangun Pusaka Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KOPI",
+    "name": "Mitra Energi Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KPIG",
+    "name": "MNC Land Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KRAH",
+    "name": "Grand Kartech Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KRAS",
+    "name": "Krakatau Steel (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KREN",
+    "name": "Quantum Clovera Investama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LAPD",
+    "name": "Leyand International Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LCGP",
+    "name": "Eureka Prima Jakarta Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LEAD",
+    "name": "Logindo Samudramakmur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LINK",
+    "name": "Link Net Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LION",
+    "name": "Lion Metal Works Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "LMAS",
+    "name": "Limas Indonesia Makmur Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LMPI",
+    "name": "Langgeng Makmur Industri Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LMSH",
+    "name": "Lionmesh Prima Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LPCK",
+    "name": "Lippo Cikarang Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "LPGI",
+    "name": "Lippo General Insurance Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LPIN",
+    "name": "Multi Prima Sejahtera Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LPKR",
+    "name": "Lippo Karawaci Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "LPLI",
+    "name": "Star Pacific Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LPPF",
+    "name": "Matahari Department Store Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "LPPS",
+    "name": "Lenox Pasifik Investama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LRNA",
+    "name": "Eka Sari Lorena Transport Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LSIP",
+    "name": "PP London Sumatra Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "LTLS",
+    "name": "Lautan Luas Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MAGP",
+    "name": "Multi Agro Gemilang Plantation",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MAIN",
+    "name": "Malindo Feedmill Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MAMI",
+    "name": "Mas Murni Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MAPI",
+    "name": "Mitra Adiperkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MASA",
+    "name": "Multistrada Arah Sarana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MAYA",
+    "name": "Bank Mayapada Internasional Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MBAP",
+    "name": "Mitrabara Adiperdana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MBSS",
+    "name": "Mitrabahtera Segara Sejati Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MBTO",
+    "name": "Martina Berto Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MCOR",
+    "name": "Bank China Construction Bank I",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MDIA",
+    "name": "Intermedia Capital Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MDKA",
+    "name": "Merdeka Copper Gold Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MDLN",
+    "name": "Modernland Realty Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MDRN",
+    "name": "Modern Internasional Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MEDC",
+    "name": "Medco Energi Internasional Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MEGA",
+    "name": "Bank Mega Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MERK",
+    "name": "Merck Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "META",
+    "name": "Nusantara Infrastructure Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MFIN",
+    "name": "Mandala Multifinance Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MFMI",
+    "name": "Multifiling Mitra Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MGNA",
+    "name": "Magna Investama Mandiri Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MICE",
+    "name": "Multi Indocitra Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MIDI",
+    "name": "Midi Utama Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MIKA",
+    "name": "Mitra Keluarga Karyasehat Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MIRA",
+    "name": "Mitra International Resources",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MITI",
+    "name": "Mitra Investindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MKPI",
+    "name": "Metropolitan Kentjana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MLBI",
+    "name": "Multi Bintang Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MLIA",
+    "name": "Mulia Industrindo Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MLPL",
+    "name": "Multipolar Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MLPT",
+    "name": "Multipolar Technology Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MMLP",
+    "name": "Mega Manunggal Property Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MNCN",
+    "name": "Media Nusantara Citra Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MPMX",
+    "name": "Mitra Pinasthika Mustika Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MPPA",
+    "name": "Matahari Putra Prima Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MRAT",
+    "name": "Mustika Ratu Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MREI",
+    "name": "Maskapai Reasuransi Indonesia",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MSKY",
+    "name": "MNC Sky Vision Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MTDL",
+    "name": "Metrodata Electronics Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MTFN",
+    "name": "Capitalinc Investment Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MTLA",
+    "name": "Metropolitan Land Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MTSM",
+    "name": "Metro Realty Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MYOH",
+    "name": "Samindo Resources Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MYOR",
+    "name": "Mayora Indah Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MYRX",
+    "name": "Hanson International Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MYTX",
+    "name": "Asia Pacific Investama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "NELY",
+    "name": "Pelayaran Nelly Dwi Putri Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NIKL",
+    "name": "Pelat Timah Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NIPS",
+    "name": "Nipress Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "NIRO",
+    "name": "City Retail Developments Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NISP",
+    "name": "Bank OCBC NISP Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "NOBU",
+    "name": "Bank Nationalnobu Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NRCA",
+    "name": "Nusa Raya Cipta Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "OCAP",
+    "name": "Onix Capital Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "OKAS",
+    "name": "Ancora Indonesia Resources Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "OMRE",
+    "name": "Indonesia Prima Property Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PADI",
+    "name": "Minna Padi Investama Sekuritas",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PALM",
+    "name": "Provident Investasi Bersama Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PANR",
+    "name": "Panorama Sentrawisata Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PANS",
+    "name": "Panin Sekuritas Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PBRX",
+    "name": "Pan Brothers Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PDES",
+    "name": "Destinasi Tirta Nusantara Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PEGE",
+    "name": "Panca Global Kapital Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PGAS",
+    "name": "Perusahaan Gas Negara Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PGLI",
+    "name": "Pembangunan Graha Lestari Inda",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PICO",
+    "name": "Pelangi Indah Canindo Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PJAA",
+    "name": "Pembangunan Jaya Ancol Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PKPK",
+    "name": "Perdana Karya Perkasa Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PLAS",
+    "name": "Polaris Investama Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PLIN",
+    "name": "Plaza Indonesia Realty Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PNBN",
+    "name": "Bank Pan Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PNBS",
+    "name": "Bank Panin Dubai Syariah Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PNIN",
+    "name": "Paninvest Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PNLF",
+    "name": "Panin Financial Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PNSE",
+    "name": "Pudjiadi & Sons Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "POLY",
+    "name": "Asia Pacific Fibers Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "POOL",
+    "name": "Pool Advista Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PPRO",
+    "name": "PP Properti Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PRAS",
+    "name": "Prima Alloy Steel Universal Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PSAB",
+    "name": "J Resources Asia Pasifik Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PSDN",
+    "name": "Prasidha Aneka Niaga Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PSKT",
+    "name": "Red Planet Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PTBA",
+    "name": "Bukit Asam Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PTIS",
+    "name": "Indo Straits Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PTPP",
+    "name": "PP (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PTRO",
+    "name": "Petrosea Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PTSN",
+    "name": "Sat Nusapersada Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PTSP",
+    "name": "Pioneerindo Gourmet Internatio",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PUDP",
+    "name": "Pudjiadi Prestige Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PWON",
+    "name": "Pakuwon Jati Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PYFA",
+    "name": "Pyridam Farma Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RAJA",
+    "name": "Rukun Raharja Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RALS",
+    "name": "Ramayana Lestari Sentosa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RANC",
+    "name": "Supra Boga Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RBMS",
+    "name": "Ristia Bintang Mahkotasejati T",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "RDTX",
+    "name": "Roda Vivatex Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RELI",
+    "name": "Reliance Sekuritas Indonesia T",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RICY",
+    "name": "Ricky Putra Globalindo Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RIGS",
+    "name": "Rig Tenders Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RIMO",
+    "name": "Rimo International Lestari Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "RODA",
+    "name": "Pikko Land Development Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ROTI",
+    "name": "Nippon Indosari Corpindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RUIS",
+    "name": "Radiant Utama Interinsco Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SAFE",
+    "name": "Steady Safe Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SAME",
+    "name": "Sarana Meditama Metropolitan T",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SCCO",
+    "name": "Supreme Cable Manufacturing &",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SCMA",
+    "name": "Surya Citra Media Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SCPI",
+    "name": "Organon Pharma Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SDMU",
+    "name": "Sidomulyo Selaras Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SDPC",
+    "name": "Millennium Pharmacon Internati",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SDRA",
+    "name": "Bank Woori Saudara Indonesia 1",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SGRO",
+    "name": "Sampoerna Agro Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SHID",
+    "name": "Hotel Sahid Jaya International",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SIDO",
+    "name": "Industri Jamu dan Farmasi Sido",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SILO",
+    "name": "Siloam International Hospitals",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SIMA",
+    "name": "Siwani Makmur Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SIMP",
+    "name": "Salim Ivomas Pratama Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SIPD",
+    "name": "Sreeya Sewu Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SKBM",
+    "name": "Sekar Bumi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SKLT",
+    "name": "Sekar Laut Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SKYB",
+    "name": "Northcliff Citranusa Indonesia",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SMAR",
+    "name": "Smart Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SMBR",
+    "name": "Semen Baturaja Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SMCB",
+    "name": "Solusi Bangun Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SMDM",
+    "name": "Suryamas Dutamakmur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SMDR",
+    "name": "Samudera Indonesia  Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SMGR",
+    "name": "Semen Indonesia (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SMMA",
+    "name": "Sinarmas Multiartha Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SMMT",
+    "name": "Golden Eagle Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SMRA",
+    "name": "Summarecon Agung Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SMRU",
+    "name": "SMR Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SMSM",
+    "name": "Selamat Sempurna Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SOCI",
+    "name": "Soechi Lines Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SONA",
+    "name": "Sona Topas Tourism Industry Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SPMA",
+    "name": "Suparma Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SQMI",
+    "name": "Wilton Makmur Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SRAJ",
+    "name": "Sejahteraraya Anugrahjaya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SRIL",
+    "name": "Sri Rejeki Isman Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SRSN",
+    "name": "Indo Acidatama Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SRTG",
+    "name": "Saratoga Investama Sedaya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SSIA",
+    "name": "Surya Semesta Internusa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SSMS",
+    "name": "Sawit Sumbermas Sarana Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SSTM",
+    "name": "Sunson Textile Manufacture Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "STAR",
+    "name": "Buana Artha Anugerah Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "STTP",
+    "name": "Siantar Top Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SUGI",
+    "name": "Sugih Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SULI",
+    "name": "SLJ Global Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SUPR",
+    "name": "Solusi Tunas Pratama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TALF",
+    "name": "Tunas Alfin Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TARA",
+    "name": "Agung Semesta Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TAXI",
+    "name": "Express Transindo Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TBIG",
+    "name": "Tower Bersama Infrastructure T",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TBLA",
+    "name": "Tunas Baru Lampung Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TBMS",
+    "name": "Tembaga Mulia Semanan Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TCID",
+    "name": "Mandom Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TELE",
+    "name": "Omni Inovasi Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TFCO",
+    "name": "Tifico Fiber Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TGKA",
+    "name": "Tigaraksa Satria Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TIFA",
+    "name": "KDB Tifa Finance Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TINS",
+    "name": "Timah Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TIRA",
+    "name": "Tira Austenite Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TIRT",
+    "name": "Tirta Mahakam Resources Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TKIM",
+    "name": "Pabrik Kertas Tjiwi Kimia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TLKM",
+    "name": "Telkom Indonesia (Persero) Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TMAS",
+    "name": "Temas Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TMPO",
+    "name": "Tempo Intimedia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TOBA",
+    "name": "TBS Energi Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TOTL",
+    "name": "Total Bangun Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TOTO",
+    "name": "Surya Toto Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TOWR",
+    "name": "Sarana Menara Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TPIA",
+    "name": "Chandra Asri Pacific Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TPMA",
+    "name": "Trans Power Marine Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TRAM",
+    "name": "Trada Alam Minera Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TRIL",
+    "name": "Triwira Insanlestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TRIM",
+    "name": "Trimegah Sekuritas Indonesia T",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TRIO",
+    "name": "Trikomsel Oke Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TRIS",
+    "name": "Trisula International Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TRST",
+    "name": "Trias Sentosa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TRUS",
+    "name": "Trust Finance Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TSPC",
+    "name": "Tempo Scan Pacific Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ULTJ",
+    "name": "Ultrajaya Milk Industry & Trad",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "UNIC",
+    "name": "Unggul Indah Cahaya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "UNIT",
+    "name": "Nusantara Inti Corpora Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "UNSP",
+    "name": "Bakrie Sumatera Plantations Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "UNTR",
+    "name": "United Tractors Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "UNVR",
+    "name": "Unilever Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "VICO",
+    "name": "Victoria Investama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "VINS",
+    "name": "Victoria Insurance Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "VIVA",
+    "name": "Visi Media Asia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "VOKS",
+    "name": "Voksel Electric Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "VRNA",
+    "name": "Mizuho Leasing Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WAPO",
+    "name": "Wahana Pronatural Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WEHA",
+    "name": "WEHA Transportasi Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WICO",
+    "name": "Wicaksana Overseas Internation",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "WIIM",
+    "name": "Wismilak Inti Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "WIKA",
+    "name": "Wijaya Karya (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WINS",
+    "name": "Wintermar Offshore Marine Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "WOMF",
+    "name": "Wahana Ottomitra Multiartha Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WSKT",
+    "name": "Waskita Karya (Persero) Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "WTON",
+    "name": "Wijaya Karya Beton Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "YPAS",
+    "name": "Yanaprima Hastapersada Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "YULE",
+    "name": "Yulie Sekuritas Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ZBRA",
+    "name": "Dosni Roha Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SHIP",
+    "name": "Sillo Maritime Perdana Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CASA",
+    "name": "Capital Financial Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DAYA",
+    "name": "Duta Intidaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DPUM",
+    "name": "Dua Putra Utama Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IDPR",
+    "name": "Indonesia Pondasi Raya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JGLE",
+    "name": "Graha Andrasentra Propertindo",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KINO",
+    "name": "Kino Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MARI",
+    "name": "Mahaka Radio Integra Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MKNT",
+    "name": "Mitra Komunikasi Nusantara Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MTRA",
+    "name": "Mitra Pemuda Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "OASA",
+    "name": "Maharaksa Biru Energi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "POWR",
+    "name": "Cikarang Listrindo Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "INCF",
+    "name": "Indo Komoditi Korpora Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "WSBP",
+    "name": "Waskita Beton Precast Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PBSA",
+    "name": "Paramita Bangun Sarana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PRDA",
+    "name": "Prodia Widyahusada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BOGA",
+    "name": "Bintang Oto Global Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BRIS",
+    "name": "Bank Syariah Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PORT",
+    "name": "Nusantara Pelabuhan Handal Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CARS",
+    "name": "Industri dan Perdagangan Bintr",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MINA",
+    "name": "Sanurhasta Mitra Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "FORZ",
+    "name": "Forza Land Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CLEO",
+    "name": "Sariguna Primatirta Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TAMU",
+    "name": "Pelayaran Tamarin Samudra Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CSIS",
+    "name": "Cahayasakti Investindo Sukses",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TGRA",
+    "name": "Terregra Asia Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "FIRE",
+    "name": "Alfa Energi Investama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TOPS",
+    "name": "Totalindo Eka Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KMTR",
+    "name": "Kirana Megatara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ARMY",
+    "name": "Armidian Karyatama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MAPB",
+    "name": "MAP Boga Adiperkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "WOOD",
+    "name": "Integra Indocabinet Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "HRTA",
+    "name": "Hartadinata Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MABA",
+    "name": "Marga Abhinaya Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "HOKI",
+    "name": "Buyung Poetra Sembada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MPOW",
+    "name": "Megapower Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MARK",
+    "name": "Mark Dynamics Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "NASA",
+    "name": "Andalan Perkasa Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MDKI",
+    "name": "Emdeki Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BELL",
+    "name": "Trisula Textile Industries Tbk",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KIOS",
+    "name": "Kioson Komersial Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GMFI",
+    "name": "Garuda Maintenance Facility Ae",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MTWI",
+    "name": "Malacca Trust Wuwungan Insuran",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ZINC",
+    "name": "Kapuas Prima Coal Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MCAS",
+    "name": "M Cash Integrasi Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PPRE",
+    "name": "PP Presisi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WEGE",
+    "name": "Wijaya Karya Bangunan Gedung T",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PSSI",
+    "name": "IMC Pelita Logistik Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MORA",
+    "name": "Mora Telematika Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DWGL",
+    "name": "Dwi Guna Laksana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PBID",
+    "name": "Panca Budi Idaman Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "JMAS",
+    "name": "Asuransi Jiwa Syariah Jasa Mit",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CAMP",
+    "name": "Campina Ice Cream Industry Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IPCM",
+    "name": "Jasa Armada Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PCAR",
+    "name": "Prima Cakrawala Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LCKM",
+    "name": "LCK Global Kedaton Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BOSS",
+    "name": "Borneo Olah Sarana Sukses Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "HELI",
+    "name": "Jaya Trishindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JSKY",
+    "name": "Sky Energy Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "INPS",
+    "name": "Indah Prakasa Sentosa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GHON",
+    "name": "Gihon Telekomunikasi Indonesia",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TDPM",
+    "name": "Tianrong Chemicals Industry Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "DFAM",
+    "name": "Dafam Property Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NICK",
+    "name": "Charnic Capital Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BTPS",
+    "name": "Bank BTPN Syariah Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SPTO",
+    "name": "Surya Pertiwi Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PRIM",
+    "name": "Royal Prima Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HEAL",
+    "name": "Medikaloka Hermina Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TRUK",
+    "name": "Guna Timur Raya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PZZA",
+    "name": "Sarimelati Kencana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TUGU",
+    "name": "Asuransi Tugu Pratama Indonesi",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MSIN",
+    "name": "MNC Digital Entertainment Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SWAT",
+    "name": "Sriwahana Adityakarta Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KPAL",
+    "name": "Steadfast Marine Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TNCA",
+    "name": "Trimuda Nuansa Citra Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MAPA",
+    "name": "Map Aktif Adiperkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "TCPI",
+    "name": "Transcoal Pacific Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IPCC",
+    "name": "Indonesia Kendaraan Terminal T",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RISE",
+    "name": "Jaya Sukses Makmur Sentosa Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BPTR",
+    "name": "Batavia Prosperindo Trans Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "POLL",
+    "name": "Pollux Properties Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "NFCX",
+    "name": "NFC Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MGRO",
+    "name": "Mahkota Group Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NUSA",
+    "name": "Sinergi Megah Internusa Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "FILM",
+    "name": "MD Entertainment Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ANDI",
+    "name": "Andira Agro Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LAND",
+    "name": "Trimitra Propertindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MOLI",
+    "name": "Madusari Murni Indah Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PANI",
+    "name": "Pantai Indah Kapuk Dua Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DIGI",
+    "name": "Arkadia Digital Media Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CITY",
+    "name": "Natura City Developments Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SAPX",
+    "name": "Satria Antaran Prima Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KPAS",
+    "name": "Cottonindo Ariesta Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SURE",
+    "name": "Super Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HKMU",
+    "name": "HK Metals Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MPRO",
+    "name": "Maha Properti Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DUCK",
+    "name": "Jaya Bersama Indo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "GOOD",
+    "name": "Garudafood Putra Putri Jaya Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SKRN",
+    "name": "Superkrane Mitra Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "YELO",
+    "name": "Yelooo Integra Datanet Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CAKK",
+    "name": "Cahayaputra Asa Keramik Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SATU",
+    "name": "Kota Satu Properti Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ZONE",
+    "name": "Mega Perintis Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PEHA",
+    "name": "Phapros Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FOOD",
+    "name": "Sentra Food Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BEEF",
+    "name": "Estika Tata Tiara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "POLI",
+    "name": "Pollux Hotels Group Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CLAY",
+    "name": "Citra Putra Realty Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "NATO",
+    "name": "Surya Permata Andalan Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JAYA",
+    "name": "Armada Berjaya Trans Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "COCO",
+    "name": "Wahana Interfood Nusantara Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MTPS",
+    "name": "Meta Epsi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CPRI",
+    "name": "Capri Nusa Satu Properti Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "HRME",
+    "name": "Menteng Heritage Realty Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "POSA",
+    "name": "Bliss Properti Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "JAST",
+    "name": "Jasnita Telekomindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FITT",
+    "name": "Hotel Fitra International Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BOLA",
+    "name": "Bali Bintang Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CCSI",
+    "name": "Communication Cable Systems In",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SFAN",
+    "name": "Surya Fajar Capital Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "POLU",
+    "name": "Golden Flower Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KJEN",
+    "name": "Krida Jaringan Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KAYU",
+    "name": "Darmi Bersaudara Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ITIC",
+    "name": "Indonesian Tobacco Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PAMG",
+    "name": "Bima Sakti Pertiwi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IPTV",
+    "name": "MNC Vision Networks Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BLUE",
+    "name": "Berkah Prima Perkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ENVY",
+    "name": "Envy Technologies Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "EAST",
+    "name": "Eastparc Hotel Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LIFE",
+    "name": "MSIG Life Insurance Indonesia",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FUJI",
+    "name": "Fuji Finance Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KOTA",
+    "name": "DMS Propertindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "INOV",
+    "name": "Inocycle Technology Group Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ARKA",
+    "name": "Arkha Jayanti Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SMKL",
+    "name": "Satyamitra Kemas Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HDIT",
+    "name": "Hensel Davest Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KEEN",
+    "name": "Kencana Energi Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BAPI",
+    "name": "Bhakti Agung Propertindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TFAS",
+    "name": "Telefast Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GGRP",
+    "name": "Gunung Raja Paksi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "OPMS",
+    "name": "Optima Prima Metal Sinergi Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NZIA",
+    "name": "Nusantara Almazia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SLIS",
+    "name": "Gaya Abadi Sempurna Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PURE",
+    "name": "Trinitan Metals and Minerals T",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IRRA",
+    "name": "Itama Ranoraya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DMMX",
+    "name": "Digital Mediatama Maxima Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SINI",
+    "name": "Singaraja Putra Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "WOWS",
+    "name": "Ginting Jaya Energi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ESIP",
+    "name": "Sinergi Inti Plastindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TEBE",
+    "name": "Dana Brata Luhur Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KEJU",
+    "name": "Mulia Boga Raya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PSGO",
+    "name": "Palma Serasih Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "AGAR",
+    "name": "Asia Sejahtera Mina Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IFSH",
+    "name": "Ifishdeco Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "REAL",
+    "name": "Repower Asia Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IFII",
+    "name": "Indonesia Fibreboard Industry",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PMJS",
+    "name": "Putra Mandiri Jembar Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "UCID",
+    "name": "Uni-Charm Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "GLVA",
+    "name": "Galva Technologies Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PGJO",
+    "name": "Tourindo Guide Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "AMAR",
+    "name": "Bank Amar Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CSRA",
+    "name": "Cisadane Sawit Raya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INDO",
+    "name": "Royalindo Investa Wijaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AMOR",
+    "name": "Ashmore Asset Management Indon",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TRIN",
+    "name": "Perintis Triniti Properti Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DMND",
+    "name": "Diamond Food Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PURA",
+    "name": "Putra Rajawali Kencana Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PTPW",
+    "name": "Pratama Widya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TAMA",
+    "name": "Lancartama Sejati Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IKAN",
+    "name": "Era Mandiri Cemerlang Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "AYLS",
+    "name": "Agro Yasa Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DADA",
+    "name": "Diamond Citra Propertindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ASPI",
+    "name": "Andalan Sakti Primaindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ESTA",
+    "name": "Esta Multi Usaha Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BESS",
+    "name": "Batulicin Nusantara Maritim Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CSMI",
+    "name": "Cipta Selera Murni Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BBSS",
+    "name": "Bumi Benowo Sukses Sejahtera T",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BHAT",
+    "name": "Bhakti Multi Artha Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CASH",
+    "name": "Cashlez Worldwide Indonesia Tb",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "TECH",
+    "name": "Indosterling Technomedia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "EPAC",
+    "name": "Megalestari Epack Sentosaraya",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "UANG",
+    "name": "Pakuan Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PGUN",
+    "name": "Pradiksi Gunatama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SOFA",
+    "name": "Boston Furniture Industries Tb",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "PPGL",
+    "name": "Prima Globalindo Logistik Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "TOYS",
+    "name": "Sunindo Adipersada Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SGER",
+    "name": "Sumber Global Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TRJA",
+    "name": "Transkon Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PNGO",
+    "name": "Pinago Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SCNP",
+    "name": "Selaras Citra Nusantara Perkas",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BBSI",
+    "name": "Krom Bank Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KMDS",
+    "name": "Kurniamitra Duta Sentosa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PURI",
+    "name": "Puri Global Sukses Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SOHO",
+    "name": "Soho Global Health Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HOMI",
+    "name": "Grand House Mulia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ROCK",
+    "name": "Rockfields Properti Indonesia",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ENZO",
+    "name": "Morenzo Abadi Perkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PLAN",
+    "name": "Planet Properindo Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "PTDU",
+    "name": "Djasa Ubersakti Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ATAP",
+    "name": "Trimitra Prawara Goldland Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "VICI",
+    "name": "Victoria Care Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PMMP",
+    "name": "Panca Mitra Multiperdana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WIFI",
+    "name": "Solusi Sinergi Digital Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FAPA",
+    "name": "FAP Agri Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DCII",
+    "name": "DCI Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KETR",
+    "name": "Ketrosden Triasmitra Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DGNS",
+    "name": "Diagnos Laboratorium Utama Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "UFOE",
+    "name": "Damai Sejahtera Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BANK",
+    "name": "Bank Aladin Syariah Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "WMUU",
+    "name": "Widodo Makmur Unggas Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "EDGE",
+    "name": "Indointernet Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "UNIQ",
+    "name": "Ulima Nitra Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BEBS",
+    "name": "Berkah Beton Sadaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SNLK",
+    "name": "Sunter Lakeside Hotel Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ZYRX",
+    "name": "Zyrexindo Mandiri Buana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LFLO",
+    "name": "Imago Mulia Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "FIMP",
+    "name": "Fimperkasa Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TAPG",
+    "name": "Triputra Agro Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "NPGF",
+    "name": "Nusa Palapa Gemilang Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LUCY",
+    "name": "Lima Dua Lima Tiga Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "ADCP",
+    "name": "Adhi Commuter Properti Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HOPE",
+    "name": "Harapan Duta Pertiwi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "MGLV",
+    "name": "Panca Anugrah Wisesa Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "TRUE",
+    "name": "Triniti Dinamik Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LABA",
+    "name": "Green Power Group Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ARCI",
+    "name": "Archi Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "IPAC",
+    "name": "Era Graharealty Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "MASB",
+    "name": "Bank Multiarta Sentosa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BMHS",
+    "name": "Bundamedik Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "FLMC",
+    "name": "Falmaco Nonwoven Industri Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "NICL",
+    "name": "PAM Mineral Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "UVCR",
+    "name": "Trimegah Karya Pratama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BUKA",
+    "name": "Bukalapak.com Tbk.",
+    "exchange": "IDX",
+    "board": "Ekonomi Baru",
+    "isActive": true
+  },
+  {
+    "symbol": "HAIS",
+    "name": "Hasnur Internasional Shipping",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "OILS",
+    "name": "Indo Oil Perkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GPSO",
+    "name": "Geoprima Solusi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MCOL",
+    "name": "Prima Andalan Mandiri Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RSGK",
+    "name": "Kedoya Adyaraya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RUNS",
+    "name": "Global Sukses Solusi Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "SBMA",
+    "name": "Surya Biru Murni Acetylene Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CMNT",
+    "name": "Cemindo Gemilang Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GTSI",
+    "name": "GTS Internasional Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IDEA",
+    "name": "Idea Indonesia Akademi Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "KUAS",
+    "name": "Ace Oldfields Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BOBA",
+    "name": "Formosa Ingredient Factory Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MTEL",
+    "name": "Dayamitra Telekomunikasi Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DEPO",
+    "name": "Caturkarda Depo Bangunan Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BINO",
+    "name": "Perma Plasindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CMRY",
+    "name": "Cisarua Mountain Dairy Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "WGSH",
+    "name": "Wira Global Solusi Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "TAYS",
+    "name": "Jaya Swarasa Agung Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WMPP",
+    "name": "Widodo Makmur Perkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "RMKE",
+    "name": "RMK Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "OBMD",
+    "name": "OBM Drilchem Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AVIA",
+    "name": "Avia Avian Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "IPPE",
+    "name": "Indo Pureco Pratama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "NASI",
+    "name": "Wahana Inti Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BSML",
+    "name": "Bintang Samudera Mandiri Lines",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DRMA",
+    "name": "Dharma Polimetal Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ADMR",
+    "name": "Adaro Minerals Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SEMA",
+    "name": "Semacom Integrated Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ASLC",
+    "name": "Autopedia Sukses Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NETV",
+    "name": "MDTV Media Technologies Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BAUT",
+    "name": "Mitra Angkasa Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ENAK",
+    "name": "Champ Resto Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NTBK",
+    "name": "Nusatama Berkah Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SMKM",
+    "name": "Sumber Mas Konstruksi Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "STAA",
+    "name": "Sumber Tani Agung Resources Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "NANO",
+    "name": "Nanotech Indonesia Global Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "BIKE",
+    "name": "Sepeda Bersama Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "WIRG",
+    "name": "WIR ASIA Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SICO",
+    "name": "Sigma Energy Compressindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GOTO",
+    "name": "GoTo Gojek Tokopedia Tbk.",
+    "exchange": "IDX",
+    "board": "Ekonomi Baru",
+    "isActive": true
+  },
+  {
+    "symbol": "TLDN",
+    "name": "Teladan Prima Agro Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MTMH",
+    "name": "Murni Sadar Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "WINR",
+    "name": "Winner Nusantara Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IBOS",
+    "name": "Indo Boga Sukses Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "OLIV",
+    "name": "Oscar Mitra Sukses Sejahtera T",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "ASHA",
+    "name": "Cilacap Samudera Fishing Indus",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "SWID",
+    "name": "Saraswanti Indoland Developmen",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TRGU",
+    "name": "Cerestar Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ARKO",
+    "name": "Arkora Hydro Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CHEM",
+    "name": "Chemstar Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DEWI",
+    "name": "Dewi Shri Farmindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AXIO",
+    "name": "Tera Data Indonusa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KRYA",
+    "name": "Bangun Karya Perkasa Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HATM",
+    "name": "Habco Trans Maritima Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RCCC",
+    "name": "Utama Radar Cahaya Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "GULA",
+    "name": "Aman Agrindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JARR",
+    "name": "Jhonlin Agro Raya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "AMMS",
+    "name": "Agung Menjangan Mas Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "RAFI",
+    "name": "Sari Kreasi Boga Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KKES",
+    "name": "Kusuma Kemindo Sentosa Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ELPI",
+    "name": "Pelayaran Nasional Ekalya Purn",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "EURO",
+    "name": "Estee Gold Feet Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "KLIN",
+    "name": "Klinko Karya Imaji Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "TOOL",
+    "name": "Rohartindo Nusantara Luas Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BUAH",
+    "name": "Segar Kumala Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CRAB",
+    "name": "Toba Surimi Industries Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MEDS",
+    "name": "Hetzer Medical Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "COAL",
+    "name": "Black Diamond Resources Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PRAY",
+    "name": "Famon Awal Bros Sedaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CBUT",
+    "name": "Citra Borneo Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "BELI",
+    "name": "Global Digital Niaga Tbk.",
+    "exchange": "IDX",
+    "board": "Ekonomi Baru",
+    "isActive": true
+  },
+  {
+    "symbol": "MKTR",
+    "name": "Menthobi Karyatama Raya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "OMED",
+    "name": "Jayamas Medica Industri Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BSBK",
+    "name": "Wulandari Bangun Laksana Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PDPP",
+    "name": "Primadaya Plastisindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KDTN",
+    "name": "Puri Sentul Permai Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ZATA",
+    "name": "Bersama Zatta Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "NINE",
+    "name": "Techno9 Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "MMIX",
+    "name": "Multi Medika Internasional Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PADA",
+    "name": "Personel Alih Daya Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "ISAP",
+    "name": "Isra Presisi Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "VTNY",
+    "name": "Venteny Fortuna International",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SOUL",
+    "name": "Mitra Tirta Buwana Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "ELIT",
+    "name": "Data Sinergitama Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BEER",
+    "name": "Jobubu Jarum Minahasa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CBPE",
+    "name": "Citra Buana Prasida Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SUNI",
+    "name": "Sunindo Pratama Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CBRE",
+    "name": "Cakra Buana Resources Energi T",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "WINE",
+    "name": "Hatten Bali Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BMBL",
+    "name": "Lavender Bina Cendikia Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "PEVE",
+    "name": "Penta Valent Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LAJU",
+    "name": "Jasa Berdikari Logistics Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "FWCT",
+    "name": "Wijaya Cahaya Timber Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NAYZ",
+    "name": "Hassana Boga Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "IRSX",
+    "name": "Aviana Sinar Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "PACK",
+    "name": "Abadi Nusantara Hijau Investam",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "VAST",
+    "name": "Vastland Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CHIP",
+    "name": "Pelita Teknologi Global Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "HALO",
+    "name": "Haloni Jane Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KING",
+    "name": "Hoffmen Cleanindo Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "PGEO",
+    "name": "Pertamina Geothermal Energy Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "FUTR",
+    "name": "Lini Imaji Kreasi Ekosistem Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HILL",
+    "name": "Hillcon Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BDKR",
+    "name": "Berdikari Pondasi Perkasa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "PTMP",
+    "name": "Mitra Pack Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SAGE",
+    "name": "Saptausaha Gemilangindah Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "TRON",
+    "name": "Teknologi Karya Digital Nusa T",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CUAN",
+    "name": "Petrindo Jaya Kreasi Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "NSSS",
+    "name": "Nusantara Sawit Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GTRA",
+    "name": "Grahaprima Suksesmandiri Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HAJJ",
+    "name": "Arsy Buana Travelindo Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "PIPA",
+    "name": "Multi Makmur Lemindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "NCKL",
+    "name": "Trimegah Bangun Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MENN",
+    "name": "Menn Teknologi Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "AWAN",
+    "name": "Era Digital Media Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MBMA",
+    "name": "Merdeka Battery Materials Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RAAM",
+    "name": "Tripar Multivision Plus Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "DOOH",
+    "name": "Era Media Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "JATI",
+    "name": "Informasi Teknologi Indonesia",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TYRE",
+    "name": "King Tire Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MPXL",
+    "name": "MPX Logistics International Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SMIL",
+    "name": "Sarana Mitra Luas Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KLAS",
+    "name": "Pelayaran Kurnia Lautan Semest",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MAXI",
+    "name": "Maxindo Karya Anugerah Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "VKTR",
+    "name": "VKTR Teknologi Mobilitas Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "RELF",
+    "name": "Graha Mitra Asia Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "AMMN",
+    "name": "Amman Mineral Internasional Tb",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CRSN",
+    "name": "Carsurin Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GRPM",
+    "name": "Graha Prima Mentari Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "WIDI",
+    "name": "Widiant Jaya Krenindo Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "TGUK",
+    "name": "Platinum Wahab Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "INET",
+    "name": "Sinergi Inti Andalan Prima Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MAHA",
+    "name": "Mandiri Herindo Adiperkasa Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RMKO",
+    "name": "Royaltama Mulia Kontraktorindo",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CNMA",
+    "name": "Nusantara Sejahtera Raya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "FOLK",
+    "name": "Multi Garam Utama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HBAT",
+    "name": "Minahasa Membangun Hebat Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "GRIA",
+    "name": "Ingria Pratama Capitalindo Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PPRI",
+    "name": "Paperocks Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ERAL",
+    "name": "Sinar Eka Selaras Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CYBR",
+    "name": "ITSEC Asia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MUTU",
+    "name": "Mutuagung Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LMAX",
+    "name": "Lupromax Pelumas Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "HUMI",
+    "name": "Humpuss Maritim Internasional",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MSIE",
+    "name": "Multisarana Intan Eduka Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "RSCH",
+    "name": "Charlie Hospital Semarang Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BABY",
+    "name": "Multitrend Indo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AEGS",
+    "name": "Anugerah Spareparts Sejahtera",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "IOTF",
+    "name": "Sumber Sinergi Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KOCI",
+    "name": "Kokoh Exa Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PTPS",
+    "name": "Pulau Subur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BREN",
+    "name": "Barito Renewables Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "STRK",
+    "name": "Lovina Beach Brewery Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "KOKA",
+    "name": "Koka Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "LOPI",
+    "name": "Logisticsplus International Tb",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "UDNG",
+    "name": "Agro Bahari Nusantara Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "RGAS",
+    "name": "Kian Santang Muliatama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MSTI",
+    "name": "Mastersystem Infotama Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "IKPM",
+    "name": "Ikapharmindo Putramas Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AYAM",
+    "name": "Janu Putra Sejahtera Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SURI",
+    "name": "Maja Agung Latexindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ASLI",
+    "name": "Asri Karya Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CGAS",
+    "name": "Citra Nusantara Gemilang Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NICE",
+    "name": "Adhi Kartiko Pratama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MSJA",
+    "name": "Multi Spunindo Jaya Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SMLE",
+    "name": "Sinergi Multi Lestarindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ACRO",
+    "name": "Samcro Hyosung Adilestari Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MANG",
+    "name": "Manggung Polahraya Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "GRPH",
+    "name": "Griptha Putra Persada Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SMGA",
+    "name": "Sumber Mineral Global Abadi Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "UNTD",
+    "name": "Terang Dunia Internusa Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "TOSK",
+    "name": "Topindo Solusi Komunika Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MPIX",
+    "name": "Mitra Pedagang Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ALII",
+    "name": "Ancara Logistics Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MKAP",
+    "name": "Multikarya Asia Pasifik Raya T",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MEJA",
+    "name": "Harta Djaya Karya Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "LIVE",
+    "name": "Homeco Victoria Makmur Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HYGN",
+    "name": "Ecocare Indo Pasifik Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BAIK",
+    "name": "Bersama Mencapai Puncak Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "VISI",
+    "name": "Satu Visi Putra Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AREA",
+    "name": "Dunia Virtual Online Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "MHKI",
+    "name": "Multi Hanna Kreasindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "ATLA",
+    "name": "Atlantis Subsea Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DATA",
+    "name": "Remala Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SOLA",
+    "name": "Xolare RCR Energy Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BATR",
+    "name": "Benteng Api Technic Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SPRE",
+    "name": "Soraya Berjaya Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Akselerasi",
+    "isActive": true
+  },
+  {
+    "symbol": "PART",
+    "name": "Cipta Perdana Lancar Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "GOLF",
+    "name": "Intra Golflink Resorts Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "ISEA",
+    "name": "Indo American Seafoods Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BLES",
+    "name": "Superior Prima Sukses Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "GUNA",
+    "name": "Gunanusa Eramandiri Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LABS",
+    "name": "UBC Medical Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DOSS",
+    "name": "Global Sukses Digital Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NEST",
+    "name": "Esta Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "PTMR",
+    "name": "Master Print Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "VERN",
+    "name": "Verona Indah Pictures Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DAAZ",
+    "name": "Daaz Bara Lestari Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "BOAT",
+    "name": "Newport Marine Services Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "NAIK",
+    "name": "Adiwarna Anugerah Abadi Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AADI",
+    "name": "Adaro Andalan Indonesia Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "MDIY",
+    "name": "Daya Intiguna Yasa Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "KSIX",
+    "name": "Kentanix Supra International T",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "RATU",
+    "name": "Raharja Energi Cepu Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "YOII",
+    "name": "Asuransi Digital Bersama Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "HGII",
+    "name": "Hero Global Investment Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "BRRC",
+    "name": "Raja Roti Cemerlang Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "DGWG",
+    "name": "Delta Giri Wacana Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "CBDK",
+    "name": "Bangun Kosambi Sukses Tbk.",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "OBAT",
+    "name": "Brigit Biofarmaka Teknologi Tb",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SOSS",
+    "name": "Shield On Service Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "DEAL",
+    "name": "Dewata Freightinternational Tb",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "POLA",
+    "name": "Pool Advista Finance Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "DIVA",
+    "name": "Distribusi Voucher Nusantara T",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "LUCK",
+    "name": "Sentral Mitra Informatika Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "URBN",
+    "name": "Urban Jakarta Propertindo Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SOTS",
+    "name": "Satria Mega Kencana Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "AMAN",
+    "name": "Makmur Berkah Amanda Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "CARE",
+    "name": "Metro Healthcare Indonesia Tbk",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  },
+  {
+    "symbol": "SAMF",
+    "name": "Saraswanti Anugerah Makmur Tbk",
+    "exchange": "IDX",
+    "board": "Utama",
+    "isActive": true
+  },
+  {
+    "symbol": "SBAT",
+    "name": "Sejahtera Bintang Abadi Textil",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "KBAG",
+    "name": "Karya Bersama Anugerah Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "CBMF",
+    "name": "Cahaya Bintang Medan Tbk.",
+    "exchange": "IDX",
+    "board": "Pemantauan Khusus",
+    "isActive": true
+  },
+  {
+    "symbol": "RONY",
+    "name": "Aesler Grup Internasional Tbk.",
+    "exchange": "IDX",
+    "board": "Pengembangan",
+    "isActive": true
+  }
+]

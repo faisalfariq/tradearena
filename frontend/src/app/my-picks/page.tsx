@@ -238,7 +238,7 @@ export default function MyPicksPage() {
 
   const filteredStocks = useMemo(() => {
     const available = stocks.filter((s) => !currentPickedStockIds.has(s.id));
-    if (!stockSearchQuery.trim()) return available;
+    if (!stockSearchQuery.trim()) return available.slice(0, 100);
     const q = stockSearchQuery.toLowerCase();
     return available.filter(
       (s) => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)

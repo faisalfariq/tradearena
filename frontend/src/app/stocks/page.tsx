@@ -12,6 +12,9 @@ import {
   X,
   Loader2,
   ExternalLink,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface Stock {
@@ -32,6 +35,14 @@ export default function StocksPage() {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ACTIVE');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sync state
+  const [syncingIdx, setSyncingIdx] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 24;
 
   // Form states
   const [symbol, setSymbol] = useState('');
@@ -69,6 +80,41 @@ export default function StocksPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [fetchStocks]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, activeFilter]);
+
+  const handleSyncIdx = async () => {
+    if (!token) return;
+    setSyncingIdx(true);
+    setSyncMessage(null);
+    try {
+      const res = await fetch(`${API_BASE}/stocks/sync-idx`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal menyinkronkan data emiten IDX');
+      }
+      setSyncMessage({
+        type: 'success',
+        text: data.message || `Berhasil menyinkronkan ${data.total || 951} emiten saham IDX!`,
+      });
+      fetchStocks();
+    } catch (err: any) {
+      setSyncMessage({
+        type: 'error',
+        text: err.message || 'Terjadi kesalahan saat menyinkronkan emiten',
+      });
+    } finally {
+      setSyncingIdx(false);
+    }
+  };
 
   const handleCreateStock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +158,9 @@ export default function StocksPage() {
     }
   };
 
+  const totalPages = Math.ceil(stocks.length / pageSize) || 1;
+  const paginatedStocks = stocks.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header */}
@@ -129,26 +178,62 @@ export default function StocksPage() {
           </p>
         </div>
 
-        {user && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-sm font-semibold transition-all shadow-lg shadow-blue-600/20"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Emiten Baru</span>
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {user?.role === 'ADMIN' && (
+            <button
+              onClick={handleSyncIdx}
+              disabled={syncingIdx}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-cyan-400 hover:text-cyan-300 text-sm font-semibold transition-all shadow-md disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${syncingIdx ? 'animate-spin' : ''}`} />
+              <span>{syncingIdx ? 'Menyinkronkan IDX...' : 'Sync Emiten IDX Otomatis'}</span>
+            </button>
+          )}
+
+          {user && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-sm font-semibold transition-all shadow-lg shadow-blue-600/20"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Emiten Baru</span>
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* Sync Message Alert */}
+      {syncMessage && (
+        <div
+          className={`p-4 rounded-2xl mb-6 text-xs flex items-center justify-between shadow-lg ${
+            syncMessage.type === 'success'
+              ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+              : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            {syncMessage.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            )}
+            <span className="font-semibold">{syncMessage.text}</span>
+          </div>
+          <button onClick={() => setSyncMessage(null)} className="opacity-70 hover:opacity-100">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Filters & Search */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-4">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari berdasarkan ticker (misal: BBCA) atau nama perusahaan..."
+            placeholder="Cari berdasarkan ticker (misal: BBCA, ASII) atau nama perusahaan..."
             className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-100 text-sm placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
           />
         </div>
@@ -170,6 +255,18 @@ export default function StocksPage() {
         </div>
       </div>
 
+      {/* Stock count header */}
+      <div className="flex items-center justify-between text-xs text-slate-400 mb-4 px-1">
+        <span>
+          Total: <strong className="text-white font-mono">{stocks.length}</strong> emiten IDX terdaftar
+        </span>
+        {totalPages > 1 && (
+          <span>
+            Halaman {currentPage} dari {totalPages}
+          </span>
+        )}
+      </div>
+
       {/* Stocks Grid */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
@@ -187,52 +284,96 @@ export default function StocksPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {stocks.map((stock) => (
-            <div
-              key={stock.id}
-              className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all hover:translate-y-[-2px] group"
-            >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center">
-                    <span className="font-extrabold text-sm text-cyan-400 font-mono">
-                      {stock.symbol}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                      {stock.exchange}
-                    </span>
-                    <span
-                      className={`ml-1.5 inline-block w-1.5 h-1.5 rounded-full ${
-                        stock.isActive ? 'bg-emerald-400' : 'bg-rose-400'
-                      }`}
-                    />
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {paginatedStocks.map((stock) => (
+              <div
+                key={stock.id}
+                className="glass-panel p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all hover:translate-y-[-2px] group"
+              >
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center">
+                      <span className="font-extrabold text-sm text-cyan-400 font-mono">
+                        {stock.symbol}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                        {stock.exchange}
+                      </span>
+                      <span
+                        className={`ml-1.5 inline-block w-1.5 h-1.5 rounded-full ${
+                          stock.isActive ? 'bg-emerald-400' : 'bg-rose-400'
+                        }`}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <h4 className="text-sm font-semibold text-slate-100 group-hover:text-blue-400 transition-colors line-clamp-1">
-                {stock.name}
-              </h4>
-              <p className="text-[11px] text-slate-500 font-mono mt-1">
-                ID: {stock.id.substring(0, 8)}...
+                <h4 className="text-sm font-semibold text-slate-100 group-hover:text-blue-400 transition-colors line-clamp-1" title={stock.name}>
+                  {stock.name}
+                </h4>
+                <p className="text-[11px] text-slate-500 font-mono mt-1">
+                  ID: {stock.id.substring(0, 8)}...
+                </p>
+
+                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                  <span>Status:</span>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      stock.isActive ? 'text-emerald-400' : 'text-slate-500'
+                    }`}
+                  >
+                    {stock.isActive ? 'Siap Dipilih' : 'Non-aktif'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-800 pt-6">
+              <p className="text-xs text-slate-400">
+                Menampilkan{' '}
+                <span className="font-semibold text-slate-200">
+                  {(currentPage - 1) * pageSize + 1}
+                </span>{' '}
+                –{' '}
+                <span className="font-semibold text-slate-200">
+                  {Math.min(currentPage * pageSize, stocks.length)}
+                </span>{' '}
+                dari{' '}
+                <span className="font-semibold text-slate-200">{stocks.length}</span> emiten
               </p>
 
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                <span>Status:</span>
-                <span
-                  className={`text-[11px] font-semibold ${
-                    stock.isActive ? 'text-emerald-400' : 'text-slate-500'
-                  }`}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
-                  {stock.isActive ? 'Siap Dipilih' : 'Non-aktif'}
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Sebelumnya</span>
+                </button>
+
+                <span className="text-xs text-slate-400 px-2 font-mono">
+                  {currentPage} / {totalPages}
                 </span>
+
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <span>Berikutnya</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* Modal Tambah Saham */}

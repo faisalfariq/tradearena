@@ -99,4 +99,20 @@ export class StocksController {
   async delete(@Param('id') id: string) {
     return this.stocksService.delete(id);
   }
+
+  @Post('sync-idx')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Sinkronisasi seluruh daftar master emiten IDX resmi (~950+ saham aktif)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Daftar emiten IDX berhasil disinkronkan ke database',
+  })
+  async syncIdxStocks() {
+    return this.stocksService.syncIdxStocks();
+  }
 }
