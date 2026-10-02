@@ -286,35 +286,63 @@ export class ParticipantsService {
       throw new NotFoundException(`Pengguna tidak ditemukan`);
     }
 
-    // Find or create participant for this user
+    // Find or create participant for this user (case-insensitive email matching)
     let participant = await this.prisma.participant.findFirst({
       where: {
-        OR: [{ userId: user.id }, { email: user.email }],
+        OR: [
+          { userId: user.id },
+          ...(user.email ? [{ email: { equals: user.email.trim(), mode: 'insensitive' as const } }] : []),
+        ],
       },
     });
 
     if (!participant) {
-      participant = await this.prisma.participant.create({
-        data: {
-          name: user.name,
-          email: user.email,
-          userId: user.id,
-        },
-      });
-    } else if (!participant.userId) {
-      participant = await this.prisma.participant.update({
-        where: { id: participant.id },
-        data: { userId: user.id },
-      });
+      const safeName = user.name?.trim() || user.email?.split('@')[0] || 'Peserta';
+      try {
+        participant = await this.prisma.participant.create({
+          data: {
+            name: safeName,
+            email: user.email?.toLowerCase().trim() || null,
+            userId: user.id,
+          },
+        });
+      } catch {
+        participant = await this.prisma.participant.findFirst({
+          where: {
+            OR: [
+              { userId: user.id },
+              ...(user.email ? [{ email: { equals: user.email.trim(), mode: 'insensitive' as const } }] : []),
+            ],
+          },
+        });
+      }
+    } else if (!participant.userId || participant.userId !== user.id) {
+      try {
+        await this.prisma.participant.updateMany({
+          where: { userId: user.id, id: { not: participant.id } },
+          data: { userId: null },
+        });
+        participant = await this.prisma.participant.update({
+          where: { id: participant.id },
+          data: { userId: user.id },
+        });
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!participant) {
+      throw new NotFoundException('Gagal menyiapkan profil peserta');
     }
 
     // Check existing membership
-    const existing = await this.prisma.tournamentParticipant.findUnique({
+    const existing = await this.prisma.tournamentParticipant.findFirst({
       where: {
-        tournamentId_participantId: {
-          tournamentId,
-          participantId: participant.id,
-        },
+        tournamentId,
+        OR: [
+          { participantId: participant.id },
+          { userId: user.id },
+        ],
       },
     });
 
@@ -379,20 +407,20 @@ export class ParticipantsService {
 
     const participant = await this.prisma.participant.findFirst({
       where: {
-        OR: [{ userId: user.id }, { email: user.email }],
+        OR: [
+          { userId: user.id },
+          ...(user.email ? [{ email: { equals: user.email.trim(), mode: 'insensitive' as const } }] : []),
+        ],
       },
     });
 
-    if (!participant) {
-      return { applied: false, status: null };
-    }
-
-    const membership = await this.prisma.tournamentParticipant.findUnique({
+    const membership = await this.prisma.tournamentParticipant.findFirst({
       where: {
-        tournamentId_participantId: {
-          tournamentId,
-          participantId: participant.id,
-        },
+        tournamentId,
+        OR: [
+          ...(participant ? [{ participantId: participant.id }] : []),
+          { userId: user.id },
+        ],
       },
     });
 
@@ -404,7 +432,7 @@ export class ParticipantsService {
       applied: true,
       status: membership.status,
       membershipId: membership.id,
-      participantId: participant.id,
+      participantId: membership.participantId,
       registeredAt: membership.registeredAt,
       reviewedAt: membership.reviewedAt,
       reviewNotes: membership.reviewNotes,

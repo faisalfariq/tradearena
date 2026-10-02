@@ -312,38 +312,89 @@ export class PicksService {
   }
 
   async resolveParticipantForUser(userId: string) {
+    // 1. Check by userId
     let participant = await this.prisma.participant.findFirst({
       where: {
         OR: [{ userId }, { user: { id: userId } }],
       },
     });
 
-    if (!participant) {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (!user) {
-        throw new NotFoundException('Pengguna tidak ditemukan');
-      }
+    if (participant) {
+      return participant;
+    }
 
+    // 2. Lookup the user
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('Pengguna tidak ditemukan');
+    }
+
+    // 3. Search participant by email (case-insensitive)
+    if (user.email) {
       participant = await this.prisma.participant.findFirst({
-        where: { email: user.email },
+        where: {
+          email: { equals: user.email.trim(), mode: 'insensitive' },
+        },
       });
+    }
 
-      if (participant) {
-        participant = await this.prisma.participant.update({
-          where: { id: participant.id },
-          data: { userId: user.id },
-        });
-      } else {
-        participant = await this.prisma.participant.create({
-          data: {
-            name: user.name,
-            email: user.email,
-            userId: user.id,
-          },
-        });
+    // 4. Also check if user is already in any tournament participant record
+    if (!participant) {
+      const tp = await this.prisma.tournamentParticipant.findFirst({
+        where: { userId: user.id },
+        include: { participant: true },
+      });
+      if (tp?.participant) {
+        participant = tp.participant;
       }
+    }
+
+    // 5. If existing participant found, safely link userId without conflict
+    if (participant) {
+      if (participant.userId !== user.id) {
+        try {
+          // Unlink any other participant having this userId
+          await this.prisma.participant.updateMany({
+            where: { userId: user.id, id: { not: participant.id } },
+            data: { userId: null },
+          });
+          participant = await this.prisma.participant.update({
+            where: { id: participant.id },
+            data: { userId: user.id },
+          });
+        } catch (e) {
+          console.warn('[resolveParticipantForUser] Error linking userId:', (e as Error).message);
+        }
+      }
+      return participant;
+    }
+
+    // 6. Otherwise create a participant for this user with safe non-null name
+    try {
+      const safeName = user.name?.trim() || user.email?.split('@')[0] || 'Peserta';
+      participant = await this.prisma.participant.create({
+        data: {
+          name: safeName,
+          email: user.email?.toLowerCase().trim() || null,
+          userId: user.id,
+        },
+      });
+    } catch (e) {
+      console.warn('[resolveParticipantForUser] Error creating participant:', (e as Error).message);
+      participant = await this.prisma.participant.findFirst({
+        where: {
+          OR: [
+            { userId: user.id },
+            { email: { equals: user.email, mode: 'insensitive' } },
+          ],
+        },
+      });
+    }
+
+    if (!participant) {
+      throw new NotFoundException('Gagal menyiapkan profil peserta untuk pengguna');
     }
 
     return participant;
@@ -366,7 +417,7 @@ export class PicksService {
 
     const participant = await this.resolveParticipantForUser(userId);
 
-    const membership = await this.prisma.tournamentParticipant.findUnique({
+    let membership = await this.prisma.tournamentParticipant.findUnique({
       where: {
         tournamentId_participantId: {
           tournamentId,
@@ -374,6 +425,26 @@ export class PicksService {
         },
       },
     });
+
+    if (!membership) {
+      membership = await this.prisma.tournamentParticipant.findFirst({
+        where: {
+          tournamentId,
+          userId,
+        },
+      });
+      // Heal the linkage if needed
+      if (membership && membership.participantId !== participant.id) {
+        try {
+          await this.prisma.tournamentParticipant.update({
+            where: { id: membership.id },
+            data: { participantId: participant.id },
+          });
+        } catch {
+          // ignore
+        }
+      }
+    }
 
     const timeInfo = this.getWibTimeInfo(tradingDate, tournament);
     const dateObj = new Date(`${timeInfo.dateStr}T00:00:00.000Z`);
@@ -703,54 +774,85 @@ export class PicksService {
   }
 
   async getMyActiveTournamentsSummary(userId: string) {
-    const participant = await this.resolveParticipantForUser(userId);
-    const memberships = await this.prisma.tournamentParticipant.findMany({
-      where: {
-        participantId: participant.id,
-        status: 'APPROVED',
-      },
-      include: {
-        tournament: {
-          include: { rules: true },
+    try {
+      const participant = await this.resolveParticipantForUser(userId);
+      if (!participant) {
+        return [];
+      }
+
+      const memberships = await this.prisma.tournamentParticipant.findMany({
+        where: {
+          OR: [
+            { participantId: participant.id },
+            { userId },
+          ],
+          status: 'APPROVED',
         },
-      },
-      orderBy: { tournament: { startDate: 'desc' } },
-    });
-
-    const timeInfo = this.getWibTimeInfo();
-    const todayObj = new Date(`${timeInfo.todayWib}T00:00:00.000Z`);
-
-    const result = await Promise.all(
-      memberships.map(async (m) => {
-        const todayPick = await this.prisma.stockPick.findFirst({
-          where: {
-            tournamentId: m.tournamentId,
-            participantId: participant.id,
-            tradingDate: todayObj,
+        include: {
+          tournament: {
+            include: { rules: true },
           },
-          include: {
-            stock: true,
-            evaluations: true,
-          },
-        });
+        },
+        orderBy: { tournament: { startDate: 'desc' } },
+      });
 
-        return {
-          tournamentId: m.tournament.id,
-          tournamentName: m.tournament.name,
-          tournamentStatus: m.tournament.status,
-          startDate: m.tournament.startDate,
-          endDate: m.tournament.endDate,
-          rules: m.tournament.rules,
-          joinedAt: m.joinedAt,
-          todayPick,
-          todayWib: timeInfo.todayWib,
-          timeWib: timeInfo.timeWib,
-          isLocked: timeInfo.isLocked,
-        };
-      }),
-    );
+      const timeInfo = this.getWibTimeInfo();
+      const todayObj = new Date(`${timeInfo.todayWib}T00:00:00.000Z`);
 
-    return result;
+      const validMemberships = memberships.filter((m) => m.tournament != null);
+
+      const result = await Promise.all(
+        validMemberships.map(async (m) => {
+          let todayPick: any = null;
+          let todayPicks: any[] = [];
+          try {
+            todayPicks = await this.prisma.stockPick.findMany({
+              where: {
+                tournamentId: m.tournamentId,
+                participantId: participant.id,
+                tradingDate: todayObj,
+              },
+              include: {
+                stock: true,
+                evaluations: true,
+              },
+              orderBy: { createdAt: 'asc' },
+            });
+            todayPick = todayPicks[0] || null;
+          } catch (err) {
+            console.error('[getMyActiveTournamentsSummary] Error querying today picks:', err);
+          }
+
+          const tourneyTimeInfo = this.getWibTimeInfo(undefined, m.tournament);
+
+          return {
+            tournamentId: m.tournament.id,
+            tournamentName: m.tournament.name,
+            tournamentStatus: m.tournament.status,
+            startDate: m.tournament.startDate,
+            endDate: m.tournament.endDate,
+            completionType: m.tournament.completionType,
+            targetPoints: m.tournament.targetPoints ? Number(m.tournament.targetPoints) : null,
+            minPicksPerDay: m.tournament.minPicksPerDay ?? 2,
+            maxPicksPerDay: m.tournament.maxPicksPerDay ?? 3,
+            pickWindowStart: m.tournament.pickWindowStart || '17:00',
+            pickWindowEnd: m.tournament.pickWindowEnd || '21:00',
+            rules: m.tournament.rules,
+            joinedAt: m.joinedAt,
+            todayPick,
+            todayPicks,
+            todayWib: tourneyTimeInfo.todayWib,
+            timeWib: tourneyTimeInfo.timeWib,
+            isLocked: tourneyTimeInfo.isLocked,
+          };
+        }),
+      );
+
+      return result;
+    } catch (err: any) {
+      console.error('[getMyActiveTournamentsSummary] Fatal error:', err);
+      return [];
+    }
   }
 }
 

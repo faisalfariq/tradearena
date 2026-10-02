@@ -126,7 +126,7 @@ export default function MyPicksPage() {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      const timeStr = new Intl.DateTimeFormat('id-ID', {
+      const timeStr = new Intl.DateTimeFormat('en-GB', {
         timeZone: 'Asia/Jakarta',
         hour: '2-digit',
         minute: '2-digit',
@@ -280,7 +280,7 @@ export default function MyPicksPage() {
   // Determine current market phase for Evening Pick Window (17:00 - 21:00 WIB)
   const marketPhase = useMemo(() => {
     if (!currentWibTime) return { label: 'Memuat...', type: 'neutral', icon: Clock, description: '' };
-    const timeMatch = currentWibTime.match(/(\d{2}):(\d{2})/);
+    const timeMatch = currentWibTime.match(/(\d{2})[:.](\d{2})/);
     if (!timeMatch) return { label: 'Memuat...', type: 'neutral', icon: Clock, description: '' };
     const h = parseInt(timeMatch[1], 10);
     const m = parseInt(timeMatch[2], 10);
