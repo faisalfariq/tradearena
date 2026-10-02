@@ -31,6 +31,8 @@ import {
   Plus,
   Trash2,
   Info,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 
 interface Stock {
@@ -107,9 +109,35 @@ export default function MyPicksPage() {
   // Form states
   const [stockSearchQuery, setStockSearchQuery] = useState('');
   const [selectedStockId, setSelectedStockId] = useState('');
+  const [isStockDropdownOpen, setIsStockDropdownOpen] = useState(false);
+  const stockDropdownRef = React.useRef<HTMLDivElement>(null);
+  const stockSearchInputRef = React.useRef<HTMLInputElement>(null);
   const [submittingPick, setSubmittingPick] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Close combobox on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        stockDropdownRef.current &&
+        !stockDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsStockDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Auto-focus search input inside combobox when opened
+  useEffect(() => {
+    if (isStockDropdownOpen && stockSearchInputRef.current) {
+      setTimeout(() => {
+        stockSearchInputRef.current?.focus();
+      }, 50);
+    }
+  }, [isStockDropdownOpen]);
 
   // Real-time WIB Clock
   const [currentWibTime, setCurrentWibTime] = useState<string>('');
@@ -238,21 +266,22 @@ export default function MyPicksPage() {
 
   const filteredStocks = useMemo(() => {
     const available = stocks.filter((s) => !currentPickedStockIds.has(s.id));
-    if (!stockSearchQuery.trim()) return available.slice(0, 100);
-    const q = stockSearchQuery.toLowerCase();
+    if (!stockSearchQuery.trim()) return available.slice(0, 150);
+    const q = stockSearchQuery.toLowerCase().trim();
     return available.filter(
       (s) => s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
     );
   }, [stocks, currentPickedStockIds, stockSearchQuery]);
 
-  // Ensure selectedStockId defaults to first available
+  // Ensure selectedStockId defaults to first available stock once stocks are loaded
   useEffect(() => {
-    if (filteredStocks.length > 0) {
-      if (!filteredStocks.some((s) => s.id === selectedStockId)) {
-        setSelectedStockId(filteredStocks[0].id);
+    const available = stocks.filter((s) => !currentPickedStockIds.has(s.id));
+    if (available.length > 0) {
+      if (!selectedStockId || !available.some((s) => s.id === selectedStockId)) {
+        setSelectedStockId(available[0].id);
       }
     }
-  }, [filteredStocks, selectedStockId]);
+  }, [stocks, currentPickedStockIds, selectedStockId]);
 
   // Selected tournament item
   const activeTournament = useMemo(() => {
@@ -763,37 +792,116 @@ export default function MyPicksPage() {
                     </div>
 
                     <form onSubmit={handleAddStockPick} className="space-y-4">
-                      <div>
+                      <div className="relative" ref={stockDropdownRef}>
                         <label className="block text-xs font-semibold text-slate-300 mb-2">
-                          Cari &amp; Pilih Kode Saham IDX *
+                          Pilih Kode Saham IDX (950+ Emiten) *
                         </label>
-                        <div className="relative mb-2">
-                          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            placeholder="Cari ticker atau nama (misal: BBCA, TLKM, ASII)..."
-                            value={stockSearchQuery}
-                            onChange={(e) => setStockSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
-                          />
-                        </div>
 
-                        <select
-                          required
-                          value={selectedStockId}
-                          onChange={(e) => setSelectedStockId(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:border-blue-500 font-mono"
+                        {/* Combobox Trigger Button */}
+                        <button
+                          type="button"
+                          onClick={() => setIsStockDropdownOpen((prev) => !prev)}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/50 text-left flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-blue-500 group shadow-inner"
                         >
-                          {filteredStocks.length === 0 ? (
-                            <option value="">Semua saham telah dipilih atau tidak ditemukan</option>
+                          {chosenStock ? (
+                            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                              <span className="px-2.5 py-1 rounded-lg bg-blue-500/20 text-cyan-400 font-mono font-bold text-xs shrink-0 border border-blue-500/30">
+                                {chosenStock.symbol}
+                              </span>
+                              <span className="text-sm font-medium text-slate-200 truncate">
+                                {chosenStock.name}
+                              </span>
+                            </div>
                           ) : (
-                            filteredStocks.map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.symbol} — {s.name}
-                              </option>
-                            ))
+                            <span className="text-sm text-slate-500">
+                              -- Pilih emiten saham IDX --
+                            </span>
                           )}
-                        </select>
+                          <ChevronDown
+                            className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                              isStockDropdownOpen ? 'rotate-180 text-blue-400' : 'group-hover:text-slate-300'
+                            }`}
+                          />
+                        </button>
+
+                        {/* Floating Searchable Dropdown Popover */}
+                        {isStockDropdownOpen && (
+                          <div className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl bg-slate-900 border border-slate-700/80 shadow-2xl backdrop-blur-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                            {/* Embedded Search Header */}
+                            <div className="p-3 border-b border-slate-800 bg-slate-950/90 sticky top-0 z-10 space-y-2">
+                              <div className="relative">
+                                <Search className="w-4 h-4 text-blue-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <input
+                                  ref={stockSearchInputRef}
+                                  type="text"
+                                  value={stockSearchQuery}
+                                  onChange={(e) => setStockSearchQuery(e.target.value)}
+                                  placeholder="Ketik ticker atau nama (misal: BBCA, ASII, GOTO)..."
+                                  className="w-full pl-9 pr-8 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                />
+                                {stockSearchQuery && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setStockSearchQuery('')}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                                <span>
+                                  {filteredStocks.length} emiten tersedia
+                                </span>
+                                {stockSearchQuery && (
+                                  <span className="text-[10px] text-cyan-400 font-mono">
+                                    Hasil filter: &quot;{stockSearchQuery}&quot;
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Scrollable Stock List */}
+                            <div className="max-h-60 sm:max-h-72 overflow-y-auto divide-y divide-slate-800/40 p-1.5 custom-scrollbar">
+                              {filteredStocks.length === 0 ? (
+                                <div className="py-8 text-center text-xs text-slate-500 px-4">
+                                  Tidak ada emiten yang cocok dengan pencarian &quot;{stockSearchQuery}&quot;.
+                                </div>
+                              ) : (
+                                filteredStocks.map((stock) => {
+                                  const isSelected = stock.id === selectedStockId;
+                                  return (
+                                    <button
+                                      key={stock.id}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedStockId(stock.id);
+                                        setIsStockDropdownOpen(false);
+                                      }}
+                                      className={`w-full px-3 py-2.5 rounded-xl flex items-center justify-between text-left transition-all ${
+                                        isSelected
+                                          ? 'bg-blue-600/25 border border-blue-500/40 text-white'
+                                          : 'hover:bg-slate-800/70 text-slate-300'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                        <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-cyan-300 font-mono font-bold text-xs shrink-0 border border-blue-500/30">
+                                          {stock.symbol}
+                                        </span>
+                                        <span className="text-xs truncate font-medium text-slate-200">
+                                          {stock.name}
+                                        </span>
+                                      </div>
+                                      {isSelected && (
+                                        <Check className="w-4 h-4 text-cyan-400 shrink-0 ml-2" />
+                                      )}
+                                    </button>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Stock Rules & Preview */}

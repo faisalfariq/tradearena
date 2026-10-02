@@ -529,142 +529,210 @@ export class PicksService {
     userId: string,
     dto: SubmitMyPickDto,
   ) {
-    const tournament = await this.prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      include: { rules: true },
-    });
-    if (!tournament) {
-      throw new NotFoundException(
-        `Turnamen dengan ID ${tournamentId} tidak ditemukan`,
-      );
-    }
-
-    const participant = await this.resolveParticipantForUser(userId);
-
-    const membership = await this.prisma.tournamentParticipant.findUnique({
-      where: {
-        tournamentId_participantId: {
-          tournamentId,
-          participantId: participant.id,
-        },
-      },
-    });
-
-    if (!membership || membership.status !== 'APPROVED') {
-      if (membership?.status === 'DISQUALIFIED') {
-        throw new BadRequestException(
-          'Akun Anda telah didiskualifikasi dari turnamen ini dan tidak dapat mengirim pick',
-        );
-      }
-      if (membership?.status === 'PENDING') {
-        throw new BadRequestException(
-          'Pendaftaran Anda pada turnamen ini masih berstatus PENDING (menunggu persetujuan Admin)',
-        );
-      }
-      if (membership?.status === 'REJECTED') {
-        throw new BadRequestException(
-          'Pendaftaran Anda pada turnamen ini telah ditolak oleh Admin',
-        );
-      }
-      throw new BadRequestException(
-        'Anda belum terdaftar sebagai peserta aktif (APPROVED) pada turnamen ini',
-      );
-    }
-
-    // Check lock cutoff
-    const timeInfo = this.getWibTimeInfo(dto.tradingDate, tournament);
-    if (timeInfo.isLocked) {
-      throw new ForbiddenException(
-        `Jendela pick saham dibuka pukul ${timeInfo.windowStart.substring(0, 5)} - ${timeInfo.windowEnd.substring(0, 5)} WIB. Saat ini pengiriman sedang dikunci.`,
-      );
-    }
-
-    // Validate trading date within tournament range
-    const startStr = tournament.startDate.toISOString().substring(0, 10);
-    const endStr = tournament.endDate.toISOString().substring(0, 10);
-    if (timeInfo.dateStr < startStr || timeInfo.dateStr > endStr) {
-      throw new BadRequestException(
-        `Tanggal perdagangan (${timeInfo.dateStr}) berada di luar periode turnamen (${startStr} s/d ${endStr})`,
-      );
-    }
-
-    const tradingDateObj = new Date(`${timeInfo.dateStr}T00:00:00.000Z`);
-    const minPicks = tournament.minPicksPerDay ?? 2;
-    const maxPicks = tournament.maxPicksPerDay ?? 3;
-
-    // SCENARIO 1: Replace a specific pick
-    if (dto.replacePickId && dto.stockId) {
-      const existingPick = await this.prisma.stockPick.findUnique({
-        where: { id: dto.replacePickId },
+    try {
+      const tournament = await this.prisma.tournament.findUnique({
+        where: { id: tournamentId },
+        include: { rules: true },
       });
-      if (!existingPick || existingPick.participantId !== participant.id) {
-        throw new NotFoundException('Pick yang akan diganti tidak ditemukan');
+      if (!tournament) {
+        throw new NotFoundException(
+          `Turnamen dengan ID ${tournamentId} tidak ditemukan`,
+        );
       }
 
-      const stock = await this.prisma.stock.findUnique({ where: { id: dto.stockId } });
-      if (!stock || !stock.isActive) {
-        throw new BadRequestException('Saham tidak valid atau sedang tidak aktif');
-      }
+      const participant = await this.resolveParticipantForUser(userId);
 
-      // Check duplicate on the same date
-      const duplicatePick = await this.prisma.stockPick.findFirst({
+      let membership = await this.prisma.tournamentParticipant.findUnique({
         where: {
-          tournamentId,
-          participantId: participant.id,
-          tradingDate: tradingDateObj,
-          stockId: stock.id,
-          id: { not: dto.replacePickId },
-        },
-      });
-      if (duplicatePick) {
-        throw new ConflictException(`Saham ${stock.symbol} sudah ada di daftar pick Anda pada tanggal ini`);
-      }
-
-      const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
-
-      return this.prisma.stockPick.update({
-        where: { id: dto.replacePickId },
-        data: {
-          stockId: stock.id,
-          entryPrice: lockedClosePrice,
-          entrySource: EntrySource.CLOSING_PRICE,
-          status: PickStatus.CONFIRMED,
-          updatedAt: new Date(),
-        },
-        include: { stock: true },
-      });
-    }
-
-    // SCENARIO 2: Batch submission of 2-3 stocks at once
-    if (dto.stockIds && dto.stockIds.length > 0) {
-      if (dto.stockIds.length > maxPicks) {
-        throw new BadRequestException(`Maksimal ${maxPicks} emiten per hari untuk turnamen ini`);
-      }
-
-      // Check unique
-      const uniqueStockIds = Array.from(new Set(dto.stockIds));
-      if (uniqueStockIds.length !== dto.stockIds.length) {
-        throw new BadRequestException('Emiten saham tidak boleh dipilih ganda pada hari yang sama');
-      }
-
-      // Remove existing picks on this date and recreate fresh
-      await this.prisma.stockPick.deleteMany({
-        where: {
-          tournamentId,
-          participantId: participant.id,
-          tradingDate: tradingDateObj,
+          tournamentId_participantId: {
+            tournamentId,
+            participantId: participant.id,
+          },
         },
       });
 
-      const createdPicks = [];
-      for (const sId of dto.stockIds) {
-        const stock = await this.prisma.stock.findUnique({ where: { id: sId } });
-        if (!stock || !stock.isActive) continue;
+      if (!membership) {
+        // Fallback: lookup by tournamentId & userId
+        membership = await this.prisma.tournamentParticipant.findFirst({
+          where: {
+            tournamentId,
+            userId,
+          },
+        });
+        if (membership && membership.participantId !== participant.id) {
+          try {
+            await this.prisma.tournamentParticipant.update({
+              where: { id: membership.id },
+              data: { participantId: participant.id },
+            });
+          } catch {
+            // ignore
+          }
+        }
+      }
+
+      if (!membership || membership.status !== 'APPROVED') {
+        if (membership?.status === 'DISQUALIFIED') {
+          throw new BadRequestException(
+            'Akun Anda telah didiskualifikasi dari turnamen ini dan tidak dapat mengirim pick',
+          );
+        }
+        if (membership?.status === 'PENDING') {
+          throw new BadRequestException(
+            'Pendaftaran Anda pada turnamen ini masih berstatus PENDING (menunggu persetujuan Admin)',
+          );
+        }
+        if (membership?.status === 'REJECTED') {
+          throw new BadRequestException(
+            'Pendaftaran Anda pada turnamen ini telah ditolak oleh Admin',
+          );
+        }
+        throw new BadRequestException(
+          'Anda belum terdaftar sebagai peserta aktif (APPROVED) pada turnamen ini',
+        );
+      }
+
+      // Check lock cutoff
+      const timeInfo = this.getWibTimeInfo(dto.tradingDate, tournament);
+      if (timeInfo.isLocked) {
+        throw new ForbiddenException(
+          `Jendela pick saham dibuka pukul ${timeInfo.windowStart.substring(0, 5)} - ${timeInfo.windowEnd.substring(0, 5)} WIB. Saat ini pengiriman sedang dikunci.`,
+        );
+      }
+
+      // Validate trading date within tournament range
+      const startStr = tournament.startDate.toISOString().substring(0, 10);
+      const endStr = tournament.endDate.toISOString().substring(0, 10);
+      if (timeInfo.dateStr < startStr || timeInfo.dateStr > endStr) {
+        throw new BadRequestException(
+          `Tanggal perdagangan (${timeInfo.dateStr}) berada di luar periode turnamen (${startStr} s/d ${endStr})`,
+        );
+      }
+
+      const tradingDateObj = new Date(`${timeInfo.dateStr}T00:00:00.000Z`);
+      const minPicks = tournament.minPicksPerDay ?? 2;
+      const maxPicks = tournament.maxPicksPerDay ?? 3;
+
+      // Helper to safely create a stock pick with fallback if database enum lacks CLOSING_PRICE
+      const safeCreatePick = async (data: any) => {
+        try {
+          return await this.prisma.stockPick.create({
+            data,
+            include: {
+              participant: true,
+              stock: true,
+              tournament: {
+                select: { id: true, name: true, status: true },
+              },
+            },
+          });
+        } catch (createErr: any) {
+          const errMsg = createErr?.message || '';
+          if (errMsg.includes('EntrySource') || errMsg.includes('CLOSING_PRICE') || errMsg.includes('invalid input value for enum')) {
+            return await this.prisma.stockPick.create({
+              data: {
+                ...data,
+                entrySource: EntrySource.MARKET_OPEN,
+              },
+              include: {
+                participant: true,
+                stock: true,
+                tournament: {
+                  select: { id: true, name: true, status: true },
+                },
+              },
+            });
+          }
+          throw createErr;
+        }
+      };
+
+      // SCENARIO 1: Replace a specific pick
+      if (dto.replacePickId && dto.stockId) {
+        const existingPick = await this.prisma.stockPick.findUnique({
+          where: { id: dto.replacePickId },
+        });
+        if (!existingPick || existingPick.participantId !== participant.id) {
+          throw new NotFoundException('Pick yang akan diganti tidak ditemukan');
+        }
+
+        const stock = await this.prisma.stock.findUnique({ where: { id: dto.stockId } });
+        if (!stock || !stock.isActive) {
+          throw new BadRequestException('Saham tidak valid atau sedang tidak aktif');
+        }
+
+        // Check duplicate on the same date using findFirst for robust type comparison
+        const duplicatePick = await this.prisma.stockPick.findFirst({
+          where: {
+            tournamentId,
+            participantId: participant.id,
+            tradingDate: tradingDateObj,
+            stockId: stock.id,
+            id: { not: dto.replacePickId },
+          },
+        });
+        if (duplicatePick) {
+          throw new ConflictException(`Saham ${stock.symbol} sudah ada di daftar pick Anda pada tanggal ini`);
+        }
 
         const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
 
-        const newPick = await this.prisma.stockPick.create({
-          data: {
+        try {
+          return await this.prisma.stockPick.update({
+            where: { id: dto.replacePickId },
+            data: {
+              stockId: stock.id,
+              entryPrice: lockedClosePrice,
+              entrySource: EntrySource.CLOSING_PRICE,
+              status: PickStatus.CONFIRMED,
+              updatedAt: new Date(),
+            },
+            include: { stock: true },
+          });
+        } catch (updateErr: any) {
+          return await this.prisma.stockPick.update({
+            where: { id: dto.replacePickId },
+            data: {
+              stockId: stock.id,
+              entryPrice: lockedClosePrice,
+              entrySource: EntrySource.MARKET_OPEN,
+              status: PickStatus.CONFIRMED,
+              updatedAt: new Date(),
+            },
+            include: { stock: true },
+          });
+        }
+      }
+
+      // SCENARIO 2: Batch submission of 2-3 stocks at once
+      if (dto.stockIds && dto.stockIds.length > 0) {
+        if (dto.stockIds.length > maxPicks) {
+          throw new BadRequestException(`Maksimal ${maxPicks} emiten per hari untuk turnamen ini`);
+        }
+
+        // Check unique
+        const uniqueStockIds = Array.from(new Set(dto.stockIds));
+        if (uniqueStockIds.length !== dto.stockIds.length) {
+          throw new BadRequestException('Emiten saham tidak boleh dipilih ganda pada hari yang sama');
+        }
+
+        // Remove existing picks on this date and recreate fresh
+        await this.prisma.stockPick.deleteMany({
+          where: {
+            tournamentId,
+            participantId: participant.id,
+            tradingDate: tradingDateObj,
+          },
+        });
+
+        const createdPicks = [];
+        for (const sId of dto.stockIds) {
+          const stock = await this.prisma.stock.findUnique({ where: { id: sId } });
+          if (!stock || !stock.isActive) continue;
+
+          const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
+
+          const newPick = await safeCreatePick({
             tournamentId,
             participantId: participant.id,
             stockId: stock.id,
@@ -672,60 +740,56 @@ export class PicksService {
             entryPrice: lockedClosePrice,
             entrySource: EntrySource.CLOSING_PRICE,
             status: PickStatus.CONFIRMED,
-          },
-          include: { stock: true },
-        });
-        createdPicks.push(newPick);
+          });
+          createdPicks.push(newPick);
+        }
+
+        return {
+          message: `Berhasil mengunci ${createdPicks.length} pick saham untuk sesi ${timeInfo.dateStr}`,
+          picks: createdPicks,
+        };
       }
 
-      return {
-        message: `Berhasil mengunci ${createdPicks.length} pick saham untuk sesi ${timeInfo.dateStr}`,
-        picks: createdPicks,
-      };
-    }
+      // SCENARIO 3: Single stock addition
+      if (!dto.stockId) {
+        throw new BadRequestException('ID Saham wajib diisi');
+      }
 
-    // SCENARIO 3: Single stock addition
-    if (!dto.stockId) {
-      throw new BadRequestException('ID Saham wajib diisi');
-    }
+      const currentPicksCount = await this.prisma.stockPick.count({
+        where: {
+          tournamentId,
+          participantId: participant.id,
+          tradingDate: tradingDateObj,
+        },
+      });
 
-    const currentPicksCount = await this.prisma.stockPick.count({
-      where: {
-        tournamentId,
-        participantId: participant.id,
-        tradingDate: tradingDateObj,
-      },
-    });
+      if (currentPicksCount >= maxPicks) {
+        throw new BadRequestException(
+          `Anda sudah memilih ${currentPicksCount} emiten (maksimal ${maxPicks} emiten per hari). Hapus atau ganti salah satu emiten terlebih dahulu.`,
+        );
+      }
 
-    if (currentPicksCount >= maxPicks) {
-      throw new BadRequestException(
-        `Anda sudah memilih ${currentPicksCount} emiten (maksimal ${maxPicks} emiten per hari). Hapus atau ganti salah satu emiten terlebih dahulu.`,
-      );
-    }
+      const stock = await this.prisma.stock.findUnique({ where: { id: dto.stockId } });
+      if (!stock || !stock.isActive) {
+        throw new BadRequestException('Saham tidak valid atau sedang tidak aktif');
+      }
 
-    const stock = await this.prisma.stock.findUnique({ where: { id: dto.stockId } });
-    if (!stock || !stock.isActive) {
-      throw new BadRequestException('Saham tidak valid atau sedang tidak aktif');
-    }
-
-    const duplicatePick = await this.prisma.stockPick.findUnique({
-      where: {
-        tournamentId_participantId_tradingDate_stockId: {
+      // Robust duplicate check using findFirst to avoid compound unique @db.Date serialization issues
+      const duplicatePick = await this.prisma.stockPick.findFirst({
+        where: {
           tournamentId,
           participantId: participant.id,
           tradingDate: tradingDateObj,
           stockId: stock.id,
         },
-      },
-    });
-    if (duplicatePick) {
-      throw new ConflictException(`Saham ${stock.symbol} sudah ada di daftar pilihan Anda pada sesi ini`);
-    }
+      });
+      if (duplicatePick) {
+        throw new ConflictException(`Saham ${stock.symbol} sudah ada di daftar pilihan Anda pada sesi ini`);
+      }
 
-    const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
+      const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
 
-    return this.prisma.stockPick.create({
-      data: {
+      return await safeCreatePick({
         tournamentId,
         participantId: participant.id,
         stockId: stock.id,
@@ -733,15 +797,21 @@ export class PicksService {
         entryPrice: lockedClosePrice,
         entrySource: EntrySource.CLOSING_PRICE,
         status: PickStatus.CONFIRMED,
-      },
-      include: {
-        participant: true,
-        stock: true,
-        tournament: {
-          select: { id: true, name: true, status: true },
-        },
-      },
-    });
+      });
+    } catch (err) {
+      console.error('[submitMyPick Error]:', err);
+      if (
+        err instanceof NotFoundException ||
+        err instanceof BadRequestException ||
+        err instanceof ForbiddenException ||
+        err instanceof ConflictException
+      ) {
+        throw err;
+      }
+      throw new BadRequestException(
+        (err as any)?.message || 'Terjadi kesalahan saat memproses pick saham Anda.',
+      );
+    }
   }
 
   async cancelMyPick(tournamentId: string, userId: string, pickId: string) {

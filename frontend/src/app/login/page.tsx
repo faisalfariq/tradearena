@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
@@ -42,7 +42,7 @@ export default function LoginPage() {
   const [googleEmail, setGoogleEmail] = useState('budi.investor@gmail.com');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const initGoogleSignIn = () => {
+  const initGoogleSignIn = useCallback(() => {
     if (typeof window !== 'undefined' && window.google?.accounts?.id) {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
@@ -66,21 +66,29 @@ export default function LoginPage() {
       const btnContainer = document.getElementById('googleOfficialBtn');
       if (btnContainer) {
         btnContainer.innerHTML = '';
+        const parentW = btnContainer.parentElement?.clientWidth || btnContainer.clientWidth || 300;
+        // Keep within 200px to 380px and never wider than parent container
+        const targetWidth = Math.max(200, Math.min(380, Math.floor(parentW) - 8));
         window.google.accounts.id.renderButton(btnContainer, {
           theme: 'outline',
           size: 'large',
           text: 'continue_with',
           shape: 'rectangular',
           logo_alignment: 'left',
-          width: 380,
+          width: targetWidth,
         });
       }
     }
-  };
+  }, [loginWithGoogle, router]);
 
   useEffect(() => {
     initGoogleSignIn();
-  }, []);
+    const handleResize = () => {
+      initGoogleSignIn();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [initGoogleSignIn]);
 
   // If already logged in, redirect home
   if (user) {
@@ -124,7 +132,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 py-12 relative">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 sm:py-12 relative overflow-x-hidden">
       <Script
         src="https://accounts.google.com/gsi/client"
         strategy="afterInteractive"
@@ -132,26 +140,26 @@ export default function LoginPage() {
       />
 
       {/* Dynamic Background Glows */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/15 blur-[120px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] bg-blue-600/15 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md mx-auto">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors mb-6"
+          className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors mb-5"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Kembali ke Beranda</span>
         </Link>
 
-        <div className="glass-panel p-8 rounded-2xl border border-slate-800 shadow-2xl relative">
+        <div className="glass-panel p-5 sm:p-8 rounded-2xl border border-slate-800 shadow-2xl relative w-full overflow-hidden">
           <div className="text-center mb-6">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 mx-auto flex items-center justify-center shadow-lg shadow-blue-500/25 mb-4">
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               TradeArena Login & Masuk
             </h1>
-            <p className="text-xs text-slate-400 mt-1.5">
+            <p className="text-xs text-slate-400 mt-1.5 px-2">
               Masuk dengan Google (Peserta/User) atau Kredensial Pengelola Admin
             </p>
           </div>
@@ -164,11 +172,13 @@ export default function LoginPage() {
           )}
 
           {/* 1. Primary: Official Google SSO Button */}
-          <div className="space-y-3 mb-6">
-            <div
-              id="googleOfficialBtn"
-              className="w-full flex justify-center min-h-[44px]"
-            />
+          <div className="space-y-3 mb-6 w-full flex flex-col items-center">
+            <div className="w-full flex justify-center items-center overflow-hidden">
+              <div
+                id="googleOfficialBtn"
+                className="w-full flex justify-center min-h-[44px] overflow-hidden max-w-full [&>div]:max-w-full [&>iframe]:max-w-full"
+              />
+            </div>
             {isGoogleLoading && (
               <div className="flex items-center justify-center gap-2 text-xs text-blue-400">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
