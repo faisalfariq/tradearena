@@ -53,7 +53,35 @@ export class MockMarketDataProvider implements MarketDataProvider {
     const dateStr = tradingDate.substring(0, 10);
 
     const random = this.createSeededRandom(`${cleanSymbol}_${dateStr}`);
-    let currentPrice = this.defaultBasePrices[cleanSymbol] || 1500;
+    let currentPrice = this.defaultBasePrices[cleanSymbol];
+
+    if (!currentPrice) {
+      try {
+        const res = await fetch(
+          `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(cleanSymbol)}.JK?interval=1d&range=5d`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            },
+          },
+        );
+        if (res.ok) {
+          const d = await res.json();
+          const meta = d?.chart?.result?.[0]?.meta;
+          const p =
+            meta?.regularMarketPrice ||
+            meta?.chartPreviousClose ||
+            meta?.previousClose;
+          if (p && Number(p) > 0) {
+            currentPrice = Math.round(Number(p));
+          }
+        }
+      } catch {}
+    }
+
+    if (!currentPrice) {
+      currentPrice = 1500;
+    }
 
     const rawCandles: NormalizedCandle[] = [];
 

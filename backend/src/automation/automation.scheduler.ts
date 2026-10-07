@@ -13,15 +13,16 @@ export class AutomationScheduler {
   ) {}
 
   /**
-   * Daily cron job scheduled at 16:15 WIB (Asia/Jakarta) every Monday through Friday.
-   * Runs the complete post-market pipeline for all active tournaments.
+   * Daily cron job scheduled at 16:30 WIB (Asia/Jakarta) every Monday through Friday
+   * (tepat 30 menit setelah penutupan pasar reguler bursa IDX jam 16:00 WIB).
+   * Runs the complete post-market pipeline for all active tournaments automatically.
    */
-  @Cron('15 16 * * 1-5', {
+  @Cron('30 16 * * 1-5', {
     name: 'post-market-daily-pipeline',
     timeZone: 'Asia/Jakarta',
   })
   async handlePostMarketCron() {
-    this.logger.log('Executing automated post-market cron job (16:15 WIB)...');
+    this.logger.log('Executing automated post-market cron job (16:30 WIB - 30 mins after market close)...');
 
     const activeTournaments = await this.prisma.tournament.findMany({
       where: { status: 'ACTIVE' },

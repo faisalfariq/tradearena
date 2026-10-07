@@ -1865,6 +1865,7 @@ export default function TournamentDetailPage() {
                     <tr className="border-b border-slate-800/80 bg-slate-900/40 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                       <th className="py-4 px-6">Peserta</th>
                       <th className="py-4 px-6">Saham (Ticker)</th>
+                      <th className="py-4 px-6">Tanggal Pick</th>
                       <th className="py-4 px-6">Tanggal Evaluasi</th>
                       <th className="py-4 px-6 text-right">Harga Entry</th>
                       <th className="py-4 px-6 text-center">Sumber Entry</th>
@@ -1892,13 +1893,33 @@ export default function TournamentDetailPage() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="text-xs text-slate-200 font-mono font-medium">
-                            {new Date(pick.tradingDate).toISOString().substring(0, 10)}
+                            {pick.createdAt
+                              ? new Date(pick.createdAt).toLocaleDateString('id-ID', {
+                                  timeZone: 'Asia/Jakarta',
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })
+                              : '-'}
                           </div>
                           {pick.createdAt && (
-                            <div className="text-[10px] text-slate-500 font-sans mt-0.5">
-                              Pick: {new Date(pick.createdAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short' })}
+                            <div className="text-[10px] text-slate-400 font-sans mt-0.5">
+                              {new Date(pick.createdAt).toLocaleTimeString('id-ID', {
+                                timeZone: 'Asia/Jakarta',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}{' '}
+                              WIB
                             </div>
                           )}
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="text-xs text-cyan-300 font-mono font-semibold">
+                            {new Date(pick.tradingDate).toISOString().substring(0, 10)}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-sans mt-0.5">
+                            Sesi Bursa D+1
+                          </div>
                         </td>
                         <td className="py-4 px-6 text-right font-mono font-bold text-slate-100">
                           Rp {Number(pick.entryPrice).toLocaleString('id-ID')}
