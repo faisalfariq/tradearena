@@ -651,7 +651,7 @@ export default function MyPicksPage() {
                     <div>
                       <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 mb-1">
                         <Layers className="w-4 h-4" />
-                        <span>Picklist Sesi: {pickStatus?.tradingDate || 'Sesi Berikutnya'}</span>
+                        <span>Tanggal Evaluasi: {pickStatus?.tradingDate || 'Sesi Berikutnya'}</span>
                       </div>
                       <h2 className="text-xl font-bold text-white">
                         Daftar Pilihan Saham Harian ({currentCount}/{maxPicks} Emiten)
@@ -677,7 +677,7 @@ export default function MyPicksPage() {
                   <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs flex items-start gap-2.5">
                     <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                     <span>
-                      <strong>Sistem Otomatisasi Harga Closing:</strong> Setiap emiten yang Anda submit otomatis mengunci harga Closing hari ini sebagai harga Entry sesi besok. Picklist dapat diubah atau dibatalkan bebas sebelum pukul {pickWindowEnd} WIB.
+                      <strong>Sistem Otomatisasi Harga Closing:</strong> Setiap emiten yang Anda submit otomatis mengunci harga Closing bursa hari ini sebagai harga Entry sesi evaluasi berikutnya (hari bursa aktif). Picklist dapat diubah atau dibatalkan bebas sebelum pukul {pickWindowEnd} WIB.
                     </span>
                   </div>
 
@@ -1064,7 +1064,7 @@ export default function MyPicksPage() {
                       <div className="px-4 py-3 bg-slate-900/80 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <span className="font-mono font-bold text-xs text-white">
-                            Sesi: {new Date(group.dateStr).toLocaleDateString('id-ID', {
+                            Sesi Evaluasi: {new Date(group.dateStr).toLocaleDateString('id-ID', {
                               weekday: 'long',
                               day: 'numeric',
                               month: 'long',

@@ -136,6 +136,9 @@ export class PicksService {
       status?: PickStatus;
     },
   ) {
+    // Otomatis sinkronisasi harga entry dummy (1000) dan penyesuaian tanggal evaluasi
+    await this.reconcileExistingPicks(tournamentId);
+
     const where: any = { tournamentId };
 
     if (filters?.tradingDate) {
@@ -243,20 +246,8 @@ export class PicksService {
 
     const bypassLock = process.env.BYPASS_PICK_LOCK === 'true';
 
-    // Helper: calculate next trading day (skip weekend)
-    const getNextTradingDay = (curDateStr: string): string => {
-      const cur = new Date(`${curDateStr}T00:00:00.000Z`);
-      const day = cur.getUTCDay(); // 0: Sun, 1: Mon, ..., 5: Fri, 6: Sat
-      let addDays = 1;
-      if (day === 5) addDays = 3; // Fri -> Mon
-      else if (day === 6) addDays = 2; // Sat -> Mon
-      const next = new Date(cur.getTime() + addDays * 86400000);
-      return next.toISOString().substring(0, 10);
-    };
-
-    // If picking during evening window (17:00 - 21:00 WIB), the picks are for the next trading session!
-    const defaultTargetDate =
-      timeWib >= windowStart ? getNextTradingDay(todayWib) : todayWib;
+    // Tanggal Evaluasi: Setiap pick selalu dievaluasi pada hari bursa berikutnya (D+1 trading day)!
+    const defaultTargetDate = this.calculateNextTradingDay(todayWib);
 
     const dateStr = tradingDateStr
       ? tradingDateStr.substring(0, 10)
@@ -283,13 +274,150 @@ export class PicksService {
   }
 
   /**
-   * Retrieves today's market closing price for a stock to lock as entry price for the next trading day
+   * Helper to calculate the next open trading day on IDX (skips weekends and Indonesian market holidays)
+   */
+  calculateNextTradingDay(curDateStr: string): string {
+    const idxHolidays = new Set([
+      '2026-01-01', '2026-01-16', '2026-02-17', '2026-03-20', '2026-03-21',
+      '2026-03-22', '2026-03-23', '2026-03-24', '2026-04-03', '2026-05-01',
+      '2026-05-14', '2026-05-27', '2026-05-31', '2026-06-01', '2026-06-16',
+      '2026-08-17', '2026-08-25', '2026-12-25',
+    ]);
+    let cur = new Date(`${curDateStr}T00:00:00.000Z`);
+    while (true) {
+      cur = new Date(cur.getTime() + 86400000);
+      const day = cur.getUTCDay(); // 0: Sun, 6: Sat
+      if (day === 0 || day === 6) continue;
+      const curIso = cur.toISOString().substring(0, 10);
+      if (idxHolidays.has(curIso)) continue;
+      return curIso;
+    }
+  }
+
+  /**
+   * Automatically reconciles existing picks that have dummy prices (1000) or need evaluation date shifting
+   */
+  async reconcileExistingPicks(tournamentId?: string) {
+    try {
+      const picksToUpdate = await this.prisma.stockPick.findMany({
+        where: {
+          ...(tournamentId && { tournamentId }),
+          entryPrice: 1000,
+        },
+        include: { stock: true },
+      });
+
+      for (const pick of picksToUpdate) {
+        if (pick.stock?.symbol) {
+          try {
+            const dateStr = pick.tradingDate.toISOString().substring(0, 10);
+            const realPrice = await this.getStockClosingPrice(pick.stockId, dateStr);
+            if (realPrice && realPrice !== 1000) {
+              await this.prisma.stockPick.update({
+                where: { id: pick.id },
+                data: { entryPrice: realPrice },
+              });
+            }
+          } catch (itemErr) {
+            console.warn(`[reconcileExistingPicks] Could not update price for pick ${pick.id}:`, (itemErr as Error).message);
+          }
+        }
+      }
+
+      // Also ensure evaluation date is shifted to next trading day if it was saved as creation date
+      const picksWithSameDate = await this.prisma.stockPick.findMany({
+        where: {
+          ...(tournamentId && { tournamentId }),
+        },
+      });
+
+      for (const p of picksWithSameDate) {
+        const createdStr = p.createdAt.toISOString().substring(0, 10);
+        const tradeStr = p.tradingDate.toISOString().substring(0, 10);
+        if (createdStr === tradeStr) {
+          const nextTradingDate = this.calculateNextTradingDay(createdStr);
+          try {
+            await this.prisma.stockPick.update({
+              where: { id: p.id },
+              data: {
+                tradingDate: new Date(`${nextTradingDate}T00:00:00.000Z`),
+              },
+            });
+          } catch (itemErr) {
+            console.warn(`[reconcileExistingPicks] Could not shift date for pick ${p.id}:`, (itemErr as Error).message);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[reconcileExistingPicks] Notice:', (e as Error).message);
+    }
+  }
+
+  /**
+   * Retrieves official market closing price for a stock to lock as entry price for the evaluation session
    */
   async getStockClosingPrice(stockId: string, referenceDateStr: string): Promise<number> {
     const stock = await this.prisma.stock.findUnique({ where: { id: stockId } });
     if (!stock) return 1000;
 
-    // Check candle on or before referenceDate (today's close)
+    // 1. Fetch real market closing price from Yahoo Finance for Indonesian stocks ({SYMBOL}.JK)
+    try {
+      const cleanSymbol = stock.symbol.trim().toUpperCase();
+      const symbolJk = `${cleanSymbol}.JK`;
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbolJk)}?interval=1d&range=5d`;
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const meta = data?.chart?.result?.[0]?.meta;
+        const validPrice =
+          meta?.regularMarketPrice ||
+          meta?.chartPreviousClose ||
+          meta?.previousClose;
+
+        if (validPrice && Number(validPrice) > 0) {
+          const finalPrice = Math.round(Number(validPrice));
+          // Store a snapshot in DB for audit trail
+          try {
+            await this.prisma.intradayCandle.upsert({
+              where: {
+                symbol_timestamp_provider: {
+                  symbol: cleanSymbol,
+                  timestamp: new Date(`${referenceDateStr}T16:00:00.000Z`),
+                  provider: 'idx_yahoo_finance',
+                },
+              },
+              create: {
+                stockId: stock.id,
+                symbol: cleanSymbol,
+                tradingDate: new Date(`${referenceDateStr}T00:00:00.000Z`),
+                timestamp: new Date(`${referenceDateStr}T16:00:00.000Z`),
+                open: finalPrice,
+                high: finalPrice,
+                low: finalPrice,
+                close: finalPrice,
+                volume: meta?.regularMarketVolume ? BigInt(meta.regularMarketVolume) : 0n,
+                provider: 'idx_yahoo_finance',
+              },
+              update: {
+                close: finalPrice,
+              },
+            });
+          } catch {}
+
+          return finalPrice;
+        }
+      }
+    } catch (err) {
+      console.warn(`[getStockClosingPrice] Yahoo Finance fetch notice for ${stock.symbol}:`, (err as Error).message);
+    }
+
+    // 2. Check existing candle in database on or before referenceDate
     const candle = await this.prisma.intradayCandle.findFirst({
       where: {
         symbol: stock.symbol,
@@ -298,17 +426,21 @@ export class PicksService {
       orderBy: [{ tradingDate: 'desc' }, { timestamp: 'desc' }],
     });
 
-    if (candle && candle.close) {
+    if (candle && candle.close && Number(candle.close) > 0) {
       return Number(candle.close);
     }
 
-    // Fallback to any latest candle
+    // 3. Fallback to any latest candle
     const latestCandle = await this.prisma.intradayCandle.findFirst({
       where: { symbol: stock.symbol },
       orderBy: { timestamp: 'desc' },
     });
 
-    return latestCandle?.close ? Number(latestCandle.close) : 1000;
+    if (latestCandle?.close && Number(latestCandle.close) > 0) {
+      return Number(latestCandle.close);
+    }
+
+    return 1000;
   }
 
   async resolveParticipantForUser(userId: string) {
@@ -405,6 +537,8 @@ export class PicksService {
     userId: string,
     tradingDate?: string,
   ) {
+    await this.reconcileExistingPicks(tournamentId);
+
     const tournament = await this.prisma.tournament.findUnique({
       where: { id: tournamentId },
       include: { rules: true },

@@ -203,6 +203,7 @@ interface StockPick {
   entryPrice: number | string;
   entrySource: string;
   status: string;
+  createdAt?: string;
   participant: {
     id: string;
     name: string;
@@ -1762,7 +1763,7 @@ export default function TournamentDetailPage() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-xs text-slate-300">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                <span>Filter Tanggal:</span>
+                <span>Filter Tanggal Evaluasi:</span>
               </div>
               <input
                 type="date"
@@ -1864,7 +1865,7 @@ export default function TournamentDetailPage() {
                     <tr className="border-b border-slate-800/80 bg-slate-900/40 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                       <th className="py-4 px-6">Peserta</th>
                       <th className="py-4 px-6">Saham (Ticker)</th>
-                      <th className="py-4 px-6">Tanggal Trading</th>
+                      <th className="py-4 px-6">Tanggal Evaluasi</th>
                       <th className="py-4 px-6 text-right">Harga Entry</th>
                       <th className="py-4 px-6 text-center">Sumber Entry</th>
                       <th className="py-4 px-6 text-center">Status</th>
@@ -1889,8 +1890,15 @@ export default function TournamentDetailPage() {
                             </span>
                           </div>
                         </td>
-                        <td className="py-4 px-6 text-xs text-slate-300 font-mono">
-                          {new Date(pick.tradingDate).toISOString().substring(0, 10)}
+                        <td className="py-4 px-6">
+                          <div className="text-xs text-slate-200 font-mono font-medium">
+                            {new Date(pick.tradingDate).toISOString().substring(0, 10)}
+                          </div>
+                          {pick.createdAt && (
+                            <div className="text-[10px] text-slate-500 font-sans mt-0.5">
+                              Pick: {new Date(pick.createdAt).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short' })}
+                            </div>
+                          )}
                         </td>
                         <td className="py-4 px-6 text-right font-mono font-bold text-slate-100">
                           Rp {Number(pick.entryPrice).toLocaleString('id-ID')}
@@ -4648,7 +4656,7 @@ export default function TournamentDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Tanggal Perdagangan *
+                    Tanggal Evaluasi *
                   </label>
                   <input
                     type="date"
