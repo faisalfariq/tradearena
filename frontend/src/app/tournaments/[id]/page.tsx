@@ -266,7 +266,7 @@ interface EvaluationTimelineStep {
 interface EvaluationItem {
   id: string;
   pickId: string;
-  status: 'PENDING_DATA' | 'COMPLETED' | 'REVIEW_REQUIRED';
+  status: 'PENDING_DATA' | 'COMPLETED' | 'REVIEW_REQUIRED' | 'OVERRIDDEN';
   entryPrice: number | string;
   exitPrice: number | string;
   exitTimestamp: string;
@@ -898,7 +898,7 @@ export default function TournamentDetailPage() {
     setLoadingCandles(true);
     try {
       const res = await fetch(
-        `${API_BASE}/market-data/candles?symbol=${symbol}&tradingDate=${tradingDate}&limit=100`,
+        `${API_BASE}/market-data/candles?symbol=${symbol}&tradingDate=${tradingDate}&limit=1000`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -2904,7 +2904,9 @@ export default function TournamentDetailPage() {
                   Rata-rata Return
                 </span>
                 {(() => {
-                  const completed = evaluations.filter((e) => e.status === 'COMPLETED');
+                  const completed = evaluations.filter(
+                    (e) => e.status === 'COMPLETED' || e.status === 'OVERRIDDEN',
+                  );
                   const avg =
                     completed.length > 0
                       ? completed.reduce((acc, c) => acc + Number(c.realizedReturn), 0) /

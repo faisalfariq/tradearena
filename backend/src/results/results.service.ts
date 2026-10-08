@@ -68,12 +68,18 @@ export class ResultsService {
 
     // Step 1: Ensure pointsResult exists for each evaluation
     for (const ev of evaluations) {
-      if (!ev.pointsResult && ev.status === EvaluationStatus.COMPLETED) {
+      if (
+        !ev.pointsResult &&
+        (ev.status === EvaluationStatus.COMPLETED ||
+          ev.status === EvaluationStatus.OVERRIDDEN)
+      ) {
         const returnVal = Number(ev.realizedReturn ?? 0);
         const exitReason = ev.exitReason ?? 'MARKET_CLOSE';
         const overridePoints = ev.override?.overridePoints
           ? Number(ev.override.overridePoints)
-          : null;
+          : ev.status === EvaluationStatus.OVERRIDDEN
+            ? returnVal
+            : null;
 
         const calc = this.pointsEngine.calculatePoints({
           evaluationId: ev.id,
@@ -167,7 +173,9 @@ export class ResultsService {
 
     // Step 4: Calculate Daily Summary Metrics
     const completedResults = results.filter(
-      (r) => r.evaluationStatus === EvaluationStatus.COMPLETED,
+      (r) =>
+        r.evaluationStatus === EvaluationStatus.COMPLETED ||
+        r.evaluationStatus === EvaluationStatus.OVERRIDDEN,
     );
     const totalParticipants = results.length;
     const averageReturn =
@@ -300,7 +308,9 @@ export class ResultsService {
       const participantEmail = enrolledObj?.participant.email || null;
 
       const completed = evList.filter(
-        (ev) => ev.status === EvaluationStatus.COMPLETED,
+        (ev) =>
+          ev.status === EvaluationStatus.COMPLETED ||
+          ev.status === EvaluationStatus.OVERRIDDEN,
       );
       const picksCount = completed.length;
 
@@ -437,7 +447,9 @@ export class ResultsService {
       winnerParticipantName: targetReachedWinner ? targetReachedWinner.participantName : null,
       totalParticipants: tournament.participants.length,
       totalEvaluatedPicks: evaluations.filter(
-        (e) => e.status === EvaluationStatus.COMPLETED,
+        (e) =>
+          e.status === EvaluationStatus.COMPLETED ||
+          e.status === EvaluationStatus.OVERRIDDEN,
       ).length,
       standings: statsList,
     };
@@ -466,7 +478,9 @@ export class ResultsService {
     const evaluations = await this.prisma.tradeEvaluation.findMany({
       where: {
         pick: { tournamentId },
-        status: EvaluationStatus.COMPLETED,
+        status: {
+          in: [EvaluationStatus.COMPLETED, EvaluationStatus.OVERRIDDEN],
+        },
       },
       include: {
         override: true,
@@ -480,7 +494,9 @@ export class ResultsService {
       const exitReason = ev.exitReason ?? 'MARKET_CLOSE';
       const overridePoints = ev.override?.overridePoints
         ? Number(ev.override.overridePoints)
-        : null;
+        : ev.status === EvaluationStatus.OVERRIDDEN
+          ? returnVal
+          : null;
 
       const calc = this.pointsEngine.calculatePoints({
         evaluationId: ev.id,

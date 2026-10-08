@@ -103,7 +103,7 @@ export class MarketDataController {
     return this.marketDataService.getCandles(
       symbol,
       tradingDate,
-      limit ? Number(limit) : 500,
+      limit ? Number(limit) : 1000,
     );
   }
 }

@@ -150,7 +150,9 @@ export class AutomationService {
           },
         });
 
-        completedCount = evals.filter((e) => e.status === 'COMPLETED').length;
+        completedCount = evals.filter(
+          (e) => e.status === 'COMPLETED' || e.status === 'OVERRIDDEN',
+        ).length;
         exceptionsCount = evals.filter(
           (e) => e.status === 'REVIEW_REQUIRED' || e.status === 'PENDING_DATA',
         ).length;

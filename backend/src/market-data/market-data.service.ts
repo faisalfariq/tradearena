@@ -250,7 +250,7 @@ export class MarketDataService {
   /**
    * Retrieves stored intraday candles for a specific symbol and date.
    */
-  async getCandles(symbol: string, tradingDate: string, limit: number = 500) {
+  async getCandles(symbol: string, tradingDate: string, limit: number = 1000) {
     const cleanSymbol = symbol.trim().toUpperCase();
     const dateStr = tradingDate.substring(0, 10);
     const tradingDateObj = new Date(`${dateStr}T00:00:00.000Z`);
