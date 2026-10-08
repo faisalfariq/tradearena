@@ -167,7 +167,7 @@ export class ResultsService {
         points,
         pointsRule: ev.pointsResult?.pointsRule || pointsRule,
         evaluationStatus: ev.status,
-        isOverridden: !!ev.override,
+        isOverridden: ev.status === EvaluationStatus.OVERRIDDEN,
       };
     });
 
@@ -492,11 +492,12 @@ export class ResultsService {
     for (const ev of evaluations) {
       const returnVal = Number(ev.realizedReturn ?? 0);
       const exitReason = ev.exitReason ?? 'MARKET_CLOSE';
-      const overridePoints = ev.override?.overridePoints
-        ? Number(ev.override.overridePoints)
-        : ev.status === EvaluationStatus.OVERRIDDEN
-          ? returnVal
-          : null;
+      const overridePoints =
+        ev.status === EvaluationStatus.OVERRIDDEN && ev.override?.overridePoints
+          ? Number(ev.override.overridePoints)
+          : ev.status === EvaluationStatus.OVERRIDDEN
+            ? returnVal
+            : null;
 
       const calc = this.pointsEngine.calculatePoints({
         evaluationId: ev.id,

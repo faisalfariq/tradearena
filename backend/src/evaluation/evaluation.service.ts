@@ -169,6 +169,11 @@ export class EvaluationService {
       },
     });
 
+    // Clean up any lingering override record since the evaluation was recomputed algorithmically by the engine
+    await this.prisma.evaluationOverride.deleteMany({
+      where: { evaluationId: evaluation.id },
+    });
+
     this.logger.log(
       `[Evaluation] Pick ${pick.id} (${pick.stock.symbol}) evaluated: Exit ${evalOutput.exitPrice} (${evalOutput.exitReason}), Return: ${evalOutput.realizedReturn}%`,
     );
@@ -251,7 +256,7 @@ export class EvaluationService {
       whereClause.pick.tradingDate = targetDate;
     }
 
-    return this.prisma.tradeEvaluation.findMany({
+    const evaluations = await this.prisma.tradeEvaluation.findMany({
       where: whereClause,
       include: {
         pick: {
@@ -274,6 +279,11 @@ export class EvaluationService {
         createdAt: 'desc',
       },
     });
+
+    return evaluations.map((ev) => ({
+      ...ev,
+      override: ev.status === EvaluationStatus.OVERRIDDEN ? ev.override : null,
+    }));
   }
 
   /**
@@ -310,7 +320,13 @@ export class EvaluationService {
       );
     }
 
-    return evaluation;
+    return {
+      ...evaluation,
+      override:
+        evaluation.status === EvaluationStatus.OVERRIDDEN
+          ? evaluation.override
+          : null,
+    };
   }
 
   /**

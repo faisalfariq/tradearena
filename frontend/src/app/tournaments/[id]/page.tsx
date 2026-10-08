@@ -3033,9 +3033,9 @@ export default function TournamentDetailPage() {
                           <td className="py-3.5 px-4 font-medium text-white">
                             <div className="flex items-center gap-2">
                               <span>{ev.pick.participant.name}</span>
-                              {ev.override && (
+                              {ev.status === 'OVERRIDDEN' && (
                                 <span
-                                  title={`Di-override oleh admin: ${ev.override.reason}`}
+                                  title={`Di-override oleh admin: ${ev.override?.reason || 'Penyesuaian manual'}`}
                                   className="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold"
                                 >
                                   OVERRIDDEN

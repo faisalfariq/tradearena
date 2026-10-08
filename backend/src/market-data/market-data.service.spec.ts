@@ -5,6 +5,9 @@ import {
   MARKET_DATA_PROVIDER,
   MarketDataProvider,
 } from './interfaces/market-data-provider.interface';
+import { YahooMarketDataProvider } from './providers/yahoo-market-data.provider';
+import { MockMarketDataProvider } from './providers/mock-market-data.provider';
+import { HttpMarketDataProvider } from './providers/http-market-data.provider';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { SyncStatus } from '@prisma/client';
 
@@ -117,6 +120,7 @@ describe('MarketDataService', () => {
         update: jest.fn().mockResolvedValue({ id: 'sync-item-1' }),
       },
       intradayCandle: {
+        deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
         createMany: jest.fn().mockResolvedValue({ count: 1 }),
         findMany: jest.fn().mockResolvedValue(mockCandles),
       },
@@ -127,6 +131,9 @@ describe('MarketDataService', () => {
         MarketDataService,
         { provide: PrismaService, useValue: prismaService },
         { provide: MARKET_DATA_PROVIDER, useValue: mockProvider },
+        { provide: YahooMarketDataProvider, useValue: mockProvider },
+        { provide: MockMarketDataProvider, useValue: mockProvider },
+        { provide: HttpMarketDataProvider, useValue: mockProvider },
       ],
     }).compile();
 

@@ -74,6 +74,7 @@ describe('EvaluationService', () => {
       },
       evaluationOverride: {
         upsert: jest.fn(),
+        deleteMany: jest.fn(),
       },
       auditLog: {
         create: jest.fn(),
