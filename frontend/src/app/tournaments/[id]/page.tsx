@@ -398,7 +398,7 @@ export default function TournamentDetailPage() {
   const [syncRuns, setSyncRuns] = useState<MarketSyncRun[]>([]);
   const [loadingSyncRuns, setLoadingSyncRuns] = useState(false);
   const [syncDate, setSyncDate] = useState('');
-  const [syncProvider, setSyncProvider] = useState<'mock' | 'http'>('mock');
+  const [syncProvider, setSyncProvider] = useState<'yahoo' | 'mock' | 'http'>('yahoo');
   const [triggeringSync, setTriggeringSync] = useState(false);
   const [syncError, setSyncError] = useState('');
   const [syncSuccess, setSyncSuccess] = useState('');
@@ -844,7 +844,14 @@ export default function TournamentDetailPage() {
     setTriggeringSync(true);
 
     try {
-      const targetDate = syncDate || tournament?.startDate.substring(0, 10);
+      const todayDateStr = new Date().toLocaleDateString('en-CA');
+      const targetDate =
+        syncDate ||
+        (tournament &&
+        todayDateStr >= tournament.startDate.substring(0, 10) &&
+        todayDateStr <= tournament.endDate.substring(0, 10)
+          ? todayDateStr
+          : tournament?.startDate.substring(0, 10) || todayDateStr);
       const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/market-sync`, {
         method: 'POST',
         headers: {
@@ -2591,7 +2598,14 @@ export default function TournamentDetailPage() {
                   <input
                     type="date"
                     required
-                    value={syncDate || (tournament ? tournament.startDate.substring(0, 10) : '')}
+                    value={
+                      syncDate ||
+                      (tournament &&
+                      new Date().toLocaleDateString('en-CA') >= tournament.startDate.substring(0, 10) &&
+                      new Date().toLocaleDateString('en-CA') <= tournament.endDate.substring(0, 10)
+                        ? new Date().toLocaleDateString('en-CA')
+                        : tournament?.startDate.substring(0, 10) || '')
+                    }
                     onChange={(e) => setSyncDate(e.target.value)}
                     min={tournament?.startDate.substring(0, 10)}
                     max={tournament?.endDate.substring(0, 10)}
@@ -2605,10 +2619,11 @@ export default function TournamentDetailPage() {
                   </label>
                   <select
                     value={syncProvider}
-                    onChange={(e) => setSyncProvider(e.target.value as 'mock' | 'http')}
+                    onChange={(e) => setSyncProvider(e.target.value as 'yahoo' | 'mock' | 'http')}
                     className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-blue-500"
                   >
-                    <option value="mock">Mock IDX (Deterministik 330 Bar)</option>
+                    <option value="yahoo">Yahoo Finance IDX (Bursa Riil 1-Menit - Disarankan)</option>
+                    <option value="mock">Mock IDX (Simulasi Deterministik 330 Bar)</option>
                     <option value="http">HTTP Provider (API Eksternal)</option>
                   </select>
                 </div>

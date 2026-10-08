@@ -10,6 +10,9 @@ import {
   MarketDataProvider,
   MARKET_DATA_PROVIDER,
 } from './interfaces/market-data-provider.interface';
+import { YahooMarketDataProvider } from './providers/yahoo-market-data.provider';
+import { MockMarketDataProvider } from './providers/mock-market-data.provider';
+import { HttpMarketDataProvider } from './providers/http-market-data.provider';
 import { TriggerSyncDto } from './dto/trigger-sync.dto';
 import { SyncStatus } from '@prisma/client';
 
@@ -20,7 +23,10 @@ export class MarketDataService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(MARKET_DATA_PROVIDER)
-    private readonly provider: MarketDataProvider,
+    private readonly defaultProvider: MarketDataProvider,
+    private readonly yahooProvider: YahooMarketDataProvider,
+    private readonly mockProvider: MockMarketDataProvider,
+    private readonly httpProvider: HttpMarketDataProvider,
   ) {}
 
   /**
@@ -96,6 +102,20 @@ export class MarketDataService {
       },
     });
 
+    const providerKey = (dto.provider || '').toLowerCase();
+    const chosenProvider: MarketDataProvider =
+      providerKey === 'yahoo' || providerKey === 'yahoo_finance'
+        ? this.yahooProvider
+        : providerKey === 'mock'
+        ? this.mockProvider
+        : providerKey === 'http'
+        ? this.httpProvider
+        : this.defaultProvider;
+
+    this.logger.log(
+      `[MarketSync] Selected provider '${chosenProvider.providerName}' for date ${dateStr}`,
+    );
+
     let syncedCount = 0;
     let failedCount = 0;
 
@@ -124,7 +144,7 @@ export class MarketDataService {
 
       try {
         // Fetch canonical normalized candles from provider
-        const normalizedCandles = await this.provider.getIntradayCandles({
+        const normalizedCandles = await chosenProvider.getIntradayCandles({
           symbol,
           tradingDate: dateStr,
           interval: '1m',
@@ -132,7 +152,7 @@ export class MarketDataService {
 
         if (normalizedCandles.length === 0) {
           throw new Error(
-            `Provider '${this.provider.providerName}' tidak mengembalikan candle untuk ${symbol}`,
+            `Provider '${chosenProvider.providerName}' tidak mengembalikan candle untuk ${symbol}`,
           );
         }
 
