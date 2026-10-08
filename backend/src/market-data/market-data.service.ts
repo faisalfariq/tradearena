@@ -136,6 +136,14 @@ export class MarketDataService {
           );
         }
 
+        // Clean up any previous candles for this symbol & date to guarantee fresh canonical data
+        await this.prisma.intradayCandle.deleteMany({
+          where: {
+            symbol: stock.symbol,
+            tradingDate: tradingDateObj,
+          },
+        });
+
         // Batch persist candles into database
         // In PostgreSQL with Prisma, createMany with skipDuplicates ensures idempotency
         await this.prisma.intradayCandle.createMany({

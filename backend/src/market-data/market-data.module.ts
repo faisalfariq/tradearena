@@ -5,6 +5,7 @@ import { MarketDataService } from './market-data.service';
 import { MarketDataController } from './market-data.controller';
 import { MockMarketDataProvider } from './providers/mock-market-data.provider';
 import { HttpMarketDataProvider } from './providers/http-market-data.provider';
+import { YahooMarketDataProvider } from './providers/yahoo-market-data.provider';
 import { MARKET_DATA_PROVIDER } from './interfaces/market-data-provider.interface';
 
 @Module({
@@ -14,22 +15,33 @@ import { MARKET_DATA_PROVIDER } from './interfaces/market-data-provider.interfac
     MarketDataService,
     MockMarketDataProvider,
     HttpMarketDataProvider,
+    YahooMarketDataProvider,
     {
       provide: MARKET_DATA_PROVIDER,
       useFactory: (
         config: ConfigService,
         mockProvider: MockMarketDataProvider,
         httpProvider: HttpMarketDataProvider,
+        yahooProvider: YahooMarketDataProvider,
       ) => {
         const providerName = (
-          config.get<string>('MARKET_DATA_PROVIDER') || 'mock'
+          config.get<string>('MARKET_DATA_PROVIDER') || 'yahoo'
         ).toLowerCase();
         if (providerName === 'http') {
           return httpProvider;
         }
-        return mockProvider;
+        if (providerName === 'pure_mock') {
+          return mockProvider;
+        }
+        // Default to Yahoo Finance real IDX intraday provider with mock fallback
+        return yahooProvider;
       },
-      inject: [ConfigService, MockMarketDataProvider, HttpMarketDataProvider],
+      inject: [
+        ConfigService,
+        MockMarketDataProvider,
+        HttpMarketDataProvider,
+        YahooMarketDataProvider,
+      ],
     },
   ],
   exports: [MarketDataService, MARKET_DATA_PROVIDER],
