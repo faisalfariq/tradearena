@@ -6,9 +6,16 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { MarketDataModule } from '../market-data/market-data.module';
 import { EvaluationModule } from '../evaluation/evaluation.module';
 import { ResultsModule } from '../results/results.module';
+import { StocksModule } from '../stocks/stocks.module';
 
 @Module({
-  imports: [PrismaModule, MarketDataModule, EvaluationModule, ResultsModule],
+  imports: [
+    PrismaModule,
+    MarketDataModule,
+    EvaluationModule,
+    ResultsModule,
+    StocksModule,
+  ],
   controllers: [AutomationController],
   providers: [AutomationService, AutomationScheduler],
   exports: [AutomationService],

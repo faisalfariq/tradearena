@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
 import { AutomationService } from './automation.service';
+import { StocksService } from '../stocks/stocks.service';
 
 @Injectable()
 export class AutomationScheduler {
@@ -10,7 +11,28 @@ export class AutomationScheduler {
   constructor(
     private readonly prisma: PrismaService,
     private readonly automationService: AutomationService,
+    private readonly stocksService: StocksService,
   ) {}
+
+  /**
+   * Pre-market cron scheduled at 08:00 WIB (Asia/Jakarta) every Monday through Friday
+   * (1 jam sebelum pembukaan pasar reguler BEI jam 09:00 WIB).
+   * Automatically refreshes IDX stocks universe and updates board & status classifications.
+   */
+  @Cron('0 8 * * 1-5', {
+    name: 'pre-market-idx-stocks-sync',
+    timeZone: 'Asia/Jakarta',
+  })
+  async handlePreMarketStocksSync() {
+    this.logger.log('Executing automated pre-market IDX stock catalog sync (08:00 WIB)...');
+    try {
+      const res = await this.stocksService.syncIdxStocks();
+      this.logger.log(`Pre-market stock sync completed successfully: ${res.message}`);
+      return res;
+    } catch (err: any) {
+      this.logger.error(`Error in automated pre-market stock sync: ${err.message}`);
+    }
+  }
 
   /**
    * Daily cron job scheduled at 16:30 WIB (Asia/Jakarta) every Monday through Friday
