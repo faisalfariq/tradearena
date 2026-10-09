@@ -386,16 +386,34 @@ export class PicksService {
     stock: { id: string; symbol: string; board?: string },
     referenceDateStr: string,
   ): Promise<number> {
-    // 1. Anti-FCA Check
-    const board = (stock.board || '').toLowerCase().trim();
-    if (board.includes('pemantauan khusus') || board.includes('fca')) {
-      throw new BadRequestException(
-        `Saham ${stock.symbol} berada di Papan Pemantauan Khusus (Full Call Auction / FCA) dan tidak dapat dipilih dalam turnamen.`,
-      );
-    }
-
     const cleanSymbol = stock.symbol.trim().toUpperCase();
     const symbolJk = `${cleanSymbol}.JK`;
+
+    // Dynamic Board Resolution: if stock.board defaults to 'Utama', check bundled IDX catalog
+    let resolvedBoard = stock.board || 'Utama';
+    if (resolvedBoard.toLowerCase() === 'utama') {
+      try {
+        const catalog = require('../stocks/data/idx-stocks.json');
+        const matched = catalog.find((c: any) => c.symbol === cleanSymbol);
+        if (matched?.board && matched.board.toLowerCase() !== 'utama') {
+          resolvedBoard = matched.board;
+          this.prisma.stock
+            .update({
+              where: { id: stock.id },
+              data: { board: matched.board },
+            })
+            .catch(() => {});
+        }
+      } catch {}
+    }
+
+    // 1. Anti-FCA Check
+    const boardLower = resolvedBoard.toLowerCase().trim();
+    if (boardLower.includes('pemantauan khusus') || boardLower.includes('fca')) {
+      throw new BadRequestException(
+        `Saham ${cleanSymbol} berada di Papan Pemantauan Khusus (Full Call Auction / FCA) dan tidak dapat dipilih dalam turnamen.`,
+      );
+    }
 
     let closePrice: number | null = null;
     let previousClose: number | null = null;
@@ -423,10 +441,26 @@ export class PicksService {
 
         if (validPrice && Number(validPrice) > 0) {
           closePrice = Math.round(Number(validPrice));
-          const prev = meta?.chartPreviousClose || meta?.previousClose;
-          if (prev && Number(prev) > 0) {
-            previousClose = Math.round(Number(prev));
+
+          // Extract previous session close price reliably from candle series
+          const quotes = data?.chart?.result?.[0]?.indicators?.quote?.[0];
+          const rawCloses = quotes?.close || [];
+          const validCloses = rawCloses.filter(
+            (c: any) => c != null && Number(c) > 0,
+          );
+
+          if (validCloses.length >= 2) {
+            // The last entry is today's latest candle, the second-to-last is yesterday's official close!
+            previousClose = Math.round(
+              Number(validCloses[validCloses.length - 2]),
+            );
+          } else {
+            const prev = meta?.previousClose || meta?.chartPreviousClose;
+            if (prev && Number(prev) > 0) {
+              previousClose = Math.round(Number(prev));
+            }
           }
+
           if (meta?.regularMarketVolume !== undefined) {
             volume = Number(meta.regularMarketVolume);
           }
@@ -462,7 +496,7 @@ export class PicksService {
         }
       }
     } catch (err) {
-      console.warn(`[validateAndResolveStockPick] Yahoo Finance fetch notice for ${stock.symbol}:`, (err as Error).message);
+      console.warn(`[validateAndResolveStockPick] Yahoo Finance fetch notice for ${cleanSymbol}:`, (err as Error).message);
     }
 
     // Fallback to candle in DB if live quote unavailable
@@ -485,17 +519,17 @@ export class PicksService {
     // 2. Anti-Suspensi Check (If live quote returns volume === 0)
     if (isLive && volume === 0) {
       throw new BadRequestException(
-        `Saham ${stock.symbol} terdeteksi sedang disuspensi atau tidak ada volume perdagangan pada sesi hari ini.`,
+        `Saham ${cleanSymbol} terdeteksi sedang disuspensi atau tidak ada volume perdagangan pada sesi hari ini.`,
       );
     }
 
     // 3. Anti-Closing ARA Check
     if (previousClose && previousClose > 0 && closePrice > previousClose) {
-      if (this.priceFractionService.isClosingAra(closePrice, previousClose, stock.board)) {
-        const araLimit = this.priceFractionService.calculateAraPrice(previousClose, stock.board);
-        const boardLabel = stock.board ? ` (${stock.board})` : '';
+      if (this.priceFractionService.isClosingAra(closePrice, previousClose, resolvedBoard)) {
+        const araLimit = this.priceFractionService.calculateAraPrice(previousClose, resolvedBoard);
+        const boardLabel = resolvedBoard ? ` (${resolvedBoard})` : '';
         throw new BadRequestException(
-          `Saham ${stock.symbol}${boardLabel} ditutup di batas Auto Rejection Atas (ARA di Rp ${araLimit}) dan tidak dapat dipilih.`,
+          `Saham ${cleanSymbol}${boardLabel} ditutup di batas Auto Rejection Atas (ARA di Rp ${araLimit}) dan tidak dapat dipilih.`,
         );
       }
     }

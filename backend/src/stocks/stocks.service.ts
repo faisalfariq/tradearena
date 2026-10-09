@@ -2,14 +2,31 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 
 @Injectable()
-export class StocksService {
+export class StocksService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    // Auto-heal stock boards from bundled IDX catalog if currently set to 'Utama'
+    try {
+      const catalog = require('./data/idx-stocks.json');
+      const nonUtama = catalog.filter(
+        (s: any) => s.board && s.board.toLowerCase() !== 'utama',
+      );
+      for (const item of nonUtama) {
+        await this.prisma.stock.updateMany({
+          where: { symbol: item.symbol, board: 'Utama' },
+          data: { board: item.board },
+        });
+      }
+    } catch {}
+  }
 
   async create(dto: CreateStockDto) {
     const symbol = dto.symbol.trim().toUpperCase();
