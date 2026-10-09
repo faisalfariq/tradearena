@@ -455,7 +455,34 @@ export class PicksService {
             }
           }
 
-          if (meta?.regularMarketVolume !== undefined) {
+          // Extract volume reliably from today's session or check if trading was halted/suspended
+          const rawVolumes = quotes?.volume || [];
+          const timestamps = data?.chart?.result?.[0]?.timestamp || [];
+          let todayVolume: number | null = null;
+
+          if (timestamps.length > 0 && rawVolumes.length === timestamps.length) {
+            const lastTs = timestamps[timestamps.length - 1];
+            const candleDateWib = new Date(lastTs * 1000 + 7 * 3600 * 1000)
+              .toISOString()
+              .split('T')[0];
+            if (candleDateWib === referenceDateStr) {
+              const val = rawVolumes[rawVolumes.length - 1];
+              todayVolume = val == null ? 0 : Number(val);
+            }
+          }
+
+          const lastTradeDateWib = meta?.regularMarketTime
+            ? new Date(meta.regularMarketTime * 1000 + 7 * 3600 * 1000)
+                .toISOString()
+                .split('T')[0]
+            : null;
+
+          if (todayVolume !== null) {
+            volume = todayVolume;
+          } else if (lastTradeDateWib && lastTradeDateWib < referenceDateStr) {
+            // No trades occurred today on regular market (e.g. suspended by IDX)
+            volume = 0;
+          } else if (meta?.regularMarketVolume !== undefined) {
             volume = Number(meta.regularMarketVolume);
           }
           isLive = true;
