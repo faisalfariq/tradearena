@@ -575,32 +575,60 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* Card 3: Stock Catalog */}
-          <Link
-            href="/stocks"
-            className="p-6 rounded-2xl glass-panel border border-slate-800 hover:border-purple-500/40 transition-all group flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <CandlestickChart className="w-5 h-5" />
+          {/* Card 3: Stock Catalog (Admin only) or Rules & Guidelines (Participants) */}
+          {user?.role === 'ADMIN' ? (
+            <Link
+              href="/stocks"
+              className="p-6 rounded-2xl glass-panel border border-slate-800 hover:border-purple-500/40 transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <CandlestickChart className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                    Katalog IDX (Admin)
+                  </span>
                 </div>
-                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
-                  Katalog IDX
-                </span>
+                <h3 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors mb-1.5">
+                  Daftar Saham Terdaftar
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Kelola dan sinkronkan master data emiten resmi BEI serta status papan perdagangan saham.
+                </p>
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors mb-1.5">
-                Daftar Saham Terdaftar
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Cek daftar saham resmi IDX yang memenuhi kriteria fraksi harga dan diizinkan dalam turnamen.
-              </p>
-            </div>
-            <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-purple-400 group-hover:translate-x-1 transition-transform">
-              <span>Lihat Katalog Saham</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </div>
-          </Link>
+              <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-purple-400 group-hover:translate-x-1 transition-transform">
+                <span>Kelola Katalog Saham</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </Link>
+          ) : (
+            <Link
+              href="/tournaments"
+              className="p-6 rounded-2xl glass-panel border border-slate-800 hover:border-purple-500/40 transition-all group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                    Regulasi & Fair Play
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors mb-1.5">
+                  Aturan & Mekanisme
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Pelajari ketentuan Anti-FCA, Anti-Suspensi, batas Auto Rejection Atas (ARA), serta proteksi Cut Loss harian.
+                </p>
+              </div>
+              <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-purple-400 group-hover:translate-x-1 transition-transform">
+                <span>Lihat Aturan Turnamen</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </Link>
+          )}
         </div>
 
         {/* Active & Upcoming Tournaments */}

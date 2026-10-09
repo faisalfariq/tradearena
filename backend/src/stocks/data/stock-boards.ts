@@ -7,6 +7,12 @@ export const PENGEMBANGAN_SYMBOLS = new Set<string>(["ACST","ADES","ADMF","ADMG"
 
 export const EKONOMI_BARU_SYMBOLS = new Set<string>(["BUKA","GOTO","BELI"]);
 
+export const SUSPENDED_SYMBOLS = new Set<string>(["CSMI"]);
+
+export function isIdxStockSuspended(symbol: string): boolean {
+  return SUSPENDED_SYMBOLS.has((symbol || '').trim().toUpperCase());
+}
+
 /**
  * Returns accurate IDX board for symbol, prioritizing official IDX categorization
  */
@@ -21,3 +27,4 @@ export function resolveIdxStockBoard(symbol: string, existingBoard?: string): st
   }
   return 'Utama';
 }
+

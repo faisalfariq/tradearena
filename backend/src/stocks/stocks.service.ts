@@ -14,6 +14,7 @@ import {
   PENGEMBANGAN_SYMBOLS,
   EKONOMI_BARU_SYMBOLS,
   resolveIdxStockBoard,
+  isIdxStockSuspended,
 } from './data/stock-boards';
 
 @Injectable()
@@ -21,23 +22,23 @@ export class StocksService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
-    // Auto-heal stock boards from official IDX sets if currently set to 'Utama'
+    // Unconditionally sync stock boards from official IDX sets
     try {
       await Promise.all([
         this.prisma.stock.updateMany({
-          where: { symbol: { in: Array.from(AKSELERASI_SYMBOLS) }, board: 'Utama' },
+          where: { symbol: { in: Array.from(AKSELERASI_SYMBOLS) } },
           data: { board: 'Akselerasi' },
         }),
         this.prisma.stock.updateMany({
-          where: { symbol: { in: Array.from(FCA_SYMBOLS) }, board: 'Utama' },
+          where: { symbol: { in: Array.from(FCA_SYMBOLS) } },
           data: { board: 'Pemantauan Khusus' },
         }),
         this.prisma.stock.updateMany({
-          where: { symbol: { in: Array.from(PENGEMBANGAN_SYMBOLS) }, board: 'Utama' },
+          where: { symbol: { in: Array.from(PENGEMBANGAN_SYMBOLS) } },
           data: { board: 'Pengembangan' },
         }),
         this.prisma.stock.updateMany({
-          where: { symbol: { in: Array.from(EKONOMI_BARU_SYMBOLS) }, board: 'Utama' },
+          where: { symbol: { in: Array.from(EKONOMI_BARU_SYMBOLS) } },
           data: { board: 'Ekonomi Baru' },
         }),
       ]);
@@ -83,10 +84,16 @@ export class StocksService implements OnModuleInit {
       ];
     }
 
-    return this.prisma.stock.findMany({
+    const stocks = await this.prisma.stock.findMany({
       where,
       orderBy: { symbol: 'asc' },
     });
+
+    return stocks.map((stock) => ({
+      ...stock,
+      board: resolveIdxStockBoard(stock.symbol, stock.board),
+      isSuspended: isIdxStockSuspended(stock.symbol),
+    }));
   }
 
   async findOne(id: string) {
@@ -103,13 +110,23 @@ export class StocksService implements OnModuleInit {
       throw new NotFoundException(`Saham dengan ID ${id} tidak ditemukan`);
     }
 
-    return stock;
+    return {
+      ...stock,
+      board: resolveIdxStockBoard(stock.symbol, stock.board),
+      isSuspended: isIdxStockSuspended(stock.symbol),
+    };
   }
 
   async findBySymbol(symbol: string) {
-    return this.prisma.stock.findUnique({
+    const stock = await this.prisma.stock.findUnique({
       where: { symbol: symbol.trim().toUpperCase() },
     });
+    if (!stock) return null;
+    return {
+      ...stock,
+      board: resolveIdxStockBoard(stock.symbol, stock.board),
+      isSuspended: isIdxStockSuspended(stock.symbol),
+    };
   }
 
   async update(id: string, dto: UpdateStockDto) {

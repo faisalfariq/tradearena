@@ -72,14 +72,14 @@ export default function Sidebar() {
             icon: UserCog,
             active: pathname.startsWith('/users'),
           },
+          {
+            label: 'Katalog Saham',
+            href: '/stocks',
+            icon: CandlestickChart,
+            active: pathname.startsWith('/stocks'),
+          },
         ]
       : []),
-    {
-      label: 'Katalog Saham',
-      href: '/stocks',
-      icon: CandlestickChart,
-      active: pathname.startsWith('/stocks'),
-    },
   ];
 
   return (

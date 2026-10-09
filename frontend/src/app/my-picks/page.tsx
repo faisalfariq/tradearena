@@ -42,6 +42,7 @@ interface Stock {
   exchange: string;
   board?: string;
   isActive: boolean;
+  isSuspended?: boolean;
 }
 
 interface EvaluationItem {
@@ -915,19 +916,21 @@ export default function MyPicksPage() {
                                   const isSelected = stock.id === selectedStockId;
                                   const boardLower = (stock.board || '').toLowerCase();
                                   const isFca = boardLower.includes('pemantauan khusus') || boardLower.includes('fca');
+                                  const isSuspended = Boolean(stock.isSuspended);
                                   const isAkselerasi = boardLower.includes('akselerasi');
+                                  const isDisabled = isFca || isSuspended;
                                   return (
                                     <button
                                       key={stock.id}
                                       type="button"
-                                      disabled={isFca}
+                                      disabled={isDisabled}
                                       onClick={() => {
-                                        if (isFca) return;
+                                        if (isDisabled) return;
                                         setSelectedStockId(stock.id);
                                         setIsStockDropdownOpen(false);
                                       }}
                                       className={`w-full px-3 py-2.5 rounded-xl flex items-center justify-between text-left transition-all ${
-                                        isFca
+                                        isDisabled
                                           ? 'opacity-40 bg-rose-950/20 text-slate-500 cursor-not-allowed border border-rose-900/30'
                                           : isSelected
                                           ? 'bg-blue-600/25 border border-blue-500/40 text-white'
@@ -946,6 +949,11 @@ export default function MyPicksPage() {
                                         {isFca && (
                                           <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 shrink-0">
                                             FCA (Dilarang)
+                                          </span>
+                                        )}
+                                        {isSuspended && (
+                                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                                            Suspend (Dilarang)
                                           </span>
                                         )}
                                         <span className="text-xs truncate font-medium text-slate-200">

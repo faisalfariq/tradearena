@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import {
   TrendingUp,
@@ -29,7 +30,16 @@ interface Stock {
 }
 
 export default function StocksPage() {
+  const router = useRouter();
   const { user, token } = useAuth();
+
+  // Guard: Admin only
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN') {
+      router.push('/');
+    }
+  }, [user, router]);
+
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ACTIVE');
@@ -160,6 +170,20 @@ export default function StocksPage() {
 
   const totalPages = Math.ceil(stocks.length / pageSize) || 1;
   const paginatedStocks = stocks.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  if (user && user.role !== 'ADMIN') {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mb-4">
+          <AlertCircle className="w-7 h-7" />
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">Akses Terbatas</h2>
+        <p className="text-sm text-slate-400 max-w-md">
+          Katalog master emiten saham hanya dapat diakses dan dikelola oleh Administrator. Mengalihkan Anda...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
