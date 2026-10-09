@@ -50,6 +50,8 @@ interface DailyResultItem {
   rank: number;
   participantId: string;
   participantName: string;
+  pickId?: string;
+  evaluationId?: string;
   stockSymbol: string;
   stockName: string;
   tradingDate: string;
@@ -730,6 +732,9 @@ export default function TournamentDetailPage() {
         if (res.ok) {
           const data = await res.json();
           setDailyResults(data);
+          if (data.tradingDate && !date) {
+            setResultsDateFilter(data.tradingDate);
+          }
         }
       } catch {
         // ignore
@@ -2840,9 +2845,11 @@ export default function TournamentDetailPage() {
                       setEvalDateFilter(e.target.value);
                       fetchEvaluations(e.target.value);
                     }}
+                    onClick={(e) => e.currentTarget.showPicker?.()}
+                    onFocus={(e) => e.currentTarget.showPicker?.()}
                     min={tournament?.startDate.substring(0, 10)}
                     max={tournament?.endDate.substring(0, 10)}
-                    className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-blue-500 font-mono cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                   />
                 </div>
 
@@ -3231,31 +3238,45 @@ export default function TournamentDetailPage() {
               {/* Date Filter (for Daily view) */}
               {resultsView === 'DAILY' && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">Tanggal:</span>
+                  <span className="text-xs text-slate-400 font-medium">Tanggal:</span>
                   <input
                     type="date"
-                    value={resultsDateFilter}
+                    value={
+                      resultsDateFilter ||
+                      dailyResults?.tradingDate ||
+                      (tournament &&
+                      new Date().toLocaleDateString('en-CA') >= tournament.startDate.substring(0, 10) &&
+                      new Date().toLocaleDateString('en-CA') <= tournament.endDate.substring(0, 10)
+                        ? new Date().toLocaleDateString('en-CA')
+                        : tournament?.startDate.substring(0, 10) || '')
+                    }
                     onChange={(e) => {
                       setResultsDateFilter(e.target.value);
                       fetchDailyResults(e.target.value);
                     }}
+                    onClick={(e) => e.currentTarget.showPicker?.()}
+                    onFocus={(e) => e.currentTarget.showPicker?.()}
                     min={tournament?.startDate.substring(0, 10)}
                     max={tournament?.endDate.substring(0, 10)}
-                    className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-blue-500 font-mono"
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-xs focus:outline-none focus:border-blue-500 font-mono cursor-pointer [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert"
                   />
-                  {resultsDateFilter && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const defaultDate = tournament?.startDate.substring(0, 10) || '';
-                        setResultsDateFilter(defaultDate);
-                        fetchDailyResults(defaultDate);
-                      }}
-                      className="text-xs text-slate-400 hover:text-white"
-                    >
-                      Reset
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const todayStr = new Date().toLocaleDateString('en-CA');
+                      const defaultDate =
+                        tournament &&
+                        todayStr >= tournament.startDate.substring(0, 10) &&
+                        todayStr <= tournament.endDate.substring(0, 10)
+                          ? todayStr
+                          : tournament?.endDate.substring(0, 10) || '';
+                      setResultsDateFilter(defaultDate);
+                      fetchDailyResults(defaultDate);
+                    }}
+                    className="text-xs text-slate-400 hover:text-white px-2 py-1 rounded-lg hover:bg-slate-800 transition-colors"
+                  >
+                    Reset
+                  </button>
                 </div>
               )}
             </div>
@@ -3585,6 +3606,7 @@ export default function TournamentDetailPage() {
                             <th className="py-3 px-4 font-semibold text-center">Realized Return</th>
                             <th className="py-3 px-4 font-semibold text-center">Poin Turnamen</th>
                             <th className="py-3 px-4 font-semibold text-center">Alasan Exit</th>
+                            <th className="py-3 px-4 font-semibold text-right">Bukti Audit</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800">
@@ -3722,6 +3744,18 @@ export default function TournamentDetailPage() {
                                   >
                                     {r.exitReason}
                                   </span>
+                                </td>
+
+                                {/* Evidence Action */}
+                                <td className="py-3.5 px-4 text-right">
+                                  <button
+                                    onClick={() => handleViewEvidence(r.evaluationId || r.pickId || '')}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition-all border border-slate-700 shadow-sm"
+                                    title="Lihat Bukti Audit & Trigger Candle"
+                                  >
+                                    <Eye className="w-3.5 h-3.5 text-blue-400" />
+                                    <span>Evidence</span>
+                                  </button>
                                 </td>
                               </tr>
                             );

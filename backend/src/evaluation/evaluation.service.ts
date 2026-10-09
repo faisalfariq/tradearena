@@ -290,8 +290,10 @@ export class EvaluationService {
    * Retrieves detailed evaluation record with full audit evidence.
    */
   async getEvaluationDetail(id: string) {
-    const evaluation = await this.prisma.tradeEvaluation.findUnique({
-      where: { id },
+    const evaluation = await this.prisma.tradeEvaluation.findFirst({
+      where: {
+        OR: [{ id }, { pickId: id }],
+      },
       include: {
         pick: {
           include: {

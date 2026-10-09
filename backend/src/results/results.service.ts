@@ -154,6 +154,7 @@ export class ResultsService {
         participantName: ev.pick.participant.name,
         participantEmail: ev.pick.participant.email,
         pickId: ev.pickId,
+        evaluationId: ev.id,
         stockSymbol: ev.pick.stock.symbol,
         stockName: ev.pick.stock.name,
         tradingDate: tradingDateStr.substring(0, 10),

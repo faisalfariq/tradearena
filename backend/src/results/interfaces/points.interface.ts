@@ -21,6 +21,7 @@ export interface DailyResultItem {
   participantName: string;
   participantEmail?: string | null;
   pickId: string;
+  evaluationId?: string;
   stockSymbol: string;
   stockName: string;
   tradingDate: string;
