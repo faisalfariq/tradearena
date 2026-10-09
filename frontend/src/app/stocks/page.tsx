@@ -23,6 +23,7 @@ import {
   Layers,
   ArrowUpDown,
   Power,
+  Info,
 } from 'lucide-react';
 
 interface Stock {
@@ -229,20 +230,32 @@ export default function StocksPage() {
 
     let boardLabel = stock.board || 'Utama';
     let boardBadgeColor = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
-    let araText = '+20% ~ +35%';
-    let arbText = '-15%';
-    let araColor = 'text-emerald-400';
-    let arbColor = 'text-rose-400';
+    let araTier = {
+      primary: '+20% s/d +35%',
+      detail: '≤Rp200: +35% | Rp200-5rb: +25% | >Rp5rb: +20%',
+      color: 'text-emerald-400',
+    };
+    let arbTier = {
+      primary: '-15%',
+      detail: 'Batas Asimetris BEI (-15%)',
+      color: 'text-rose-400',
+    };
     let eligibility = 'Boleh Dipilih';
     let eligibilityBadge = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
 
     if (isAkselerasi) {
       boardLabel = 'Akselerasi';
       boardBadgeColor = 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
-      araText = '+10%';
-      arbText = '-10%';
-      araColor = 'text-indigo-400';
-      arbColor = 'text-rose-400';
+      araTier = {
+        primary: '+10%',
+        detail: 'Flat +10% (Fraksi Rp 1)',
+        color: 'text-indigo-400',
+      };
+      arbTier = {
+        primary: '-10%',
+        detail: 'Flat -10% (Fraksi Rp 1)',
+        color: 'text-rose-400',
+      };
     } else if (isPengembangan) {
       boardLabel = 'Pengembangan';
       boardBadgeColor = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
@@ -254,17 +267,31 @@ export default function StocksPage() {
     if (isFca) {
       boardLabel = 'Pemantauan Khusus';
       boardBadgeColor = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
-      araText = '+10%';
-      arbText = '-10%';
+      araTier = {
+        primary: '+10%',
+        detail: 'Full Call Auction (FCA)',
+        color: 'text-rose-400',
+      };
+      arbTier = {
+        primary: '-10%',
+        detail: 'Full Call Auction (FCA)',
+        color: 'text-rose-400',
+      };
       eligibility = 'Dilarang (FCA)';
       eligibilityBadge = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
     }
 
     if (isSuspended) {
-      araText = '0% (Suspend)';
-      arbText = '0% (Suspend)';
-      araColor = 'text-slate-500';
-      arbColor = 'text-slate-500';
+      araTier = {
+        primary: '0%',
+        detail: 'Suspensi Bursa (Halted)',
+        color: 'text-slate-500',
+      };
+      arbTier = {
+        primary: '0%',
+        detail: 'Suspensi Bursa (Halted)',
+        color: 'text-slate-500',
+      };
       eligibility = 'Dilarang (Suspend)';
       eligibilityBadge = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
     } else if (!stock.isActive) {
@@ -278,10 +305,8 @@ export default function StocksPage() {
       isFca,
       isAkselerasi,
       isSuspended,
-      araText,
-      arbText,
-      araColor,
-      arbColor,
+      araTier,
+      arbTier,
       eligibility,
       eligibilityBadge,
     };
@@ -561,6 +586,38 @@ export default function StocksPage() {
         </div>
       </div>
 
+      {/* IDX Auto Rejection Reference Guide */}
+      <div className="p-3.5 rounded-2xl border border-cyan-900/40 bg-gradient-to-r from-cyan-950/30 via-slate-900/60 to-slate-900/40 text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-inner">
+        <div className="flex items-start gap-2.5">
+          <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <div className="font-semibold text-slate-200 text-xs">
+              Pedoman Batas Auto Rejection Resmi Bursa Efek Indonesia (BEI):
+            </div>
+            <div className="text-[11px] text-slate-400 flex flex-wrap gap-x-4 gap-y-1">
+              <span>
+                <strong className="text-emerald-400">Reguler ≤ Rp200:</strong> ARA +35% | ARB -15%
+              </span>
+              <span>
+                <strong className="text-emerald-400">Reguler Rp200-5.000:</strong> ARA +25% | ARB -15%
+              </span>
+              <span>
+                <strong className="text-emerald-400">Reguler &gt; Rp5.000:</strong> ARA +20% | ARB -15%
+              </span>
+              <span>
+                <strong className="text-indigo-400">Akselerasi:</strong> ARA +10% | ARB -10%
+              </span>
+              <span>
+                <strong className="text-rose-400">FCA / PPK:</strong> ARA +10% | ARB -10%
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="text-[10px] text-slate-500 font-mono whitespace-nowrap self-end md:self-auto">
+          Ref: Kep-00055/BEI/03-2023
+        </div>
+      </div>
+
       {/* Filter, Search & Controls Bar */}
       <div className="p-4 rounded-2xl glass-panel border border-slate-800 bg-slate-900/70 space-y-3.5">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
@@ -739,10 +796,8 @@ export default function StocksPage() {
                     isFca,
                     isSuspended,
                     isAkselerasi,
-                    araText,
-                    arbText,
-                    araColor,
-                    arbColor,
+                    araTier,
+                    arbTier,
                     eligibility,
                     eligibilityBadge,
                   } = getStockAttributes(stock);
@@ -792,28 +847,22 @@ export default function StocksPage() {
 
                       {/* Batas ARA */}
                       <td className="py-3.5 px-4 text-center">
-                        <span className={`font-mono font-bold text-xs ${araColor}`}>
-                          {araText}
+                        <span className={`font-mono font-bold text-xs ${araTier.color}`}>
+                          {araTier.primary}
                         </span>
-                        {isAkselerasi && (
-                          <div className="text-[9px] text-indigo-400 font-mono">Fraksi Rp 1</div>
-                        )}
-                        {!isAkselerasi && !isFca && !isSuspended && (
-                          <div className="text-[9px] text-slate-500">Tiered (Harga)</div>
-                        )}
+                        <div className="text-[9px] text-slate-400 font-mono mt-0.5">
+                          {araTier.detail}
+                        </div>
                       </td>
 
                       {/* Batas ARB */}
                       <td className="py-3.5 px-4 text-center">
-                        <span className={`font-mono font-bold text-xs ${arbColor}`}>
-                          {arbText}
+                        <span className={`font-mono font-bold text-xs ${arbTier.color}`}>
+                          {arbTier.primary}
                         </span>
-                        {isAkselerasi && (
-                          <div className="text-[9px] text-indigo-400 font-mono">Fraksi Rp 1</div>
-                        )}
-                        {!isAkselerasi && !isFca && !isSuspended && (
-                          <div className="text-[9px] text-slate-500">BEI Asimetris</div>
-                        )}
+                        <div className="text-[9px] text-slate-400 font-mono mt-0.5">
+                          {arbTier.detail}
+                        </div>
                       </td>
 
                       {/* Status Turnamen */}
