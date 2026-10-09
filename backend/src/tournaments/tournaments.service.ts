@@ -64,6 +64,7 @@ export class TournamentsService {
           maxPicksPerDay: dto.maxPicksPerDay ?? 3,
           pickWindowStart: dto.pickWindowStart || '17:00',
           pickWindowEnd: dto.pickWindowEnd || '21:00',
+          isPickWindowForceOpen: dto.isPickWindowForceOpen ?? false,
           rules: {
             create: {
               initialStopPct,
@@ -155,6 +156,10 @@ export class TournamentsService {
           maxPicksPerDay: dto.maxPicksPerDay !== undefined ? dto.maxPicksPerDay : undefined,
           pickWindowStart: dto.pickWindowStart !== undefined ? dto.pickWindowStart : undefined,
           pickWindowEnd: dto.pickWindowEnd !== undefined ? dto.pickWindowEnd : undefined,
+          isPickWindowForceOpen:
+            dto.isPickWindowForceOpen !== undefined
+              ? dto.isPickWindowForceOpen
+              : undefined,
           rules: dto.rules
             ? {
                 upsert: {
@@ -205,6 +210,26 @@ export class TournamentsService {
       data: { status },
       include: {
         rules: true,
+      },
+    });
+  }
+
+  async togglePickWindow(id: string, forceOpen?: boolean) {
+    const existing = await this.findOne(id);
+    const newStatus =
+      forceOpen !== undefined ? forceOpen : !existing.isPickWindowForceOpen;
+
+    return this.prisma.tournament.update({
+      where: { id },
+      data: { isPickWindowForceOpen: newStatus },
+      include: {
+        rules: true,
+        _count: {
+          select: {
+            participants: true,
+            picks: true,
+          },
+        },
       },
     });
   }

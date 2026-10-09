@@ -10,10 +10,14 @@ import { CreatePickDto } from './dto/create-pick.dto';
 import { UpdatePickDto } from './dto/update-pick.dto';
 import { SubmitMyPickDto } from './dto/submit-my-pick.dto';
 import { EntrySource, PickStatus } from '@prisma/client';
+import { PriceFractionService } from '../evaluation/services/price-fraction.service';
 
 @Injectable()
 export class PicksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly priceFractionService: PriceFractionService,
+  ) {}
 
   async create(tournamentId: string, dto: CreatePickDto) {
     // 1. Validate tournament existence
@@ -64,6 +68,13 @@ export class PicksService {
     if (!stock.isActive) {
       throw new BadRequestException(
         `Saham ${stock.symbol} saat ini sedang tidak aktif dan tidak dapat dipilih`,
+      );
+    }
+
+    const board = (stock.board || '').toLowerCase().trim();
+    if (board.includes('pemantauan khusus') || board.includes('fca')) {
+      throw new BadRequestException(
+        `Saham ${stock.symbol} berada di Papan Pemantauan Khusus (Full Call Auction / FCA) dan tidak dapat dipilih dalam turnamen`,
       );
     }
 
@@ -253,8 +264,9 @@ export class PicksService {
       ? tradingDateStr.substring(0, 10)
       : defaultTargetDate;
 
+    const isForceOpen = tournament?.isPickWindowForceOpen === true;
     let isLocked = false;
-    if (!bypassLock) {
+    if (!bypassLock && !isForceOpen) {
       // Pick window is open between windowStart and windowEnd WIB
       if (timeWib < windowStart || timeWib > windowEnd) {
         isLocked = true;
@@ -267,6 +279,7 @@ export class PicksService {
       timeWib,
       dateStr,
       isLocked,
+      isForceOpen,
       bypassLock,
       windowStart,
       windowEnd,
@@ -354,21 +367,40 @@ export class PicksService {
   }
 
   /**
-   * Retrieves official market closing price for a stock to lock as entry price for the evaluation session
+   * Validates stock pick eligibility:
+   * 1. Anti-FCA: Reject if stock is on Papan Pemantauan Khusus (FCA).
+   * 2. Anti-Suspensi: Reject if volume is 0 or trading was suspended on today's session.
+   * 3. Anti-Closing ARA: Reject if today's closing price reached the official ARA limit price.
+   * Returns valid entry price (closing price).
    */
-  async getStockClosingPrice(stockId: string, referenceDateStr: string): Promise<number> {
-    const stock = await this.prisma.stock.findUnique({ where: { id: stockId } });
-    if (!stock) return 1000;
+  async validateAndResolveStockPick(
+    stock: { id: string; symbol: string; board?: string },
+    referenceDateStr: string,
+  ): Promise<number> {
+    // 1. Anti-FCA Check
+    const board = (stock.board || '').toLowerCase().trim();
+    if (board.includes('pemantauan khusus') || board.includes('fca')) {
+      throw new BadRequestException(
+        `Saham ${stock.symbol} berada di Papan Pemantauan Khusus (Full Call Auction / FCA) dan tidak dapat dipilih dalam turnamen.`,
+      );
+    }
 
-    // 1. Fetch real market closing price from Yahoo Finance for Indonesian stocks ({SYMBOL}.JK)
+    const cleanSymbol = stock.symbol.trim().toUpperCase();
+    const symbolJk = `${cleanSymbol}.JK`;
+
+    let closePrice: number | null = null;
+    let previousClose: number | null = null;
+    let volume: number | null = null;
+    let isLive = false;
+
+    // Fetch quote from Yahoo Finance
     try {
-      const cleanSymbol = stock.symbol.trim().toUpperCase();
-      const symbolJk = `${cleanSymbol}.JK`;
       const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbolJk)}?interval=1d&range=5d`;
       const res = await fetch(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'application/json',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          Accept: 'application/json',
         },
       });
 
@@ -381,8 +413,17 @@ export class PicksService {
           meta?.previousClose;
 
         if (validPrice && Number(validPrice) > 0) {
-          const finalPrice = Math.round(Number(validPrice));
-          // Store a snapshot in DB for audit trail
+          closePrice = Math.round(Number(validPrice));
+          const prev = meta?.chartPreviousClose || meta?.previousClose;
+          if (prev && Number(prev) > 0) {
+            previousClose = Math.round(Number(prev));
+          }
+          if (meta?.regularMarketVolume !== undefined) {
+            volume = Number(meta.regularMarketVolume);
+          }
+          isLive = true;
+
+          // Snapshot in DB
           try {
             await this.prisma.intradayCandle.upsert({
               where: {
@@ -397,50 +438,69 @@ export class PicksService {
                 symbol: cleanSymbol,
                 tradingDate: new Date(`${referenceDateStr}T00:00:00.000Z`),
                 timestamp: new Date(`${referenceDateStr}T16:00:00.000Z`),
-                open: finalPrice,
-                high: finalPrice,
-                low: finalPrice,
-                close: finalPrice,
-                volume: meta?.regularMarketVolume ? BigInt(meta.regularMarketVolume) : 0n,
+                open: closePrice,
+                high: closePrice,
+                low: closePrice,
+                close: closePrice,
+                volume: volume !== null ? BigInt(volume) : 0n,
                 provider: 'idx_yahoo_finance',
               },
               update: {
-                close: finalPrice,
+                close: closePrice,
               },
             });
           } catch {}
-
-          return finalPrice;
         }
       }
     } catch (err) {
-      console.warn(`[getStockClosingPrice] Yahoo Finance fetch notice for ${stock.symbol}:`, (err as Error).message);
+      console.warn(`[validateAndResolveStockPick] Yahoo Finance fetch notice for ${stock.symbol}:`, (err as Error).message);
     }
 
-    // 2. Check existing candle in database on or before referenceDate
-    const candle = await this.prisma.intradayCandle.findFirst({
-      where: {
-        symbol: stock.symbol,
-        tradingDate: { lte: new Date(`${referenceDateStr}T00:00:00.000Z`) },
-      },
-      orderBy: [{ tradingDate: 'desc' }, { timestamp: 'desc' }],
-    });
-
-    if (candle && candle.close && Number(candle.close) > 0) {
-      return Number(candle.close);
+    // Fallback to candle in DB if live quote unavailable
+    if (closePrice === null) {
+      const candle = await this.prisma.intradayCandle.findFirst({
+        where: {
+          symbol: stock.symbol,
+          tradingDate: { lte: new Date(`${referenceDateStr}T00:00:00.000Z`) },
+        },
+        orderBy: [{ tradingDate: 'desc' }, { timestamp: 'desc' }],
+      });
+      if (candle && candle.close && Number(candle.close) > 0) {
+        closePrice = Number(candle.close);
+        volume = Number(candle.volume || 0);
+      } else {
+        closePrice = 1000;
+      }
     }
 
-    // 3. Fallback to any latest candle
-    const latestCandle = await this.prisma.intradayCandle.findFirst({
-      where: { symbol: stock.symbol },
-      orderBy: { timestamp: 'desc' },
-    });
-
-    if (latestCandle?.close && Number(latestCandle.close) > 0) {
-      return Number(latestCandle.close);
+    // 2. Anti-Suspensi Check (If live quote returns volume === 0)
+    if (isLive && volume === 0) {
+      throw new BadRequestException(
+        `Saham ${stock.symbol} terdeteksi sedang disuspensi atau tidak ada volume perdagangan pada sesi hari ini.`,
+      );
     }
 
-    return 1000;
+    // 3. Anti-Closing ARA Check
+    if (previousClose && previousClose > 0 && closePrice > previousClose) {
+      if (this.priceFractionService.isClosingAra(closePrice, previousClose, stock.board)) {
+        const araLimit = this.priceFractionService.calculateAraPrice(previousClose, stock.board);
+        const boardLabel = stock.board ? ` (${stock.board})` : '';
+        throw new BadRequestException(
+          `Saham ${stock.symbol}${boardLabel} ditutup di batas Auto Rejection Atas (ARA di Rp ${araLimit}) dan tidak dapat dipilih.`,
+        );
+      }
+    }
+
+    return closePrice;
+  }
+
+  /**
+   * Retrieves official market closing price for a stock to lock as entry price for the evaluation session
+   */
+  async getStockClosingPrice(stockId: string, referenceDateStr: string): Promise<number> {
+    const stock = await this.prisma.stock.findUnique({ where: { id: stockId } });
+    if (!stock) return 1000;
+    return this.validateAndResolveStockPick(stock, referenceDateStr);
   }
 
   async resolveParticipantForUser(userId: string) {
@@ -639,6 +699,7 @@ export class PicksService {
         end: timeInfo.windowEnd.substring(0, 5),
         isOpen: !timeInfo.isLocked,
         isLocked: timeInfo.isLocked,
+        isForceOpen: timeInfo.isForceOpen ?? false,
       },
       pickLimits: {
         min: tournament.minPicksPerDay ?? 2,
@@ -659,6 +720,7 @@ export class PicksService {
         maxPicksPerDay: tournament.maxPicksPerDay ?? 3,
         pickWindowStart: tournament.pickWindowStart || '17:00',
         pickWindowEnd: tournament.pickWindowEnd || '21:00',
+        isPickWindowForceOpen: tournament.isPickWindowForceOpen ?? false,
         rules: tournament.rules,
       },
     };
@@ -843,7 +905,7 @@ export class PicksService {
           throw new ConflictException(`Saham ${stock.symbol} sudah ada di daftar pick Anda pada tanggal ini`);
         }
 
-        const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
+        const lockedClosePrice = await this.validateAndResolveStockPick(stock, timeInfo.todayWib);
 
         try {
           return await this.prisma.stockPick.update({
@@ -898,7 +960,7 @@ export class PicksService {
           const stock = await this.prisma.stock.findUnique({ where: { id: sId } });
           if (!stock || !stock.isActive) continue;
 
-          const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
+          const lockedClosePrice = await this.validateAndResolveStockPick(stock, timeInfo.todayWib);
 
           const newPick = await safeCreatePick({
             tournamentId,
@@ -959,7 +1021,7 @@ export class PicksService {
         throw new ConflictException(`Saham ${stock.symbol} sudah ada di daftar pilihan Anda pada sesi ini`);
       }
 
-      const lockedClosePrice = await this.getStockClosingPrice(stock.id, timeInfo.todayWib);
+      const lockedClosePrice = await this.validateAndResolveStockPick(stock, timeInfo.todayWib);
 
       return await safeCreatePick({
         tournamentId,
@@ -1086,6 +1148,8 @@ export class PicksService {
             todayWib: tourneyTimeInfo.todayWib,
             timeWib: tourneyTimeInfo.timeWib,
             isLocked: tourneyTimeInfo.isLocked,
+            isForceOpen: tourneyTimeInfo.isForceOpen ?? false,
+            isPickWindowForceOpen: m.tournament.isPickWindowForceOpen ?? false,
           };
         }),
       );

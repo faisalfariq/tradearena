@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDateString,
   IsEnum,
+  IsBoolean,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -114,6 +115,15 @@ export class CreateTournamentDto {
   @IsOptional()
   @IsString()
   pickWindowEnd?: string;
+
+  @ApiPropertyOptional({
+    example: false,
+    default: false,
+    description: 'Manual override to force pick window open outside normal hours',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isPickWindowForceOpen?: boolean;
 
   @ApiPropertyOptional({
     type: TournamentRuleDto,

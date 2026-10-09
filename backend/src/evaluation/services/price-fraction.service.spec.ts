@@ -96,4 +96,60 @@ describe('PriceFractionService', () => {
       expect(exitPrice).toBe(97);
     });
   });
+
+  describe('calculateAraPrice & isClosingAra', () => {
+    it('should correctly calculate ARA for Papan Reguler <= 200 (+35%)', () => {
+      // PrevClose 150: 150 * 1.35 = 202.5 -> floor to tick 2 (prices > 200) = 202
+      const ara150 = service.calculateAraPrice(150, 'Utama');
+      expect(ara150).toBe(202);
+
+      // PrevClose 100: 100 * 1.35 = 135 -> tick 1 = 135
+      const ara100 = service.calculateAraPrice(100, 'Pengembangan');
+      expect(ara100).toBe(135);
+
+      // Verify isClosingAra
+      expect(service.isClosingAra(202, 150, 'Utama')).toBe(true);
+      expect(service.isClosingAra(200, 150, 'Utama')).toBe(false); // 1 tick below is NOT ARA
+      expect(service.isClosingAra(135, 100, 'Pengembangan')).toBe(true);
+      expect(service.isClosingAra(134, 100, 'Pengembangan')).toBe(false); // 1 tick below is NOT ARA
+    });
+
+    it('should correctly calculate ARA for Papan Reguler 200 - 5000 (+25%)', () => {
+      // PrevClose 3000: 3000 * 1.25 = 3750 -> tick 10 = 3750
+      const ara3000 = service.calculateAraPrice(3000, 'Utama');
+      expect(ara3000).toBe(3750);
+      expect(service.isClosingAra(3750, 3000, 'Utama')).toBe(true);
+      expect(service.isClosingAra(3740, 3000, 'Utama')).toBe(false); // 1 tick below
+
+      // PrevClose 400: 400 * 1.25 = 500 -> tick 5 = 500
+      const ara400 = service.calculateAraPrice(400, 'Utama');
+      expect(ara400).toBe(500);
+      expect(service.isClosingAra(500, 400, 'Utama')).toBe(true);
+      expect(service.isClosingAra(498, 400, 'Utama')).toBe(false);
+    });
+
+    it('should correctly calculate ARA for Papan Reguler > 5000 (+20%)', () => {
+      // PrevClose 10000: 10000 * 1.20 = 12000 -> tick 25 = 12000
+      const ara10000 = service.calculateAraPrice(10000, 'Utama');
+      expect(ara10000).toBe(12000);
+      expect(service.isClosingAra(12000, 10000, 'Utama')).toBe(true);
+      expect(service.isClosingAra(11975, 10000, 'Utama')).toBe(false);
+    });
+
+    it('should correctly calculate ARA for Papan Akselerasi (+10%, tick 1 flat, like PACK)', () => {
+      // Emiten PACK: PrevClose 80 on Akselerasi board -> 80 * 1.10 = 88
+      const araPack = service.calculateAraPrice(80, 'Akselerasi');
+      expect(araPack).toBe(88);
+
+      expect(service.isClosingAra(88, 80, 'Akselerasi')).toBe(true);
+      expect(service.isClosingAra(87, 80, 'Akselerasi')).toBe(false); // 1 tick below is NOT ARA
+
+      // Akselerasi above 200 still keeps flat tick 1 and +10%
+      const araPack250 = service.calculateAraPrice(250, 'Akselerasi');
+      expect(araPack250).toBe(275);
+      expect(service.isClosingAra(275, 250, 'Akselerasi')).toBe(true);
+      expect(service.isClosingAra(274, 250, 'Akselerasi')).toBe(false);
+    });
+  });
 });
+

@@ -25,6 +25,15 @@ export class CreateStockDto {
   exchange?: string;
 
   @ApiPropertyOptional({
+    example: 'Utama',
+    default: 'Utama',
+    description: 'Listing board (Utama, Pengembangan, Akselerasi, Pemantauan Khusus, Ekonomi Baru)',
+  })
+  @IsOptional()
+  @IsString()
+  board?: string;
+
+  @ApiPropertyOptional({
     example: true,
     default: true,
     description: 'Active status',

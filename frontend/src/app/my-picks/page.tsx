@@ -40,6 +40,7 @@ interface Stock {
   symbol: string;
   name: string;
   exchange: string;
+  board?: string;
   isActive: boolean;
 }
 
@@ -320,6 +321,15 @@ export default function MyPicksPage() {
     const startMin = startH * 60 + startM;
     const endMin = endH * 60 + endM;
 
+    if (pickStatus?.pickWindow?.isForceOpen) {
+      return {
+        label: 'Jendela Pick Dibuka Manual oleh Admin (Akses Terbuka)',
+        description: 'Admin turnamen mengaktifkan override jendela pick. Anda dapat memilih emiten sekarang di luar jam reguler!',
+        type: 'open',
+        icon: Unlock,
+      };
+    }
+
     if (totalMinutes >= startMin && totalMinutes <= endMin) {
       return {
         label: `Window Pick Dibuka (${pickWindowStart} – ${pickWindowEnd} WIB)`,
@@ -349,7 +359,7 @@ export default function MyPicksPage() {
         icon: Lock,
       };
     }
-  }, [currentWibTime, pickWindowStart, pickWindowEnd]);
+  }, [currentWibTime, pickWindowStart, pickWindowEnd, pickStatus?.pickWindow?.isForceOpen]);
 
   // Handle submit pick (adding 1 stock to the picklist, locks closing price automatically)
   const handleAddStockPick = async (e: React.FormEvent) => {
@@ -804,10 +814,15 @@ export default function MyPicksPage() {
                           className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/50 text-left flex items-center justify-between transition-all focus:outline-none focus:ring-1 focus:ring-blue-500 group shadow-inner"
                         >
                           {chosenStock ? (
-                            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                            <div className="flex items-center gap-2 min-w-0 pr-2">
                               <span className="px-2.5 py-1 rounded-lg bg-blue-500/20 text-cyan-400 font-mono font-bold text-xs shrink-0 border border-blue-500/30">
                                 {chosenStock.symbol}
                               </span>
+                              {chosenStock.board?.toLowerCase().includes('akselerasi') && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">
+                                  Akselerasi (ARA 10%)
+                                </span>
+                              )}
                               <span className="text-sm font-medium text-slate-200 truncate">
                                 {chosenStock.name}
                               </span>
@@ -870,24 +885,41 @@ export default function MyPicksPage() {
                               ) : (
                                 filteredStocks.map((stock) => {
                                   const isSelected = stock.id === selectedStockId;
+                                  const boardLower = (stock.board || '').toLowerCase();
+                                  const isFca = boardLower.includes('pemantauan khusus') || boardLower.includes('fca');
+                                  const isAkselerasi = boardLower.includes('akselerasi');
                                   return (
                                     <button
                                       key={stock.id}
                                       type="button"
+                                      disabled={isFca}
                                       onClick={() => {
+                                        if (isFca) return;
                                         setSelectedStockId(stock.id);
                                         setIsStockDropdownOpen(false);
                                       }}
                                       className={`w-full px-3 py-2.5 rounded-xl flex items-center justify-between text-left transition-all ${
-                                        isSelected
+                                        isFca
+                                          ? 'opacity-40 bg-rose-950/20 text-slate-500 cursor-not-allowed border border-rose-900/30'
+                                          : isSelected
                                           ? 'bg-blue-600/25 border border-blue-500/40 text-white'
                                           : 'hover:bg-slate-800/70 text-slate-300'
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                      <div className="flex items-center gap-2 min-w-0 pr-2">
                                         <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-cyan-300 font-mono font-bold text-xs shrink-0 border border-blue-500/30">
                                           {stock.symbol}
                                         </span>
+                                        {isAkselerasi && (
+                                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">
+                                            Akselerasi (ARA 10%)
+                                          </span>
+                                        )}
+                                        {isFca && (
+                                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 shrink-0">
+                                            FCA (Dilarang)
+                                          </span>
+                                        )}
                                         <span className="text-xs truncate font-medium text-slate-200">
                                           {stock.name}
                                         </span>

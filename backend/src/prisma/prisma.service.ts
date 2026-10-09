@@ -58,6 +58,8 @@ export class PrismaService
         `ALTER TABLE "tournament_participants" ADD COLUMN IF NOT EXISTS "reviewed_by" TEXT;`,
         `DO $$ BEGIN ALTER TABLE "tournament_participants" ADD CONSTRAINT "tournament_participants_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$;`,
         `ALTER TABLE "stock_picks" ADD COLUMN IF NOT EXISTS "entry_timestamp" TIMESTAMP(3);`,
+        `ALTER TABLE "tournaments" ADD COLUMN IF NOT EXISTS "is_pick_window_force_open" BOOLEAN NOT NULL DEFAULT FALSE;`,
+        `ALTER TABLE "stocks" ADD COLUMN IF NOT EXISTS "board" VARCHAR(50) NOT NULL DEFAULT 'Utama';`,
       ];
 
       for (const stmt of schemaStatements) {

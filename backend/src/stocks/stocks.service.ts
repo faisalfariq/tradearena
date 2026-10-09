@@ -29,6 +29,7 @@ export class StocksService {
         symbol,
         name: dto.name.trim(),
         exchange: dto.exchange?.trim().toUpperCase() || 'IDX',
+        board: dto.board?.trim() || 'Utama',
         isActive: dto.isActive !== undefined ? dto.isActive : true,
       },
     });
@@ -99,6 +100,7 @@ export class StocksService {
         ...(symbol && { symbol }),
         ...(dto.name && { name: dto.name.trim() }),
         ...(dto.exchange && { exchange: dto.exchange.trim().toUpperCase() }),
+        ...(dto.board && { board: dto.board.trim() }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
       },
     });
@@ -125,7 +127,7 @@ export class StocksService {
   }
 
   async syncIdxStocks() {
-    let stockList: Array<{ symbol: string; name: string; exchange: string; isActive?: boolean }> = [];
+    let stockList: Array<{ symbol: string; name: string; exchange: string; board?: string; isActive?: boolean }> = [];
 
     // 1. Try to fetch live list from official/open dataset
     try {
@@ -145,11 +147,13 @@ export class StocksService {
             let name = parts.slice(1, parts.length - 3).join(',').trim();
             if (!name) name = parts[1].trim();
             name = name.replace(/^"|"$/g, '').trim();
+            const listingBoard = parts[parts.length - 1]?.trim() || 'Utama';
             if (code && code.length >= 4) {
               stockList.push({
                 symbol: code,
                 name: name || code,
                 exchange: 'IDX',
+                board: listingBoard,
                 isActive: true,
               });
             }
@@ -192,6 +196,7 @@ export class StocksService {
               data: {
                 name: s.name,
                 exchange: s.exchange || 'IDX',
+                board: s.board || existing.board || 'Utama',
                 isActive: true,
               },
             });
@@ -202,6 +207,7 @@ export class StocksService {
                 symbol: s.symbol,
                 name: s.name,
                 exchange: s.exchange || 'IDX',
+                board: s.board || 'Utama',
                 isActive: true,
               },
             });

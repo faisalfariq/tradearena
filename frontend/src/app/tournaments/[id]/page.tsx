@@ -44,6 +44,8 @@ import {
   UserCheck,
   UserX,
   CheckSquare,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 
 interface DailyResultItem {
@@ -142,6 +144,7 @@ interface TournamentDetail {
   maxPicksPerDay?: number;
   pickWindowStart?: string;
   pickWindowEnd?: string;
+  isPickWindowForceOpen?: boolean;
   winnerParticipantId?: string | null;
   winnerParticipant?: { id: string; name: string } | null;
   rules: TournamentRule | null;
@@ -570,6 +573,46 @@ export default function TournamentDetailPage() {
     },
     [API_BASE, token, tournamentId],
   );
+
+  const [togglingPickWindow, setTogglingPickWindow] = useState(false);
+
+  const handleTogglePickWindow = async () => {
+    if (!token || !tournamentId) return;
+    setTogglingPickWindow(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/toggle-pick-window`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTournament((prev: any) => ({
+          ...prev,
+          isPickWindowForceOpen: data.isPickWindowForceOpen,
+        }));
+        if (data.isPickWindowForceOpen) {
+          toast.success(
+            'Jendela pick berhasil DIBUKA secara manual! Peserta sekarang dapat memilih saham kapan saja.',
+            'Pick Terbuka Bebas',
+          );
+        } else {
+          toast.info(
+            'Jendela pick berhasil DIKEMBALIKAN ke jadwal reguler turnamen (17:00 - 21:00 WIB).',
+            'Jadwal Normal Aktif',
+          );
+        }
+      } else {
+        toast.error(data.message || 'Gagal mengubah status jendela pick', 'Error');
+      }
+    } catch {
+      toast.error('Gagal menghubungi server untuk mengubah jendela pick', 'Error Server');
+    } finally {
+      setTogglingPickWindow(false);
+    }
+  };
 
   // Apply to tournament (User)
   const handleApplyTournament = async () => {
@@ -1485,6 +1528,44 @@ export default function TournamentDetailPage() {
               <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
                 {tournament.minPicksPerDay ?? 2}–{tournament.maxPicksPerDay ?? 3} Emiten/Hari ({tournament.pickWindowStart || '17:00'}–{tournament.pickWindowEnd || '21:00'} WIB)
               </span>
+
+              {tournament.isPickWindowForceOpen && (
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 animate-pulse">
+                  <Unlock className="w-3 h-3 text-emerald-400" />
+                  <span>Pick Terbuka Bebas (Manual Override)</span>
+                </span>
+              )}
+
+              {user?.role === 'ADMIN' && (
+                <button
+                  type="button"
+                  onClick={handleTogglePickWindow}
+                  disabled={togglingPickWindow}
+                  className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ml-1 border ${
+                    tournament.isPickWindowForceOpen
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30'
+                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                  }`}
+                  title={
+                    tournament.isPickWindowForceOpen
+                      ? 'Kembalikan jendela pick ke jam reguler 17:00–21:00 WIB'
+                      : 'Buka jendela pick sekarang secara manual (peserta bisa pick di luar 17:00–21:00 WIB)'
+                  }
+                >
+                  {togglingPickWindow ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : tournament.isPickWindowForceOpen ? (
+                    <Lock className="w-3 h-3 text-rose-400" />
+                  ) : (
+                    <Unlock className="w-3 h-3 text-emerald-400" />
+                  )}
+                  <span>
+                    {tournament.isPickWindowForceOpen
+                      ? 'Kunci ke Jam Reguler'
+                      : 'Buka Pick Manual'}
+                  </span>
+                </button>
+              )}
 
               {user?.role === 'ADMIN' && (
                 <Link

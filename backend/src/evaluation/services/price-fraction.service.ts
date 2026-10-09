@@ -100,4 +100,87 @@ export class PriceFractionService {
     // Otherwise, it was reached intra-candle, exit at first valid price level at/below threshold
     return firstValidLevel;
   }
+
+  /**
+   * Calculates the exact maximum Auto Rejection Atas (ARA) limit price based on IDX regulations.
+   *
+   * Rules:
+   * 1. Papan Akselerasi / Pemantauan Khusus:
+   *    - ARA: +10%
+   *    - Tick size: Rp 1 flat for all price ranges
+   *    - Formula: floor(prevClose * 1.10)
+   *
+   * 2. Papan Reguler (Utama, Pengembangan, Ekonomi Baru):
+   *    - Price <= 200: max +35%
+   *    - Price > 200 and <= 5000: max +25%
+   *    - Price > 5000: max +20%
+   *    - Floor to the nearest lower valid price level (roundToValidTick(..., 'DOWN'))
+   *      because stock price cannot exceed the regulatory percentage limit.
+   */
+  calculateAraPrice(previousClose: number, board?: string): number {
+    if (previousClose <= 0) return 0;
+
+    const normalizedBoard = (board || '').toLowerCase().trim();
+    const isAcceleration =
+      normalizedBoard.includes('akselerasi') ||
+      normalizedBoard.includes('acceleration') ||
+      normalizedBoard.includes('pemantauan khusus');
+
+    if (isAcceleration) {
+      // Papan Akselerasi: +10%, fraksi Rp 1
+      return Math.floor(previousClose * 1.1);
+    }
+
+    // Papan Reguler:
+    let maxPct = 0.2;
+    if (previousClose <= 200) {
+      maxPct = 0.35;
+    } else if (previousClose <= 5000) {
+      maxPct = 0.25;
+    }
+
+    const rawAra = previousClose * (1 + maxPct);
+    return this.roundToValidTick(rawAra, 'DOWN');
+  }
+
+  /**
+   * Checks whether a stock closed at or above the official ARA limit price.
+   *
+   * Returns true ONLY if closingPrice >= calculated ARA price.
+   * If it's even 1 tick below, returns false.
+   */
+  isClosingAra(
+    closingPrice: number,
+    previousClose: number,
+    board?: string,
+  ): boolean {
+    if (closingPrice <= 0 || previousClose <= 0) return false;
+    if (closingPrice <= previousClose) return false;
+
+    const araPrice = this.calculateAraPrice(previousClose, board);
+    return closingPrice >= araPrice;
+  }
+
+  /**
+   * Calculates the Auto Rejection Bawah (ARB) limit price based on IDX regulations.
+   * Ceiled to nearest valid tick so price does not breach downward limit.
+   */
+  calculateArbPrice(previousClose: number, board?: string): number {
+    if (previousClose <= 0) return 1;
+
+    const normalizedBoard = (board || '').toLowerCase().trim();
+    const isAcceleration =
+      normalizedBoard.includes('akselerasi') ||
+      normalizedBoard.includes('acceleration') ||
+      normalizedBoard.includes('pemantauan khusus');
+
+    if (isAcceleration) {
+      return Math.max(1, Math.ceil(previousClose * 0.9));
+    }
+
+    // Default BEI asimetris ARB ~ 15%
+    const minPct = 0.15;
+    const rawArb = previousClose * (1 - minPct);
+    return Math.max(1, this.roundToValidTick(rawArb, 'UP'));
+  }
 }

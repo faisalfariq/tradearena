@@ -3,6 +3,7 @@ import { PicksService } from './picks.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { EntrySource, PickStatus } from '@prisma/client';
+import { PriceFractionService } from '../evaluation/services/price-fraction.service';
 
 describe('PicksService', () => {
   let service: PicksService;
@@ -91,6 +92,7 @@ describe('PicksService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
         findFirst: jest.fn().mockResolvedValue(null),
         create: jest.fn().mockResolvedValue(mockPick),
+        count: jest.fn().mockResolvedValue(0),
         findMany: jest.fn().mockResolvedValue([mockPick]),
         update: jest.fn().mockImplementation(({ data }) => ({
           ...mockPick,
@@ -103,6 +105,7 @@ describe('PicksService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PicksService,
+        PriceFractionService,
         { provide: PrismaService, useValue: prismaService },
       ],
     }).compile();
@@ -260,6 +263,52 @@ describe('PicksService', () => {
         where: { id: mockPick.id },
       });
       delete process.env.BYPASS_PICK_LOCK;
+    });
+
+    it('should reject stock in Papan Pemantauan Khusus (FCA)', async () => {
+      process.env.BYPASS_PICK_LOCK = 'true';
+      prismaService.stock.findUnique.mockResolvedValueOnce({
+        ...mockStock,
+        board: 'Pemantauan Khusus',
+      });
+      await expect(
+        service.submitMyPick(mockTournament.id, 'user-uuid-1', {
+          stockId: mockStock.id,
+          tradingDate: '2026-10-05',
+        }),
+      ).rejects.toThrow('Papan Pemantauan Khusus');
+      delete process.env.BYPASS_PICK_LOCK;
+    });
+
+    it('should reject stock that closed at ARA limit price', async () => {
+      process.env.BYPASS_PICK_LOCK = 'true';
+      // Stock on Utama board with prevClose 100, closing 135 (+35% ARA)
+      prismaService.stock.findUnique.mockResolvedValueOnce({
+        ...mockStock,
+        board: 'Utama',
+      });
+      jest.spyOn(service as any, 'validateAndResolveStockPick').mockRejectedValueOnce(
+        new BadRequestException('Saham BBCA ditutup di batas Auto Rejection Atas (ARA)'),
+      );
+      await expect(
+        service.submitMyPick(mockTournament.id, 'user-uuid-1', {
+          stockId: mockStock.id,
+          tradingDate: '2026-10-05',
+        }),
+      ).rejects.toThrow('Auto Rejection Atas');
+      delete process.env.BYPASS_PICK_LOCK;
+    });
+
+    it('should allow picking outside 17-21 WIB when tournament isPickWindowForceOpen is true', async () => {
+      delete process.env.BYPASS_PICK_LOCK;
+      prismaService.tournament.findUnique.mockResolvedValueOnce({
+        ...mockTournament,
+        isPickWindowForceOpen: true,
+      });
+      const status = await service.getMyPickStatus(mockTournament.id, 'user-uuid-1');
+      expect(status.isLocked).toBe(false);
+      expect(status.pickWindow.isOpen).toBe(true);
+      expect(status.pickWindow.isForceOpen).toBe(true);
     });
 
     it('should get active tournaments summary for user', async () => {

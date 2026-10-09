@@ -63,6 +63,7 @@ describe('EvaluationService', () => {
       tradeEvaluation: {
         upsert: jest.fn(),
         findUnique: jest.fn(),
+        findFirst: jest.fn(),
         findMany: jest.fn(),
         update: jest.fn(),
       },
@@ -121,12 +122,14 @@ describe('EvaluationService', () => {
       prisma.tradeEvaluation.upsert.mockResolvedValue(mockEvalRecord);
       prisma.tradeEvaluationEvidence.upsert.mockResolvedValue({});
       prisma.pointsResult.upsert.mockResolvedValue({});
-      prisma.tradeEvaluation.findUnique.mockResolvedValue({
+      const evalDetail = {
         ...mockEvalRecord,
         pick: mockPick,
         evidence: {},
         pointsResult: {},
-      });
+      };
+      prisma.tradeEvaluation.findUnique.mockResolvedValue(evalDetail);
+      prisma.tradeEvaluation.findFirst.mockResolvedValue(evalDetail);
 
       const result = await service.evaluatePick(mockPick.id);
 
@@ -161,6 +164,15 @@ describe('EvaluationService', () => {
       };
 
       prisma.tradeEvaluation.findUnique
+        .mockResolvedValueOnce(mockExisting)
+        .mockResolvedValueOnce({
+          ...mockExisting,
+          status: EvaluationStatus.OVERRIDDEN,
+          exitPrice: 10200,
+          realizedReturn: 2,
+        });
+
+      prisma.tradeEvaluation.findFirst
         .mockResolvedValueOnce(mockExisting)
         .mockResolvedValueOnce({
           ...mockExisting,

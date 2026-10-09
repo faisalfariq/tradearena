@@ -98,6 +98,21 @@ export class TournamentsController {
     return this.tournamentsService.updateStatus(id, updateStatusDto.status);
   }
 
+  @Patch(':id/toggle-pick-window')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Toggle manual pick window override (Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Pick window override updated' })
+  async togglePickWindow(
+    @Param('id') id: string,
+    @Body() body?: { forceOpen?: boolean },
+  ) {
+    return this.tournamentsService.togglePickWindow(id, body?.forceOpen);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)
