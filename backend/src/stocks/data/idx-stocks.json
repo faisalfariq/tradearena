@@ -122,7 +122,7 @@
     "symbol": "AKKU",
     "name": "Anugerah Kagum Karya Utama Tbk",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -164,14 +164,14 @@
     "symbol": "ALMI",
     "name": "Alumindo Light Metal Industry",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "ALTO",
     "name": "Tri Banyan Tirta Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -332,7 +332,7 @@
     "symbol": "ASMI",
     "name": "Asuransi Maximus Graha Persada",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -521,7 +521,7 @@
     "symbol": "BEKS",
     "name": "Bank Pembangunan Daerah Banten",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -549,7 +549,7 @@
     "symbol": "BHIT",
     "name": "MNC Asia Holding Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -640,14 +640,14 @@
     "symbol": "BLTA",
     "name": "Berlian Laju Tanker Tbk",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "BLTZ",
     "name": "Graha Layar Prima Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -794,7 +794,7 @@
     "symbol": "BTEK",
     "name": "Bumi Teknokultura Unggul Tbk",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1116,7 +1116,7 @@
     "symbol": "DUTI",
     "name": "Duta Pertiwi Tbk",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1158,7 +1158,7 @@
     "symbol": "ELTY",
     "name": "Bakrieland Development Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1242,7 +1242,7 @@
     "symbol": "FASW",
     "name": "Fajar Surya Wisesa Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1284,7 +1284,7 @@
     "symbol": "GAMA",
     "name": "Aksara Global Development Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1403,7 +1403,7 @@
     "symbol": "HADE",
     "name": "Himalaya Energi Perkasa Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1438,7 +1438,7 @@
     "symbol": "HITS",
     "name": "Humpuss Intermoda Transportasi",
     "exchange": "IDX",
-    "board": "Utama",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1452,7 +1452,7 @@
     "symbol": "HOME",
     "name": "Hotel Mandarine Regency Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1487,7 +1487,7 @@
     "symbol": "IBST",
     "name": "Inti Bangun Sejahtera Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1515,14 +1515,14 @@
     "symbol": "IIKP",
     "name": "Inti Agri Resources Tbk",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "IKAI",
     "name": "Intikeramik Alamasri Industri",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1823,7 +1823,7 @@
     "symbol": "KIAS",
     "name": "Keramika Indonesia Assosiasi T",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1907,7 +1907,7 @@
     "symbol": "KREN",
     "name": "Quantum Clovera Investama Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1921,7 +1921,7 @@
     "symbol": "LCGP",
     "name": "Eureka Prima Jakarta Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -1963,7 +1963,7 @@
     "symbol": "LMSH",
     "name": "Lionmesh Prima Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2040,7 +2040,7 @@
     "symbol": "MAGP",
     "name": "Multi Agro Gemilang Plantation",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2110,7 +2110,7 @@
     "symbol": "MDIA",
     "name": "Intermedia Capital Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2208,7 +2208,7 @@
     "symbol": "MIRA",
     "name": "Mitra International Resources",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2236,7 +2236,7 @@
     "symbol": "MLIA",
     "name": "Mulia Industrindo Tbk",
     "exchange": "IDX",
-    "board": "Utama",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2327,7 +2327,7 @@
     "symbol": "MTSM",
     "name": "Metro Realty Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2460,7 +2460,7 @@
     "symbol": "PBRX",
     "name": "Pan Brothers Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2516,14 +2516,14 @@
     "symbol": "PLAS",
     "name": "Polaris Investama Tbk",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "PLIN",
     "name": "Plaza Indonesia Realty Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2572,14 +2572,14 @@
     "symbol": "POOL",
     "name": "Pool Advista Indonesia Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "PPRO",
     "name": "PP Properti Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2733,7 +2733,7 @@
     "symbol": "RIMO",
     "name": "Rimo International Lestari Tbk",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2789,7 +2789,7 @@
     "symbol": "SCPI",
     "name": "Organon Pharma Indonesia Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2880,7 +2880,7 @@
     "symbol": "SKYB",
     "name": "Northcliff Citranusa Indonesia",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -2901,7 +2901,7 @@
     "symbol": "SMCB",
     "name": "Solusi Bangun Indonesia Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3055,7 +3055,7 @@
     "symbol": "SUGI",
     "name": "Sugih Energy Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3069,7 +3069,7 @@
     "symbol": "SUPR",
     "name": "Solusi Tunas Pratama Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3083,14 +3083,14 @@
     "symbol": "TARA",
     "name": "Agung Semesta Sejahtera Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "TAXI",
     "name": "Express Transindo Utama Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3132,7 +3132,7 @@
     "symbol": "TFCO",
     "name": "Tifico Fiber Indonesia Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3244,14 +3244,14 @@
     "symbol": "TRAM",
     "name": "Trada Alam Minera Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "TRIL",
     "name": "Triwira Insanlestari Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3356,7 +3356,7 @@
     "symbol": "VIVA",
     "name": "Visi Media Asia Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3405,7 +3405,7 @@
     "symbol": "WIKA",
     "name": "Wijaya Karya (Persero) Tbk.",
     "exchange": "IDX",
-    "board": "Pengembangan",
+    "board": "Utama",
     "isActive": true
   },
   {
@@ -3426,7 +3426,7 @@
     "symbol": "WSKT",
     "name": "Waskita Karya (Persero) Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3545,7 +3545,7 @@
     "symbol": "INCF",
     "name": "Indo Komoditi Korpora Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3622,7 +3622,7 @@
     "symbol": "TAMU",
     "name": "Pelayaran Tamarin Samudra Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3664,14 +3664,14 @@
     "symbol": "ARMY",
     "name": "Armidian Karyatama Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "MAPB",
     "name": "MAP Boga Adiperkasa Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3720,7 +3720,7 @@
     "symbol": "NASA",
     "name": "Andalan Perkasa Abadi Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -3965,7 +3965,7 @@
     "symbol": "SWAT",
     "name": "Sriwahana Adityakarta Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4021,7 +4021,7 @@
     "symbol": "POLL",
     "name": "Pollux Properties Indonesia Tb",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4042,7 +4042,7 @@
     "symbol": "NUSA",
     "name": "Sinergi Megah Internusa Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4056,7 +4056,7 @@
     "symbol": "ANDI",
     "name": "Andira Agro Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4133,7 +4133,7 @@
     "symbol": "DUCK",
     "name": "Jaya Bersama Indo Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4245,14 +4245,14 @@
     "symbol": "CPRI",
     "name": "Capri Nusa Satu Properti Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "HRME",
     "name": "Menteng Heritage Realty Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4336,7 +4336,7 @@
     "symbol": "IPTV",
     "name": "MNC Vision Networks Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4392,7 +4392,7 @@
     "symbol": "ARKA",
     "name": "Arkha Jayanti Persada Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4420,7 +4420,7 @@
     "symbol": "BAPI",
     "name": "Bhakti Agung Propertindo Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4623,7 +4623,7 @@
     "symbol": "PURA",
     "name": "Putra Rajawali Kencana Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4931,7 +4931,7 @@
     "symbol": "EDGE",
     "name": "Indointernet Tbk.",
     "exchange": "IDX",
-    "board": "Pengembangan",
+    "board": "Utama",
     "isActive": true
   },
   {
@@ -4945,7 +4945,7 @@
     "symbol": "BEBS",
     "name": "Berkah Beton Sadaya Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -4973,7 +4973,7 @@
     "symbol": "FIMP",
     "name": "Fimperkasa Utama Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -5218,7 +5218,7 @@
     "symbol": "WMPP",
     "name": "Widodo Makmur Perkasa Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -5246,7 +5246,7 @@
     "symbol": "IPPE",
     "name": "Indo Pureco Pratama Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -5302,7 +5302,7 @@
     "symbol": "BAUT",
     "name": "Mitra Angkasa Sejahtera Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -5386,7 +5386,7 @@
     "symbol": "WINR",
     "name": "Winner Nusantara Jaya Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -5498,7 +5498,7 @@
     "symbol": "RAFI",
     "name": "Sari Kreasi Boga Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -5827,7 +5827,7 @@
     "symbol": "SAGE",
     "name": "Saptausaha Gemilangindah Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -6562,7 +6562,7 @@
     "symbol": "SOSS",
     "name": "Shield On Service Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
@@ -6639,14 +6639,14 @@
     "symbol": "KBAG",
     "name": "Karya Bersama Anugerah Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
     "symbol": "CBMF",
     "name": "Cahaya Bintang Medan Tbk.",
     "exchange": "IDX",
-    "board": "Pemantauan Khusus",
+    "board": "Pengembangan",
     "isActive": true
   },
   {
