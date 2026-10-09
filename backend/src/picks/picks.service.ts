@@ -264,11 +264,20 @@ export class PicksService {
       ? tradingDateStr.substring(0, 10)
       : defaultTargetDate;
 
+    const [curH, curM] = timeWib.split(/[:.]/).map((v) => parseInt(v, 10));
+    const currentMinutes = (curH || 0) * 60 + (curM || 0);
+
+    const [startH, startM] = windowStart.split(/[:.]/).map((v) => parseInt(v, 10));
+    const startMinutes = (startH || 0) * 60 + (startM || 0);
+
+    const [endH, endM] = windowEnd.split(/[:.]/).map((v) => parseInt(v, 10));
+    const endMinutes = (endH || 0) * 60 + (endM || 0);
+
     const isForceOpen = tournament?.isPickWindowForceOpen === true;
     let isLocked = false;
     if (!bypassLock && !isForceOpen) {
       // Pick window is open between windowStart and windowEnd WIB
-      if (timeWib < windowStart || timeWib > windowEnd) {
+      if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
         isLocked = true;
       }
     }
@@ -803,6 +812,9 @@ export class PicksService {
 
       // Check lock cutoff
       const timeInfo = this.getWibTimeInfo(dto.tradingDate, tournament);
+      console.log(
+        `[submitMyPick] Tournament "${tournament.name}" (${tournament.id}): timeWib=${timeInfo.timeWib}, window=${timeInfo.windowStart}-${timeInfo.windowEnd}, isForceOpen=${timeInfo.isForceOpen}, bypassLock=${timeInfo.bypassLock}, isLocked=${timeInfo.isLocked}`
+      );
       if (timeInfo.isLocked) {
         throw new ForbiddenException(
           `Jendela pick saham dibuka pukul ${timeInfo.windowStart.substring(0, 5)} - ${timeInfo.windowEnd.substring(0, 5)} WIB. Saat ini pengiriman sedang dikunci.`,

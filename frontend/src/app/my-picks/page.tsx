@@ -89,6 +89,8 @@ interface TournamentOverviewItem {
   todayWib: string;
   timeWib: string;
   isLocked: boolean;
+  isForceOpen?: boolean;
+  isPickWindowForceOpen?: boolean;
 }
 
 export default function MyPicksPage() {
@@ -321,10 +323,16 @@ export default function MyPicksPage() {
     const startMin = startH * 60 + startM;
     const endMin = endH * 60 + endM;
 
-    if (pickStatus?.pickWindow?.isForceOpen) {
+    const isForceOpen = Boolean(
+      pickStatus?.pickWindow?.isForceOpen ||
+      pickStatus?.tournament?.isPickWindowForceOpen ||
+      activeTournament?.isPickWindowForceOpen
+    );
+
+    if (isForceOpen) {
       return {
         label: 'Jendela Pick Dibuka Manual oleh Admin (Akses Terbuka)',
-        description: 'Admin turnamen mengaktifkan override jendela pick. Anda dapat memilih emiten sekarang di luar jam reguler!',
+        description: 'Admin turnamen mengaktifkan override jendela pick. Anda dapat memilih emiten sekarang di luar jam reguler (17:00 – 21:00 WIB)!',
         type: 'open',
         icon: Unlock,
       };
@@ -359,12 +367,32 @@ export default function MyPicksPage() {
         icon: Lock,
       };
     }
-  }, [currentWibTime, pickWindowStart, pickWindowEnd, pickStatus?.pickWindow?.isForceOpen]);
+  }, [
+    currentWibTime,
+    pickWindowStart,
+    pickWindowEnd,
+    pickStatus?.pickWindow?.isForceOpen,
+    pickStatus?.tournament?.isPickWindowForceOpen,
+    activeTournament?.isPickWindowForceOpen,
+  ]);
+
+  const isPickWindowForceOpen = useMemo(() => {
+    return Boolean(
+      pickStatus?.pickWindow?.isForceOpen ||
+      pickStatus?.tournament?.isPickWindowForceOpen ||
+      activeTournament?.isPickWindowForceOpen
+    );
+  }, [pickStatus, activeTournament]);
 
   // Handle submit pick (adding 1 stock to the picklist, locks closing price automatically)
   const handleAddStockPick = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTournamentId || !selectedStockId) return;
+
+    if (pickStatus?.isLocked && !isPickWindowForceOpen) {
+      setErrorMessage(`Jendela pick sedang terkunci. Pengiriman hanya dapat dilakukan pukul ${pickWindowStart} – ${pickWindowEnd} WIB.`);
+      return;
+    }
 
     if (currentCount >= maxPicks) {
       setErrorMessage(`Batas maksimum ${maxPicks} emiten per hari telah tercapai.`);
@@ -771,7 +799,7 @@ export default function MyPicksPage() {
                             <span>Slot Kosong {slotNum <= minPicks ? '(Wajib Diisi)' : '(Opsional)'}</span>
                           </div>
                           <span className="text-[11px] text-slate-600">
-                            {pickStatus?.isLocked ? 'Terkunci' : 'Menunggu Pilihan'}
+                            {pickStatus?.isLocked && !isPickWindowForceOpen ? 'Terkunci' : 'Menunggu Pilihan'}
                           </span>
                         </div>
                       );
@@ -779,8 +807,8 @@ export default function MyPicksPage() {
                   </div>
                 </div>
 
-                {/* Add Stock to Picklist Form (Only visible if remaining slots > 0 and pick window not locked) */}
-                {remainingSlots > 0 && !pickStatus?.isLocked && (
+                {/* Add Stock to Picklist Form (Only visible if remaining slots > 0 and pick window not locked or force open) */}
+                {remainingSlots > 0 && (!pickStatus?.isLocked || isPickWindowForceOpen) && (
                   <div className="glass-panel relative z-40 p-6 sm:p-8 rounded-3xl border border-blue-500/30 bg-slate-900/80 shadow-2xl space-y-5">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                       <div className="flex items-center gap-2">
