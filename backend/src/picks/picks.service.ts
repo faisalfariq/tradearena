@@ -11,6 +11,7 @@ import { UpdatePickDto } from './dto/update-pick.dto';
 import { SubmitMyPickDto } from './dto/submit-my-pick.dto';
 import { EntrySource, PickStatus } from '@prisma/client';
 import { PriceFractionService } from '../evaluation/services/price-fraction.service';
+import { resolveIdxStockBoard } from '../stocks/data/stock-boards';
 
 @Injectable()
 export class PicksService {
@@ -389,22 +390,15 @@ export class PicksService {
     const cleanSymbol = stock.symbol.trim().toUpperCase();
     const symbolJk = `${cleanSymbol}.JK`;
 
-    // Dynamic Board Resolution: if stock.board defaults to 'Utama', check bundled IDX catalog
-    let resolvedBoard = stock.board || 'Utama';
-    if (resolvedBoard.toLowerCase() === 'utama') {
-      try {
-        const catalog = require('../stocks/data/idx-stocks.json');
-        const matched = catalog.find((c: any) => c.symbol === cleanSymbol);
-        if (matched?.board && matched.board.toLowerCase() !== 'utama') {
-          resolvedBoard = matched.board;
-          this.prisma.stock
-            .update({
-              where: { id: stock.id },
-              data: { board: matched.board },
-            })
-            .catch(() => {});
-        }
-      } catch {}
+    // Dynamic Board Resolution: uses official IDX categorization
+    const resolvedBoard = resolveIdxStockBoard(cleanSymbol, stock.board);
+    if (resolvedBoard !== stock.board && typeof this.prisma.stock?.update === 'function') {
+      this.prisma.stock
+        .update({
+          where: { id: stock.id },
+          data: { board: resolvedBoard },
+        })
+        .catch(() => {});
     }
 
     // 1. Anti-FCA Check

@@ -8,23 +8,39 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 
+import {
+  AKSELERASI_SYMBOLS,
+  FCA_SYMBOLS,
+  PENGEMBANGAN_SYMBOLS,
+  EKONOMI_BARU_SYMBOLS,
+  resolveIdxStockBoard,
+} from './data/stock-boards';
+
 @Injectable()
 export class StocksService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
-    // Auto-heal stock boards from bundled IDX catalog if currently set to 'Utama'
+    // Auto-heal stock boards from official IDX sets if currently set to 'Utama'
     try {
-      const catalog = require('./data/idx-stocks.json');
-      const nonUtama = catalog.filter(
-        (s: any) => s.board && s.board.toLowerCase() !== 'utama',
-      );
-      for (const item of nonUtama) {
-        await this.prisma.stock.updateMany({
-          where: { symbol: item.symbol, board: 'Utama' },
-          data: { board: item.board },
-        });
-      }
+      await Promise.all([
+        this.prisma.stock.updateMany({
+          where: { symbol: { in: Array.from(AKSELERASI_SYMBOLS) }, board: 'Utama' },
+          data: { board: 'Akselerasi' },
+        }),
+        this.prisma.stock.updateMany({
+          where: { symbol: { in: Array.from(FCA_SYMBOLS) }, board: 'Utama' },
+          data: { board: 'Pemantauan Khusus' },
+        }),
+        this.prisma.stock.updateMany({
+          where: { symbol: { in: Array.from(PENGEMBANGAN_SYMBOLS) }, board: 'Utama' },
+          data: { board: 'Pengembangan' },
+        }),
+        this.prisma.stock.updateMany({
+          where: { symbol: { in: Array.from(EKONOMI_BARU_SYMBOLS) }, board: 'Utama' },
+          data: { board: 'Ekonomi Baru' },
+        }),
+      ]);
     } catch {}
   }
 
