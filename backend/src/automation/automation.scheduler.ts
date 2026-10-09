@@ -21,7 +21,7 @@ export class AutomationScheduler {
     name: 'post-market-daily-pipeline',
     timeZone: 'Asia/Jakarta',
   })
-  async handlePostMarketCron() {
+  async handlePostMarketCron(customDateStr?: string) {
     this.logger.log('Executing automated post-market cron job (16:30 WIB - 30 mins after market close)...');
 
     const activeTournaments = await this.prisma.tournament.findMany({
@@ -30,15 +30,18 @@ export class AutomationScheduler {
 
     if (activeTournaments.length === 0) {
       this.logger.log('No ACTIVE tournaments found for post-market pipeline.');
-      return;
+      return { status: 'NO_ACTIVE_TOURNAMENTS', processed: 0, results: [] };
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr =
+      customDateStr ||
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date());
 
+    const results = [];
     for (const tournament of activeTournaments) {
       try {
         this.logger.log(
-          `Triggering automated pipeline for tournament: ${tournament.name} (${tournament.id})`,
+          `Triggering automated pipeline for tournament: ${tournament.name} (${tournament.id}) on date ${todayStr}`,
         );
         const report = await this.automationService.runDailyPipeline(
           tournament.id,
@@ -47,11 +50,31 @@ export class AutomationScheduler {
         this.logger.log(
           `Pipeline finished for "${tournament.name}": status=${report.overallStatus}, evaluated=${report.evaluatedCount}`,
         );
+        results.push({
+          tournamentId: tournament.id,
+          tournamentName: tournament.name,
+          overallStatus: report.overallStatus,
+          evaluatedCount: report.evaluatedCount,
+          report,
+        });
       } catch (err: any) {
         this.logger.error(
           `Error running automated pipeline for tournament "${tournament.name}": ${err.message}`,
         );
+        results.push({
+          tournamentId: tournament.id,
+          tournamentName: tournament.name,
+          overallStatus: 'FAILED',
+          error: err.message,
+        });
       }
     }
+
+    return {
+      status: 'COMPLETED',
+      tradingDate: todayStr,
+      processedCount: results.length,
+      tournaments: results,
+    };
   }
 }

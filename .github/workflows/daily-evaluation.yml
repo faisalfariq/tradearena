@@ -1,0 +1,31 @@
+name: Daily Post-Market Tournament Evaluation
+
+on:
+  schedule:
+    # 09:30 UTC = 16:30 WIB (Asia/Jakarta) Monday through Friday (Bursa IDX hari aktif)
+    - cron: '30 9 * * 1-5'
+  workflow_dispatch: # Memungkinkan Admin menjalankan trigger manual kapan saja dari tab GitHub Actions
+
+jobs:
+  evaluate:
+    name: Run Post-Market Pipeline & Leaderboard Recalculation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Daily Pipeline on TradeArena Backend
+        run: |
+          BACKEND_URL="${{ secrets.TRADEARENA_API_URL || 'https://tradearena-backend.onrender.com' }}"
+          CRON_SECRET="${{ secrets.CRON_SECRET || '' }}"
+          echo "Memicu pipeline evaluasi pasca-bursa di: $BACKEND_URL/api/v1/automation/trigger-daily-pipeline..."
+          
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BACKEND_URL/api/v1/automation/trigger-daily-pipeline?secret=$CRON_SECRET")
+          HTTP_STATUS=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          echo "HTTP Status: $HTTP_STATUS"
+          echo "Response: $BODY"
+          
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Pipeline evaluasi harian & kalkulasi klasemen berhasil dijalankan!"
+          else
+            echo "Status respon: $HTTP_STATUS (periksa apakah URL backend sudah sesuai di secret TRADEARENA_API_URL)"
+          fi

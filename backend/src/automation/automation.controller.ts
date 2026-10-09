@@ -23,14 +23,44 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AutomationScheduler } from './automation.scheduler';
+import { UnauthorizedException } from '@nestjs/common';
 
 @ApiTags('Automation & Exception Handling')
 @Controller()
 export class AutomationController {
   constructor(
     private readonly automationService: AutomationService,
+    private readonly automationScheduler: AutomationScheduler,
     private readonly prisma: PrismaService,
   ) {}
+
+  @Post('automation/trigger-daily-pipeline')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Trigger eksternal webhook/cron untuk sinkronisasi data pasar, evaluasi trade, dan kalkulasi klasemen seluruh turnamen aktif',
+  })
+  @ApiQuery({
+    name: 'secret',
+    required: false,
+    description: 'Kunci rahasia opsional (cocokkan dengan CRON_SECRET di env jika disetel)',
+  })
+  @ApiQuery({
+    name: 'tradingDate',
+    required: false,
+    description: 'Tanggal evaluasi (YYYY-MM-DD), default ke tanggal hari ini WIB',
+  })
+  async triggerDailyPipeline(
+    @Query('secret') secret?: string,
+    @Query('tradingDate') tradingDate?: string,
+  ) {
+    const configuredSecret = process.env.CRON_SECRET;
+    if (configuredSecret && secret !== configuredSecret) {
+      throw new UnauthorizedException('Kunci autentikasi cron tidak valid');
+    }
+    return this.automationScheduler.handlePostMarketCron(tradingDate);
+  }
 
   @Post('tournaments/:tournamentId/pipeline/run')
   @HttpCode(HttpStatus.OK)
