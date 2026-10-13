@@ -114,6 +114,7 @@ export interface ParticipantOverallStats {
     dailyRank: number | null;
     isPenalty?: boolean;
     penaltyReason?: string | null;
+    isInitialImport?: boolean;
   }[];
 }
 

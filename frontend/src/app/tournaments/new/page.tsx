@@ -19,6 +19,7 @@ import {
   Clock,
   Layers,
   AlertTriangle,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export default function NewTournamentPage() {
@@ -167,6 +168,29 @@ export default function NewTournamentPage() {
             <span>{errorMsg}</span>
           </div>
         )}
+
+        {/* Banner Import Turnamen Manual */}
+        <div className="mb-8 p-4 rounded-xl bg-purple-950/40 border border-purple-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center shrink-0">
+              <FileSpreadsheet className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-purple-200">
+                Punya data klasemen turnamen yang sedang berjalan manual?
+              </h3>
+              <p className="text-xs text-purple-300/70">
+                Gunakan fitur Import Turnamen untuk memasukkan saldo poin dan riwayat peserta terakhir agar bisa langsung dilanjutkan.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/tournaments/import"
+            className="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shrink-0 transition-all shadow-md shadow-purple-600/20"
+          >
+            Buat via Import &rarr;
+          </Link>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Section 1: Informasi Umum */}

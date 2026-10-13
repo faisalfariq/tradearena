@@ -7,6 +7,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
 import {
+  CreateTournamentWithImportDto,
+  ImportStandingItemDto,
+} from './dto/import-standing.dto';
+import {
   TournamentStatus,
   CandleAmbiguityPolicy,
   GapPolicy,
@@ -250,5 +254,145 @@ export class TournamentsService {
     return this.prisma.tournament.delete({
       where: { id },
     });
+  }
+
+  async importStandingsToTournament(
+    tournamentId: string,
+    standings: ImportStandingItemDto[],
+  ) {
+    await this.findOne(tournamentId);
+
+    const results = [];
+    for (const item of standings) {
+      const trimmedName = item.name?.trim();
+      if (!trimmedName) continue;
+
+      const trimmedEmail = item.email?.trim().toLowerCase() || null;
+
+      // 1. Find existing participant by email or name
+      let participant = await this.prisma.participant.findFirst({
+        where: {
+          OR: [
+            ...(trimmedEmail
+              ? [{ email: { equals: trimmedEmail, mode: 'insensitive' as const } }]
+              : []),
+            { name: { equals: trimmedName, mode: 'insensitive' as const } },
+          ],
+        },
+      });
+
+      // 2. If user exists with that email, link userId
+      let user = null;
+      if (trimmedEmail) {
+        user = await this.prisma.user.findFirst({
+          where: { email: { equals: trimmedEmail, mode: 'insensitive' as const } },
+        });
+      }
+
+      if (!participant) {
+        participant = await this.prisma.participant.create({
+          data: {
+            name: trimmedName,
+            email: trimmedEmail,
+            userId: user?.id || null,
+          },
+        });
+      } else if (user && (!participant.userId || participant.userId !== user.id)) {
+        try {
+          await this.prisma.participant.update({
+            where: { id: participant.id },
+            data: { userId: user.id },
+          });
+        } catch {
+          // ignore linking errors
+        }
+      }
+
+      // Calculate initial picks count if not provided
+      const winCount = Number(item.winCount ?? 0);
+      const lossCount = Number(item.lossCount ?? 0);
+      const breakevenCount = Number(item.breakevenCount ?? 0);
+      const picksCount =
+        item.picksCount !== undefined && item.picksCount !== null
+          ? Number(item.picksCount)
+          : winCount + lossCount + breakevenCount;
+      const penaltiesCount = Number(item.penaltiesCount ?? 0);
+      const penaltyPoints = Number(item.penaltyPoints ?? 0);
+      const totalPoints = Number(item.totalPoints ?? 0);
+
+      // 3. Upsert TournamentParticipant record
+      const tp = await this.prisma.tournamentParticipant.upsert({
+        where: {
+          tournamentId_participantId: {
+            tournamentId,
+            participantId: participant.id,
+          },
+        },
+        create: {
+          tournamentId,
+          participantId: participant.id,
+          userId: participant.userId || user?.id || null,
+          status: 'APPROVED',
+          initialPoints: totalPoints,
+          initialWinCount: winCount,
+          initialLossCount: lossCount,
+          initialBreakevenCount: breakevenCount,
+          initialPicksCount: picksCount,
+          initialPenaltiesCount: penaltiesCount,
+          initialPenaltyPoints: penaltyPoints,
+        },
+        update: {
+          initialPoints: totalPoints,
+          initialWinCount: winCount,
+          initialLossCount: lossCount,
+          initialBreakevenCount: breakevenCount,
+          initialPicksCount: picksCount,
+          initialPenaltiesCount: penaltiesCount,
+          initialPenaltyPoints: penaltyPoints,
+          status: 'APPROVED',
+        },
+      });
+
+      results.push({
+        participantId: participant.id,
+        participantName: participant.name,
+        tournamentParticipantId: tp.id,
+        initialPoints: totalPoints,
+      });
+    }
+
+    return {
+      tournamentId,
+      importedCount: results.length,
+      participants: results,
+    };
+  }
+
+  async createWithImport(dto: CreateTournamentWithImportDto) {
+    const tournament = await this.create(dto);
+    if (dto.standings && Array.isArray(dto.standings) && dto.standings.length > 0) {
+      const importResult = await this.importStandingsToTournament(
+        tournament.id,
+        dto.standings,
+      );
+      return {
+        ...tournament,
+        importedCount: importResult.importedCount,
+      };
+    }
+    return tournament;
+  }
+
+  getImportTemplateCsv(): string {
+    const headers =
+      'nama_peserta,email,total_poin,win_count,loss_count,breakeven_count,total_trade,penalti_count,penalti_poin';
+    const sampleRows = [
+      'Budi Santoso,budi@example.com,25.40,8,2,1,11,0,0',
+      'Siti Rahma,siti@example.com,18.75,6,3,0,9,1,-10',
+      'Agus Trader,agus@example.com,12.20,5,4,2,11,0,0',
+      'Dewi Lestari,,8.50,4,3,1,8,0,0',
+      'Reza Pratama,reza@example.com,-3.50,2,5,1,8,1,-10',
+    ];
+    return [headers, ...sampleRows].join('\r\n');
   }
 }

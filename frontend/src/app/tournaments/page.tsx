@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Filter,
   Edit,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 interface TournamentRule {
@@ -149,13 +150,22 @@ export default function TournamentsPage() {
         </div>
 
         {user && user.role === 'ADMIN' && (
-          <Link
-            href="/tournaments/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold shadow-lg shadow-blue-600/25 transition-all w-fit"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Buat Turnamen Baru</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/tournaments/import"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-sm font-semibold transition-all w-fit shadow-lg shadow-purple-900/20"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-purple-400" />
+              <span>Import Turnamen</span>
+            </Link>
+            <Link
+              href="/tournaments/new"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold shadow-lg shadow-blue-600/25 transition-all w-fit"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Buat Turnamen Baru</span>
+            </Link>
+          </div>
         )}
       </div>
 

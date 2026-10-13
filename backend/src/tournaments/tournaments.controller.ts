@@ -11,7 +11,9 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -23,6 +25,10 @@ import { TournamentsService } from './tournaments.service';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
 import { UpdateTournamentStatusDto } from './dto/update-status.dto';
+import {
+  CreateTournamentWithImportDto,
+  ImportStandingsDto,
+} from './dto/import-standing.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -43,12 +49,58 @@ export class TournamentsController {
     return this.tournamentsService.findAll(status);
   }
 
+  @Get('import/template')
+  @ApiOperation({
+    summary: 'Download CSV template for importing tournament standings',
+  })
+  @ApiResponse({ status: 200, description: 'CSV template file' })
+  async getImportTemplate(@Res() res: Response) {
+    const csvContent = this.tournamentsService.getImportTemplateCsv();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="template_import_klasemen_turnamen.csv"',
+    );
+    return res.status(HttpStatus.OK).send(csvContent);
+  }
+
+  @Post('import')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Create new tournament and import latest standings from manual tracking (Admin only)',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Tournament created with imported standings',
+  })
+  async createWithImport(@Body() dto: CreateTournamentWithImportDto) {
+    return this.tournamentsService.createWithImport(dto);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get tournament by ID including rules and summary' })
   @ApiResponse({ status: 200, description: 'Tournament details' })
   @ApiResponse({ status: 404, description: 'Tournament not found' })
   async findOne(@Param('id') id: string) {
     return this.tournamentsService.findOne(id);
+  }
+
+  @Post(':id/import-standings')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Import or update latest standings for existing tournament (Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Standings imported successfully' })
+  async importStandings(
+    @Param('id') id: string,
+    @Body() dto: ImportStandingsDto,
+  ) {
+    return this.tournamentsService.importStandingsToTournament(id, dto.standings);
   }
 
   @Post()

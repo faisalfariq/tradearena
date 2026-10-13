@@ -356,13 +356,20 @@ export class ResultsService {
           ev.status === EvaluationStatus.COMPLETED ||
           ev.status === EvaluationStatus.OVERRIDDEN,
       );
-      const picksCount = completed.length;
+      const basePoints = Number(enrolledObj?.initialPoints ?? 0);
+      const baseWinCount = enrolledObj?.initialWinCount ?? 0;
+      const baseLossCount = enrolledObj?.initialLossCount ?? 0;
+      const baseBreakevenCount = enrolledObj?.initialBreakevenCount ?? 0;
+      const basePicksCount = enrolledObj?.initialPicksCount ?? 0;
+      const basePenaltiesCount = enrolledObj?.initialPenaltiesCount ?? 0;
+      const basePenaltyPoints = Number(enrolledObj?.initialPenaltyPoints ?? 0);
 
-      let totalPoints = 0;
-      let winCount = 0;
-      let lossCount = 0;
-      let breakevenCount = 0;
-      let sumReturn = 0;
+      let totalPoints = basePoints;
+      let winCount = baseWinCount;
+      let lossCount = baseLossCount;
+      let breakevenCount = baseBreakevenCount;
+      let picksCount = basePicksCount + completed.length;
+      let sumReturn = basePoints;
 
       let bestPick: ParticipantOverallStats['bestPick'] = null;
       let worstPick: ParticipantOverallStats['worstPick'] = null;
@@ -412,11 +419,12 @@ export class ResultsService {
       const userPenalties = allPenalties.filter(
         (p) => p.participantId === participantId,
       );
-      const penaltyPoints = userPenalties.reduce(
+      const ongoingPenaltyPoints = userPenalties.reduce(
         (sum, p) => sum + Number(p.points),
         0,
       );
-      const penaltiesCount = userPenalties.length;
+      const penaltyPoints = basePenaltyPoints + ongoingPenaltyPoints;
+      const penaltiesCount = basePenaltiesCount + userPenalties.length;
 
       const penaltiesHistory = userPenalties.map((p) => ({
         id: p.id,
@@ -424,6 +432,15 @@ export class ResultsService {
         points: Number(p.points),
         reason: p.reason,
       }));
+
+      if (basePenaltiesCount > 0) {
+        penaltiesHistory.unshift({
+          id: `initial-pen-${enrolledObj?.id || participantId}`,
+          date: tournament.startDate.toISOString().substring(0, 10),
+          points: basePenaltyPoints,
+          reason: `Penalti Sebelum Import (${basePenaltiesCount}x tidak pick emiten)`,
+        });
+      }
 
       for (const p of userPenalties) {
         const pDateStr = p.tradingDate.toISOString().substring(0, 10);
@@ -438,10 +455,23 @@ export class ResultsService {
         });
       }
 
+      // If participant had imported baseline points or trades, record an entry in daily history
+      if (basePoints !== 0 || basePicksCount > 0) {
+        dailyHistory.push({
+          date: tournament.startDate.toISOString().substring(0, 10),
+          symbol: 'SALDO AWAL (IMPORT)',
+          returnPct: basePoints,
+          points: basePoints,
+          dailyRank: null,
+          isPenalty: false,
+          isInitialImport: true,
+        });
+      }
+
       // Sort daily history chronologically
       dailyHistory.sort((a, b) => a.date.localeCompare(b.date));
 
-      totalPoints += penaltyPoints;
+      totalPoints += ongoingPenaltyPoints;
 
       const winRate =
         picksCount > 0 ? Number(((winCount / picksCount) * 100).toFixed(2)) : 0;

@@ -4034,7 +4034,7 @@ export default function TournamentDetailPage() {
                                 <td className="py-3.5 px-4 text-right">
                                   {isPenalty ? (
                                     <span className="text-[11px] text-slate-500 italic">
-                                      Auto -10 Poin
+                                      Auto -{tournament?.rules?.noPickPenalty ? Number(tournament.rules.noPickPenalty) : 10} Poin
                                     </span>
                                   ) : (
                                     <button
