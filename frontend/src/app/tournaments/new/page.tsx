@@ -18,6 +18,7 @@ import {
   Target,
   Clock,
   Layers,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function NewTournamentPage() {
@@ -44,6 +45,7 @@ export default function NewTournamentPage() {
   // Rules State (Defaults BSJP -3% CL & -3% TS)
   const [initialStopPct, setInitialStopPct] = useState(3);
   const [trailingStopPct, setTrailingStopPct] = useState(3);
+  const [noPickPenalty, setNoPickPenalty] = useState(10);
   const [candleAmbiguityPolicy, setCandleAmbiguityPolicy] = useState(
     'CONSERVATIVE_LOSS_FIRST',
   );
@@ -114,6 +116,7 @@ export default function NewTournamentPage() {
           rules: {
             initialStopPct: Number(initialStopPct) / 100,
             trailingStopPct: Number(trailingStopPct) / 100,
+            noPickPenalty: Number(noPickPenalty),
             candleAmbiguityPolicy,
             gapPolicy,
             priceFractionPolicy,
@@ -496,6 +499,31 @@ export default function NewTournamentPage() {
                 />
                 <span className="text-[10px] text-slate-500 block mt-1">
                   Drawdown minimum dari puncak tertinggi (peak high watermark) yang mengunci profit.
+                </span>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-rose-400" />
+                    <span>Penalti Tidak Pick Emiten (Poin)</span>
+                  </label>
+                  <span className="text-xs font-bold text-rose-400 font-mono">
+                    -{noPickPenalty} pts
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="100"
+                  required
+                  value={noPickPenalty}
+                  onChange={(e) => setNoPickPenalty(Number(e.target.value))}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition-all font-mono"
+                />
+                <span className="text-[10px] text-slate-500 block mt-1">
+                  Pengurangan poin per hari bagi peserta yang tidak memilih emiten (misal: 10 atau 3 poin).
                 </span>
               </div>
 

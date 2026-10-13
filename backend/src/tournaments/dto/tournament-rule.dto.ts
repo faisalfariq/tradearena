@@ -38,6 +38,19 @@ export class TournamentRuleDto {
   trailingStopPct?: number;
 
   @ApiPropertyOptional({
+    description:
+      'Besaran poin penalti (pengurangan) jika peserta tidak memilih emiten harian (misal: 10 atau 3)',
+    example: 10,
+    default: 10,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  noPickPenalty?: number;
+
+  @ApiPropertyOptional({
     enum: CandleAmbiguityPolicy,
     default: CandleAmbiguityPolicy.CONSERVATIVE_LOSS_FIRST,
     description: 'Policy when candle high/low sequence is ambiguous',

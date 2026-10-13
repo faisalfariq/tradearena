@@ -247,12 +247,25 @@ export class EvaluationService {
   }
 
   /**
-   * Applies -10 points penalty for any enrolled & approved participant who failed to pick an emiten on this trading date.
+   * Applies penalty for any enrolled & approved participant who failed to pick an emiten on this trading date.
+   * Uses tournament rules setting (default -10 pts or customized e.g. -3 pts).
    * Also removes penalty if the participant actually has picks.
    */
   async applyNoPickPenalties(tournamentId: string, tradingDate: Date) {
     try {
-      // 1. Get all active & approved participants for this tournament
+      // 1. Get tournament rules to determine the configured penalty points
+      const tournament = await this.prisma.tournament.findUnique({
+        where: { id: tournamentId },
+        include: { rules: true },
+      });
+
+      const configuredPenalty = tournament?.rules?.noPickPenalty !== undefined && tournament?.rules?.noPickPenalty !== null
+        ? Number(tournament.rules.noPickPenalty)
+        : 10;
+      const penaltyPoints = -Math.abs(configuredPenalty);
+      const penaltyReason = `Tidak memilih emiten harian (${penaltyPoints} poin)`;
+
+      // 2. Get all active & approved participants for this tournament
       const enrolled = await this.prisma.tournamentParticipant.findMany({
         where: {
           tournamentId,
@@ -263,7 +276,7 @@ export class EvaluationService {
 
       if (enrolled.length === 0) return { penalizedCount: 0, penalties: [] };
 
-      // 2. Get participants who submitted picks for this date
+      // 3. Get participants who submitted picks for this date
       const picksToday = await this.prisma.stockPick.findMany({
         where: {
           tournamentId,
@@ -273,7 +286,7 @@ export class EvaluationService {
       });
       const pickedParticipantIds = new Set(picksToday.map((p) => p.participantId));
 
-      // 3. Remove penalty for participants who DID submit picks
+      // 4. Remove penalty for participants who DID submit picks
       if (pickedParticipantIds.size > 0) {
         await this.prisma.participantPenalty.deleteMany({
           where: {
@@ -285,7 +298,7 @@ export class EvaluationService {
         });
       }
 
-      // 4. For participants who did NOT pick, upsert -10 penalty
+      // 5. For participants who did NOT pick, upsert penalty
       const penalties = [];
       for (const ep of enrolled) {
         if (!pickedParticipantIds.has(ep.participantId)) {
@@ -299,16 +312,16 @@ export class EvaluationService {
               },
             },
             update: {
-              points: -10,
-              reason: 'Tidak memilih emiten harian (-10 poin)',
+              points: penaltyPoints,
+              reason: penaltyReason,
             },
             create: {
               tournamentId,
               participantId: ep.participantId,
               tradingDate,
               penaltyType: 'NO_PICK',
-              points: -10,
-              reason: 'Tidak memilih emiten harian (-10 poin)',
+              points: penaltyPoints,
+              reason: penaltyReason,
             },
             include: { participant: true },
           });
@@ -317,7 +330,7 @@ export class EvaluationService {
       }
 
       this.logger.log(
-        `[applyNoPickPenalties] Applied ${penalties.length} penalties (-10 pts) for tournament ${tournamentId} on date ${tradingDate.toISOString().substring(0, 10)}`,
+        `[applyNoPickPenalties] Applied ${penalties.length} penalties (${penaltyPoints} pts) for tournament ${tournamentId} on date ${tradingDate.toISOString().substring(0, 10)}`,
       );
 
       return { penalizedCount: penalties.length, penalties };

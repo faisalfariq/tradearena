@@ -148,6 +148,7 @@ model TournamentRule {
   tournament             Tournament            @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   initialStopPct         Decimal               @default(0.03) @map("initial_stop_percentage") @db.Decimal(5, 4)
   trailingStopPct        Decimal               @default(0.03) @map("trailing_stop_percentage") @db.Decimal(5, 4)
+  noPickPenalty          Decimal               @default(10.00) @map("no_pick_penalty") @db.Decimal(6, 2)
   candleAmbiguityPolicy  CandleAmbiguityPolicy @default(CONSERVATIVE_LOSS_FIRST) @map("candle_ambiguity_policy")
   gapPolicy              GapPolicy             @default(ACTUAL_FIRST_VALID_LEVEL) @map("gap_policy")
   priceFractionPolicy    String                @default("IDX_STANDARD_V1") @map("price_fraction_policy")

@@ -38,6 +38,7 @@ export class TournamentsService {
 
     const initialStopPct = dto.rules?.initialStopPct ?? 0.03;
     const trailingStopPct = dto.rules?.trailingStopPct ?? 0.03;
+    const noPickPenalty = dto.rules?.noPickPenalty ?? 10;
     const candleAmbiguityPolicy =
       dto.rules?.candleAmbiguityPolicy ??
       CandleAmbiguityPolicy.CONSERVATIVE_LOSS_FIRST;
@@ -69,6 +70,7 @@ export class TournamentsService {
             create: {
               initialStopPct,
               trailingStopPct,
+              noPickPenalty,
               candleAmbiguityPolicy,
               gapPolicy,
               priceFractionPolicy,
@@ -166,6 +168,7 @@ export class TournamentsService {
                   create: {
                     initialStopPct: dto.rules.initialStopPct ?? 0.03,
                     trailingStopPct: dto.rules.trailingStopPct ?? 0.03,
+                    noPickPenalty: dto.rules.noPickPenalty ?? 10,
                     candleAmbiguityPolicy:
                       dto.rules.candleAmbiguityPolicy ??
                       CandleAmbiguityPolicy.CONSERVATIVE_LOSS_FIRST,
@@ -180,6 +183,7 @@ export class TournamentsService {
                   update: {
                     initialStopPct: dto.rules.initialStopPct,
                     trailingStopPct: dto.rules.trailingStopPct,
+                    noPickPenalty: dto.rules.noPickPenalty,
                     candleAmbiguityPolicy: dto.rules.candleAmbiguityPolicy,
                     gapPolicy: dto.rules.gapPolicy,
                     priceFractionPolicy: dto.rules.priceFractionPolicy,

@@ -517,7 +517,11 @@ export default function TournamentLeaderboardPage() {
                       <td className="py-3.5 px-4 font-mono text-center">
                         {item.penaltiesCount && item.penaltiesCount > 0 ? (
                           <span className="text-[11px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md inline-block">
-                            {item.penaltyPoints ?? item.penaltiesCount * -10} pts ({item.penaltiesCount}x)
+                            {item.penaltyPoints ??
+                              (item.penaltiesHistory && item.penaltiesHistory.length > 0
+                                ? item.penaltiesHistory.reduce((s, p) => s + p.points, 0)
+                                : item.penaltiesCount * -10)}{' '}
+                            pts ({item.penaltiesCount}x)
                           </span>
                         ) : (
                           <span className="text-slate-500 text-xs">0 pts</span>

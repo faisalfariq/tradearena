@@ -21,6 +21,7 @@ import {
   Activity,
   Target,
   Layers,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function EditTournamentPage() {
@@ -50,6 +51,7 @@ export default function EditTournamentPage() {
   // Rules State
   const [initialStopPct, setInitialStopPct] = useState(3);
   const [trailingStopPct, setTrailingStopPct] = useState(3);
+  const [noPickPenalty, setNoPickPenalty] = useState(10);
   const [candleAmbiguityPolicy, setCandleAmbiguityPolicy] = useState(
     'CONSERVATIVE_LOSS_FIRST',
   );
@@ -125,6 +127,11 @@ export default function EditTournamentPage() {
           data.rules.trailingStopPct
             ? Number(data.rules.trailingStopPct) * 100
             : 3,
+        );
+        setNoPickPenalty(
+          data.rules.noPickPenalty !== undefined && data.rules.noPickPenalty !== null
+            ? Number(data.rules.noPickPenalty)
+            : 10,
         );
         setCandleAmbiguityPolicy(
           data.rules.candleAmbiguityPolicy || 'CONSERVATIVE_LOSS_FIRST',
@@ -202,6 +209,7 @@ export default function EditTournamentPage() {
           rules: {
             initialStopPct: Number(initialStopPct) / 100,
             trailingStopPct: Number(trailingStopPct) / 100,
+            noPickPenalty: Number(noPickPenalty),
             candleAmbiguityPolicy,
             gapPolicy,
             priceFractionPolicy,
@@ -689,6 +697,31 @@ export default function EditTournamentPage() {
                 />
                 <p className="text-[11px] text-slate-500 mt-2">
                   Batas penurunan persentase dari harga tertinggi (Peak) selama sesi perdagangan.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-rose-400" />
+                    <span>Penalti Tidak Pick Emiten (Poin) *</span>
+                  </label>
+                  <span className="text-xs font-bold text-rose-400 font-mono">
+                    -{noPickPenalty} pts
+                  </span>
+                </div>
+                <input
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  max="100"
+                  required
+                  value={noPickPenalty}
+                  onChange={(e) => setNoPickPenalty(Number(e.target.value))}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-100 text-sm focus:outline-none focus:border-blue-500 font-mono"
+                />
+                <p className="text-[11px] text-slate-500 mt-2">
+                  Pengurangan poin per hari bagi peserta yang tidak memilih emiten (misal: 10 atau 3 poin).
                 </p>
               </div>
 

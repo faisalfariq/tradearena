@@ -143,6 +143,7 @@ interface TournamentRule {
   id: string;
   initialStopPct: number | string;
   trailingStopPct: number | string;
+  noPickPenalty?: number | string;
   candleAmbiguityPolicy: string;
   gapPolicy: string;
   priceFractionPolicy: string;
@@ -2692,6 +2693,16 @@ export default function TournamentDetailPage() {
                   Trailing stop mengikuti puncak harga tertinggi (highest valid price) selama intraday.
                 </p>
               </div>
+
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+                <span className="text-slate-400 block mb-1">Penalti Tidak Pick Emiten</span>
+                <span className="text-sm font-bold text-rose-400 font-mono">
+                  -{Number(tournament.rules.noPickPenalty ?? 10)} Poin per Hari
+                </span>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Peserta yang tidak melakukan submit pick harian sebelum market buka akan otomatis dikenakan penalti pengurangan poin ini.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -4283,7 +4294,14 @@ export default function TournamentDetailPage() {
                                     title="Klik untuk melihat riwayat pengurangan poin"
                                   >
                                     <AlertTriangle className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
-                                    <span>{s.penaltyPoints ?? s.penaltiesCount * -10} pts</span>
+                                    <span>
+                                      {s.penaltyPoints ??
+                                        s.penaltiesCount *
+                                          -(tournament?.rules?.noPickPenalty
+                                            ? Number(tournament.rules.noPickPenalty)
+                                            : 10)}{' '}
+                                      pts
+                                    </span>
                                     <span className="text-[10px] px-1.5 py-0.2 bg-rose-500/20 text-rose-300 rounded-full font-bold">
                                       {s.penaltiesCount}x
                                     </span>
