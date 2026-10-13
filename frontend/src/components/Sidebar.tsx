@@ -19,6 +19,7 @@ import {
   Activity,
   UserCog,
   CheckSquare,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export default function Sidebar() {
@@ -66,6 +67,12 @@ export default function Sidebar() {
       : []),
     ...(user?.role === 'ADMIN'
       ? [
+          {
+            label: 'Import Turnamen',
+            href: '/tournaments/import',
+            icon: FileSpreadsheet,
+            active: pathname.startsWith('/tournaments/import'),
+          },
           {
             label: 'Kelola Pengguna',
             href: '/users',
