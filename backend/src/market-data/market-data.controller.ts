@@ -72,6 +72,18 @@ export class MarketDataController {
     return this.marketDataService.getSyncRunDetail(runId);
   }
 
+  @Post('tournaments/:tournamentId/market-sync/:runId/cancel')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Batalkan atau pulihkan sync run yang macet (Admin only)',
+  })
+  @ApiResponse({ status: 200, description: 'Sync run berhasil dibatalkan / dipulihkan' })
+  async cancelSyncRun(@Param('runId') runId: string) {
+    return this.marketDataService.cancelSyncRun(runId);
+  }
+
   @Get('market-data/candles')
   @ApiOperation({
     summary: 'Ambil data candle intraday 1-menit yang tersimpan di database',

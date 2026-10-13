@@ -36,6 +36,8 @@ export interface DailyResultItem {
   pointsRule: string;
   evaluationStatus: string;
   isOverridden: boolean;
+  isPenalty?: boolean;
+  penaltyReason?: string | null;
 }
 
 export interface DailySummaryMetrics {
@@ -63,6 +65,13 @@ export interface DailyResultsResponse {
   tradingDate: string;
   metrics: DailySummaryMetrics;
   results: DailyResultItem[];
+  penalties?: Array<{
+    id: string;
+    participantId: string;
+    participantName: string;
+    points: number;
+    reason: string;
+  }>;
 }
 
 export interface ParticipantOverallStats {
@@ -77,6 +86,14 @@ export interface ParticipantOverallStats {
   breakevenCount: number;
   winRate: number;
   averageReturn: number;
+  penaltyPoints?: number;
+  penaltiesCount?: number;
+  penaltiesHistory?: Array<{
+    id: string;
+    date: string;
+    points: number;
+    reason: string;
+  }>;
   bestPick: {
     symbol: string;
     date: string;
@@ -94,7 +111,9 @@ export interface ParticipantOverallStats {
     symbol: string;
     returnPct: number;
     points: number;
-    dailyRank: number;
+    dailyRank: number | null;
+    isPenalty?: boolean;
+    penaltyReason?: string | null;
   }[];
 }
 
@@ -109,4 +128,5 @@ export interface OverallResultsResponse {
   totalParticipants: number;
   totalEvaluatedPicks: number;
   standings: ParticipantOverallStats[];
+  totalPenaltiesCount?: number;
 }

@@ -109,47 +109,50 @@ export class ResultsService {
       }
     }
 
-    // Step 2: Sort evaluations using deterministic 4-tier Daily Tie-Breaker
-    // 1. Points / Realized Return (descending)
-    // 2. Max Floating Return (descending)
-    // 3. Survival Time / Exit Timestamp (descending: later exit is better)
-    // 4. Participant Name (alphabetical)
-    const sortedEvaluations = [...evaluations].sort((a, b) => {
-      const pointsA = a.pointsResult
-        ? Number(a.pointsResult.points)
-        : Number(a.realizedReturn ?? 0);
-      const pointsB = b.pointsResult
-        ? Number(b.pointsResult.points)
-        : Number(b.realizedReturn ?? 0);
-
-      if (pointsB !== pointsA) {
-        return pointsB - pointsA;
-      }
-
-      const floatA = Number(a.maxFloatingReturn ?? 0);
-      const floatB = Number(b.maxFloatingReturn ?? 0);
-      if (floatB !== floatA) {
-        return floatB - floatA;
-      }
-
-      const timeA = a.exitTimestamp ? new Date(a.exitTimestamp).getTime() : 0;
-      const timeB = b.exitTimestamp ? new Date(b.exitTimestamp).getTime() : 0;
-      if (timeB !== timeA) {
-        return timeB - timeA;
-      }
-
-      return a.pick.participant.name.localeCompare(b.pick.participant.name);
+    // Step 2: Fetch any penalties for this trading date
+    const penalties = await this.prisma.participantPenalty.findMany({
+      where: {
+        tournamentId,
+        tradingDate: targetDate,
+      },
+      include: {
+        participant: true,
+      },
     });
 
-    // Step 3: Format daily result items with dynamic rank
-    const results: DailyResultItem[] = sortedEvaluations.map((ev, index) => {
+    const penaltyItems: DailyResultItem[] = penalties.map((p) => ({
+      rank: 0,
+      participantId: p.participantId,
+      participantName: p.participant.name,
+      participantEmail: p.participant.email,
+      pickId: `penalty-${p.id}`,
+      stockSymbol: 'NO PICK',
+      stockName: 'Tidak Pick Emiten',
+      tradingDate: dateStr.substring(0, 10),
+      entryPrice: 0,
+      highestPrice: 0,
+      maxFloatingReturn: 0,
+      exitPrice: 0,
+      exitTimestamp: p.createdAt,
+      exitReason: 'PENALTY',
+      realizedReturn: 0,
+      points: Number(p.points),
+      pointsRule: 'PENALTY',
+      evaluationStatus: 'PENALTY',
+      isOverridden: false,
+      isPenalty: true,
+      penaltyReason: p.reason,
+    }));
+
+    // Step 3: Format daily evaluated items
+    const evaluatedItems: DailyResultItem[] = evaluations.map((ev) => {
       const realizedReturn = Number(ev.realizedReturn ?? 0);
       const points = ev.pointsResult
         ? Number(ev.pointsResult.points)
         : realizedReturn;
 
       return {
-        rank: index + 1,
+        rank: 0,
         participantId: ev.pick.participantId,
         participantName: ev.pick.participant.name,
         participantEmail: ev.pick.participant.email,
@@ -157,7 +160,7 @@ export class ResultsService {
         evaluationId: ev.id,
         stockSymbol: ev.pick.stock.symbol,
         stockName: ev.pick.stock.name,
-        tradingDate: tradingDateStr.substring(0, 10),
+        tradingDate: dateStr.substring(0, 10),
         entryPrice: Number(ev.entryPrice),
         highestPrice: Number(ev.highestPrice ?? ev.entryPrice),
         maxFloatingReturn: Number(ev.maxFloatingReturn ?? 0),
@@ -169,10 +172,35 @@ export class ResultsService {
         pointsRule: ev.pointsResult?.pointsRule || pointsRule,
         evaluationStatus: ev.status,
         isOverridden: ev.status === EvaluationStatus.OVERRIDDEN,
+        isPenalty: false,
       };
     });
 
-    // Step 4: Calculate Daily Summary Metrics
+    // Step 4: Sort all items using deterministic 4-tier Daily Tie-Breaker
+    // 1. Points / Realized Return (descending)
+    // 2. Max Floating Return (descending)
+    // 3. Survival Time / Exit Timestamp (descending: later exit is better)
+    // 4. Participant Name (alphabetical)
+    const results = [...evaluatedItems, ...penaltyItems].sort((a, b) => {
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+      if (b.maxFloatingReturn !== a.maxFloatingReturn) {
+        return b.maxFloatingReturn - a.maxFloatingReturn;
+      }
+      const timeA = new Date(a.exitTimestamp).getTime();
+      const timeB = new Date(b.exitTimestamp).getTime();
+      if (timeB !== timeA) {
+        return timeB - timeA;
+      }
+      return a.participantName.localeCompare(b.participantName);
+    });
+
+    results.forEach((item, index) => {
+      item.rank = index + 1;
+    });
+
+    // Step 5: Calculate Daily Summary Metrics
     const completedResults = results.filter(
       (r) =>
         r.evaluationStatus === EvaluationStatus.COMPLETED ||
@@ -192,9 +220,9 @@ export class ResultsService {
     const gainersCount = completedResults.filter(
       (r) => r.realizedReturn > 0,
     ).length;
-    const losersCount = completedResults.filter(
-      (r) => r.realizedReturn < 0,
-    ).length;
+    const losersCount =
+      completedResults.filter((r) => r.realizedReturn < 0).length +
+      penaltyItems.length;
 
     const topGainer =
       completedResults.length > 0
@@ -207,15 +235,12 @@ export class ResultsService {
         : null;
 
     const topLoser =
-      completedResults.length > 0
+      results.length > 0
         ? {
-            participantName:
-              completedResults[completedResults.length - 1].participantName,
-            stockSymbol:
-              completedResults[completedResults.length - 1].stockSymbol,
-            returnPct:
-              completedResults[completedResults.length - 1].realizedReturn,
-            points: completedResults[completedResults.length - 1].points,
+            participantName: results[results.length - 1].participantName,
+            stockSymbol: results[results.length - 1].stockSymbol,
+            returnPct: results[results.length - 1].realizedReturn,
+            points: results[results.length - 1].points,
           }
         : null;
 
@@ -234,6 +259,13 @@ export class ResultsService {
       tradingDate: dateStr.substring(0, 10),
       metrics,
       results,
+      penalties: penalties.map((p) => ({
+        id: p.id,
+        participantId: p.participantId,
+        participantName: p.participant.name,
+        points: Number(p.points),
+        reason: p.reason,
+      })),
     };
   }
 
@@ -279,6 +311,17 @@ export class ResultsService {
         pick: {
           tradingDate: 'asc',
         },
+      },
+    });
+
+    // Fetch all penalties for the tournament
+    const allPenalties = await this.prisma.participantPenalty.findMany({
+      where: { tournamentId },
+      include: {
+        participant: true,
+      },
+      orderBy: {
+        tradingDate: 'asc',
       },
     });
 
@@ -365,6 +408,41 @@ export class ResultsService {
         }
       }
 
+      // Add user penalties to total points and history
+      const userPenalties = allPenalties.filter(
+        (p) => p.participantId === participantId,
+      );
+      const penaltyPoints = userPenalties.reduce(
+        (sum, p) => sum + Number(p.points),
+        0,
+      );
+      const penaltiesCount = userPenalties.length;
+
+      const penaltiesHistory = userPenalties.map((p) => ({
+        id: p.id,
+        date: p.tradingDate.toISOString().substring(0, 10),
+        points: Number(p.points),
+        reason: p.reason,
+      }));
+
+      for (const p of userPenalties) {
+        const pDateStr = p.tradingDate.toISOString().substring(0, 10);
+        dailyHistory.push({
+          date: pDateStr,
+          symbol: 'NO PICK (PENALTI)',
+          returnPct: 0,
+          points: Number(p.points),
+          dailyRank: null,
+          isPenalty: true,
+          penaltyReason: p.reason,
+        });
+      }
+
+      // Sort daily history chronologically
+      dailyHistory.sort((a, b) => a.date.localeCompare(b.date));
+
+      totalPoints += penaltyPoints;
+
       const winRate =
         picksCount > 0 ? Number(((winCount / picksCount) * 100).toFixed(2)) : 0;
       const averageReturn =
@@ -382,13 +460,16 @@ export class ResultsService {
         breakevenCount,
         winRate,
         averageReturn,
+        penaltyPoints,
+        penaltiesCount,
+        penaltiesHistory,
         bestPick,
         worstPick,
         dailyHistory,
       });
     }
 
-    // Step 5: Sort overall standings using 5-tier Overall Tie-Breaker
+    // Step 6: Sort overall standings using 5-tier Overall Tie-Breaker
     // 1. Total Points (descending)
     // 2. Win Count (descending)
     // 3. Average Return (descending)
@@ -453,7 +534,35 @@ export class ResultsService {
           e.status === EvaluationStatus.OVERRIDDEN,
       ).length,
       standings: statsList,
+      totalPenaltiesCount: allPenalties.length,
     };
+  }
+
+  /**
+   * Retrieves all penalty logs/history for a tournament.
+   */
+  async getTournamentPenalties(tournamentId: string) {
+    const penalties = await this.prisma.participantPenalty.findMany({
+      where: { tournamentId },
+      include: {
+        participant: true,
+      },
+      orderBy: {
+        tradingDate: 'desc',
+      },
+    });
+
+    return penalties.map((p) => ({
+      id: p.id,
+      participantId: p.participantId,
+      participantName: p.participant.name,
+      participantEmail: p.participant.email,
+      tradingDate: p.tradingDate.toISOString().substring(0, 10),
+      penaltyType: p.penaltyType,
+      points: Number(p.points),
+      reason: p.reason,
+      createdAt: p.createdAt,
+    }));
   }
 
   /**

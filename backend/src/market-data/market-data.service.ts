@@ -4,6 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  OnModuleInit,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -17,7 +18,7 @@ import { TriggerSyncDto } from './dto/trigger-sync.dto';
 import { SyncStatus } from '@prisma/client';
 
 @Injectable()
-export class MarketDataService {
+export class MarketDataService implements OnModuleInit {
   private readonly logger = new Logger(MarketDataService.name);
 
   constructor(
@@ -28,6 +29,98 @@ export class MarketDataService {
     private readonly mockProvider: MockMarketDataProvider,
     private readonly httpProvider: HttpMarketDataProvider,
   ) {}
+
+  async onModuleInit() {
+    // Automatically sweep and recover any orphaned sync runs that were running when the server died/restarted
+    try {
+      await this.cleanupAllStaleSyncRuns();
+    } catch (e: any) {
+      this.logger.warn(`Failed initial cleanup of stale sync runs: ${e.message}`);
+    }
+  }
+
+  /**
+   * Sweeps all RUNNING runs and recovers them
+   */
+  async cleanupAllStaleSyncRuns(maxAgeMinutes: number = 0) {
+    const threshold = new Date(Date.now() - maxAgeMinutes * 60 * 1000);
+    const staleRuns = await this.prisma.marketSyncRun.findMany({
+      where: {
+        status: SyncStatus.RUNNING,
+        startedAt: maxAgeMinutes > 0 ? { lte: threshold } : undefined,
+      },
+    });
+
+    for (const run of staleRuns) {
+      this.logger.log(`[MarketDataService] Auto-recovering stale sync run ${run.id}...`);
+      await this.recoverStaleSyncRun(run.id, 'Proses terhenti karena restart server / timeout');
+    }
+  }
+
+  /**
+   * Recovers a stalled or interrupted sync run into a completed status (PARTIAL, SUCCESS, or FAILED)
+   */
+  async recoverStaleSyncRun(
+    runId: string,
+    reason: string = 'Proses sinkronisasi terputus akibat restart server atau batas waktu koneksi',
+  ) {
+    const run = await this.prisma.marketSyncRun.findUnique({
+      where: { id: runId },
+      include: { items: true },
+    });
+    if (!run) return null;
+
+    // 1. Mark any item that is still RUNNING as FAILED
+    await this.prisma.marketSyncItem.updateMany({
+      where: {
+        syncRunId: runId,
+        status: SyncStatus.RUNNING,
+      },
+      data: {
+        status: SyncStatus.FAILED,
+        errorMessage: reason,
+      },
+    });
+
+    // 2. Fetch fresh items to accurately count results
+    const items = await this.prisma.marketSyncItem.findMany({
+      where: { syncRunId: runId },
+    });
+
+    const successCount = items.filter((i) => i.status === SyncStatus.SUCCESS).length;
+    const failedCount = items.filter((i) => i.status === SyncStatus.FAILED).length;
+
+    const finalStatus =
+      successCount === run.totalSymbols && run.totalSymbols > 0
+        ? SyncStatus.SUCCESS
+        : successCount > 0
+          ? SyncStatus.PARTIAL
+          : SyncStatus.FAILED;
+
+    return this.prisma.marketSyncRun.update({
+      where: { id: runId },
+      data: {
+        status: finalStatus,
+        syncedCount: successCount,
+        failedCount,
+        completedAt: new Date(),
+        errorMessage:
+          failedCount > 0
+            ? `${failedCount} dari ${run.totalSymbols} simbol tidak tuntas: ${reason}`
+            : null,
+      },
+      include: {
+        items: true,
+      },
+    });
+  }
+
+  /**
+   * Allows an admin to manually cancel / reset a stuck sync run
+   */
+  async cancelSyncRun(runId: string) {
+    return this.recoverStaleSyncRun(runId, 'Dibatalkan secara manual oleh Admin');
+  }
 
   /**
    * Triggers historical intraday sync for all unique stocks picked in a tournament on a given date.
@@ -192,6 +285,11 @@ export class MarketDataService {
         });
 
         syncedCount++;
+        // Update live parent run counts incrementally
+        await this.prisma.marketSyncRun.update({
+          where: { id: syncRun.id },
+          data: { syncedCount, failedCount },
+        });
       } catch (err: any) {
         this.logger.error(
           `[MarketSync] Failed syncing symbol ${symbol}: ${err.message}`,
@@ -204,6 +302,12 @@ export class MarketDataService {
             status: SyncStatus.FAILED,
             errorMessage: err.message || 'Unknown provider error',
           },
+        });
+
+        // Update live parent run counts incrementally
+        await this.prisma.marketSyncRun.update({
+          where: { id: syncRun.id },
+          data: { syncedCount, failedCount },
         });
       }
     }
@@ -240,6 +344,23 @@ export class MarketDataService {
    * Retrieves all sync runs for a tournament.
    */
   async getSyncRuns(tournamentId: string) {
+    // Automatically sweep any stale RUNNING runs for this tournament (older than 3 minutes)
+    try {
+      const staleThreshold = new Date(Date.now() - 3 * 60 * 1000);
+      const staleRuns = await this.prisma.marketSyncRun.findMany({
+        where: {
+          tournamentId,
+          status: SyncStatus.RUNNING,
+          startedAt: { lte: staleThreshold },
+        },
+      });
+      for (const r of staleRuns) {
+        await this.recoverStaleSyncRun(r.id);
+      }
+    } catch (e: any) {
+      this.logger.warn(`Notice while recovering stale sync runs: ${e.message}`);
+    }
+
     return this.prisma.marketSyncRun.findMany({
       where: { tournamentId },
       orderBy: { createdAt: 'desc' },
@@ -253,7 +374,7 @@ export class MarketDataService {
    * Retrieves details of a specific sync run.
    */
   async getSyncRunDetail(runId: string) {
-    const run = await this.prisma.marketSyncRun.findUnique({
+    let run = await this.prisma.marketSyncRun.findUnique({
       where: { id: runId },
       include: {
         items: true,
@@ -270,6 +391,18 @@ export class MarketDataService {
       throw new NotFoundException(
         `Sync run dengan ID ${runId} tidak ditemukan`,
       );
+    }
+
+    // If still marked as RUNNING but started more than 3 minutes ago, auto-recover it
+    if (
+      run.status === SyncStatus.RUNNING &&
+      run.startedAt &&
+      run.startedAt.getTime() < Date.now() - 3 * 60 * 1000
+    ) {
+      const recovered = await this.recoverStaleSyncRun(runId);
+      if (recovered) {
+        run = recovered as any;
+      }
     }
 
     return run;

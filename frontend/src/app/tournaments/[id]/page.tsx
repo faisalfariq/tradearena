@@ -46,6 +46,8 @@ import {
   CheckSquare,
   Lock,
   Unlock,
+  AlertTriangle,
+  History,
 } from 'lucide-react';
 
 interface DailyResultItem {
@@ -67,6 +69,8 @@ interface DailyResultItem {
   points: number | string;
   pointsRule: string;
   evaluationStatus: string;
+  isPenalty?: boolean;
+  penaltyReason?: string | null;
 }
 
 interface DailyMetrics {
@@ -94,6 +98,13 @@ interface DailyResultsResponse {
   tradingDate: string;
   metrics: DailyMetrics;
   results: DailyResultItem[];
+  penalties?: Array<{
+    id: string;
+    participantId: string;
+    participantName: string;
+    points: number;
+    reason: string;
+  }>;
 }
 
 interface OverallResultItem {
@@ -107,6 +118,14 @@ interface OverallResultItem {
   breakevenCount: number;
   winRate: number;
   averageReturn: number;
+  penaltyPoints?: number;
+  penaltiesCount?: number;
+  penaltiesHistory?: Array<{
+    id: string;
+    date: string;
+    points: number;
+    reason: string;
+  }>;
   bestPick: { symbol: string; returnPct: number; date: string; points: number } | null;
   worstPick: { symbol: string; returnPct: number; date: string; points: number } | null;
 }
@@ -117,6 +136,7 @@ interface OverallStandingsResponse {
   totalParticipants: number;
   totalEvaluatedPicks: number;
   standings: OverallResultItem[];
+  totalPenaltiesCount?: number;
 }
 
 interface TournamentRule {
@@ -457,6 +477,11 @@ export default function TournamentDetailPage() {
   const [resultsActionError, setResultsActionError] = useState('');
   const [resultsActionSuccess, setResultsActionSuccess] = useState('');
   const [showTieBreakerGuide, setShowTieBreakerGuide] = useState(false);
+  const [cancellingSync, setCancellingSync] = useState(false);
+  const [selectedParticipantPenalties, setSelectedParticipantPenalties] = useState<{
+    participantName: string;
+    penalties: Array<{ id: string; date: string; points: number; reason: string }>;
+  } | null>(null);
 
   // Automation & Exception states (Milestone M8)
   const [automationDate, setAutomationDate] = useState('');
@@ -942,6 +967,66 @@ export default function TournamentDetailPage() {
       // ignore
     } finally {
       setLoadingSyncDetail(false);
+    }
+  };
+
+  // Cancel / reset stuck market sync run
+  const handleCancelSyncRun = async (runId: string) => {
+    setCancellingSync(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/market-sync/${runId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal membatalkan sync run');
+      }
+      setSyncSuccess(data.message || 'Sync run berhasil dibatalkan / di-reset.');
+      fetchSyncRuns();
+      if (selectedSyncRun && selectedSyncRun.id === runId) {
+        handleViewRunDetails(runId);
+      }
+    } catch (err: any) {
+      setSyncError(err.message || 'Gagal membatalkan sync run');
+    } finally {
+      setCancellingSync(false);
+    }
+  };
+
+  // Resync a specific date
+  const handleResyncDate = async (tradingDate: string, provider: string) => {
+    setTriggeringSync(true);
+    try {
+      const res = await fetch(`${API_BASE}/tournaments/${tournamentId}/market-sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          tradingDate,
+          provider: provider || 'YAHOO',
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal menyinkronkan data pasar');
+      }
+      setSyncSuccess(
+        `Sinkronisasi ulang berhasil! ${data.syncedSymbols}/${data.totalSymbols} emiten (${data.status}).`,
+      );
+      fetchSyncRuns();
+      if (selectedSyncRun) {
+        handleViewRunDetails(selectedSyncRun.id);
+      }
+    } catch (err: any) {
+      setSyncError(err.message || 'Gagal menyinkronkan data pasar');
+    } finally {
+      setTriggeringSync(false);
     }
   };
 
@@ -2870,13 +2955,30 @@ export default function TournamentDetailPage() {
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          <button
-                            onClick={() => handleViewRunDetails(run.id)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all border border-slate-700"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-blue-400" />
-                            <span>Lihat Rincian</span>
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            {run.status === 'RUNNING' && (
+                              <button
+                                onClick={() => handleCancelSyncRun(run.id)}
+                                disabled={cancellingSync}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold transition-all border border-rose-500/30 disabled:opacity-50"
+                                title="Batalkan / reset sync yang macet"
+                              >
+                                {cancellingSync ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                                )}
+                                <span>Reset Macet</span>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleViewRunDetails(run.id)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all border border-slate-700"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-blue-400" />
+                              <span>Lihat Rincian</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -3658,6 +3760,38 @@ export default function TournamentDetailPage() {
                     </div>
                   </div>
 
+                  {/* Daily Penalty Notice Banner */}
+                  {dailyResults.penalties && dailyResults.penalties.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 shadow-lg">
+                      <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h5 className="text-xs font-bold text-rose-300">
+                            Pengurangan Poin Penalti ({dailyResults.penalties.length} Peserta Tidak Pick Emiten)
+                          </h5>
+                          <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold">
+                            -10 Poin / Hari
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 mt-1">
+                          Peserta berikut tidak memilih emiten harian pada sesi perdagangan tanggal{' '}
+                          <strong>{dailyResults.tradingDate}</strong> dan secara otomatis dikenakan sanksi pengurangan poin sebesar <strong>-10.00 pts</strong>:
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2.5">
+                          {dailyResults.penalties.map((pen) => (
+                            <span
+                              key={pen.id}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-rose-500/40 text-[11px] text-rose-200"
+                            >
+                              <span className="font-semibold text-white">{pen.participantName}</span>
+                              <span className="font-mono font-bold text-rose-400">({pen.points} pts)</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Daily Rankings Table */}
                   <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
                     <div className="p-4 border-b border-slate-800 flex items-center justify-between">
@@ -3686,7 +3820,7 @@ export default function TournamentDetailPage() {
                             <th className="py-3 px-4 font-semibold text-right">Harga Exit</th>
                             <th className="py-3 px-4 font-semibold text-center">Realized Return</th>
                             <th className="py-3 px-4 font-semibold text-center">Poin Turnamen</th>
-                            <th className="py-3 px-4 font-semibold text-center">Alasan Exit</th>
+                            <th className="py-3 px-4 font-semibold text-center">Alasan Exit / Status</th>
                             <th className="py-3 px-4 font-semibold text-right">Bukti Audit</th>
                           </tr>
                         </thead>
@@ -3695,17 +3829,26 @@ export default function TournamentDetailPage() {
                             const ret = Number(r.realizedReturn);
                             const isPositive = ret >= 0;
                             const pts = Number(r.points);
+                            const isPenalty = Boolean(r.isPenalty);
 
                             return (
                               <tr
-                                key={r.participantId + r.stockSymbol}
+                                key={r.participantId + (r.stockSymbol || 'NO_PICK')}
                                 className={`hover:bg-slate-800/30 transition-colors ${
-                                  r.rank === 1 ? 'bg-amber-500/5' : ''
+                                  isPenalty
+                                    ? 'bg-rose-500/5'
+                                    : r.rank === 1
+                                    ? 'bg-amber-500/5'
+                                    : ''
                                 }`}
                               >
                                 {/* Rank badge */}
                                 <td className="py-3.5 px-4 text-center">
-                                  {r.rank === 1 ? (
+                                  {isPenalty ? (
+                                    <span className="text-rose-400 font-mono font-semibold text-xs">
+                                      #{r.rank}
+                                    </span>
+                                  ) : r.rank === 1 ? (
                                     <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-black text-xs">
                                       <Crown className="w-3.5 h-3.5" />
                                     </span>
@@ -3727,7 +3870,13 @@ export default function TournamentDetailPage() {
                                 {/* Participant */}
                                 <td className="py-3.5 px-4 font-medium text-white">
                                   <div className="flex items-center gap-2.5">
-                                    <div className="w-7 h-7 rounded-lg bg-blue-600/20 text-blue-400 font-bold text-[11px] flex items-center justify-center uppercase shrink-0">
+                                    <div
+                                      className={`w-7 h-7 rounded-lg font-bold text-[11px] flex items-center justify-center uppercase shrink-0 ${
+                                        isPenalty
+                                          ? 'bg-rose-600/20 text-rose-400'
+                                          : 'bg-blue-600/20 text-blue-400'
+                                      }`}
+                                    >
                                       {r.participantName.substring(0, 2)}
                                     </div>
                                     <span className="truncate">{r.participantName}</span>
@@ -3736,107 +3885,156 @@ export default function TournamentDetailPage() {
 
                                 {/* Stock */}
                                 <td className="py-3.5 px-4">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-mono font-bold text-slate-100 bg-slate-800 px-2 py-0.5 rounded text-[11px] border border-slate-700">
-                                      {r.stockSymbol}
-                                    </span>
-                                    <span className="text-slate-400 text-[11px] truncate max-w-[120px]">
-                                      {r.stockName}
-                                    </span>
-                                  </div>
+                                  {isPenalty ? (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-mono font-bold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded text-[11px] border border-rose-500/30">
+                                        NO PICK
+                                      </span>
+                                      <span className="text-rose-400/80 text-[11px] truncate max-w-[120px]">
+                                        Tidak Pick Emiten
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-mono font-bold text-slate-100 bg-slate-800 px-2 py-0.5 rounded text-[11px] border border-slate-700">
+                                        {r.stockSymbol}
+                                      </span>
+                                      <span className="text-slate-400 text-[11px] truncate max-w-[120px]">
+                                        {r.stockName}
+                                      </span>
+                                    </div>
+                                  )}
                                 </td>
 
                                 {/* Entry Price */}
                                 <td className="py-3.5 px-4 text-right font-mono text-slate-200">
-                                  Rp {Number(r.entryPrice).toLocaleString('id-ID')}
+                                  {isPenalty ? (
+                                    <span className="text-slate-500">-</span>
+                                  ) : (
+                                    `Rp ${Number(r.entryPrice).toLocaleString('id-ID')}`
+                                  )}
                                 </td>
 
                                 {/* Peak Price */}
                                 <td className="py-3.5 px-4 text-right font-mono">
-                                  <span className="text-emerald-400">
-                                    Rp {Number(r.highestPrice).toLocaleString('id-ID')}
-                                  </span>
-                                  <span className="text-[10px] text-emerald-500/80 block">
-                                    +{Number(r.maxFloatingReturn).toFixed(2)}%
-                                  </span>
+                                  {isPenalty ? (
+                                    <span className="text-slate-500">-</span>
+                                  ) : (
+                                    <>
+                                      <span className="text-emerald-400">
+                                        Rp {Number(r.highestPrice).toLocaleString('id-ID')}
+                                      </span>
+                                      <span className="text-[10px] text-emerald-500/80 block">
+                                        +{Number(r.maxFloatingReturn).toFixed(2)}%
+                                      </span>
+                                    </>
+                                  )}
                                 </td>
 
                                 {/* Exit Price */}
                                 <td className="py-3.5 px-4 text-right font-mono">
-                                  <span className="text-white font-semibold">
-                                    Rp {Number(r.exitPrice).toLocaleString('id-ID')}
-                                  </span>
-                                  <span className="text-[10px] text-slate-500 block">
-                                    {new Date(r.exitTimestamp).toLocaleTimeString('id-ID', {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}{' '}
-                                    WIB
-                                  </span>
+                                  {isPenalty ? (
+                                    <span className="text-slate-500">-</span>
+                                  ) : (
+                                    <>
+                                      <span className="text-white font-semibold">
+                                        Rp {Number(r.exitPrice).toLocaleString('id-ID')}
+                                      </span>
+                                      <span className="text-[10px] text-slate-500 block">
+                                        {new Date(r.exitTimestamp).toLocaleTimeString('id-ID', {
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })}{' '}
+                                        WIB
+                                      </span>
+                                    </>
+                                  )}
                                 </td>
 
                                 {/* Realized Return */}
                                 <td className="py-3.5 px-4 text-center font-mono">
-                                  <span
-                                    className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-bold ${
-                                      isPositive
-                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                    }`}
-                                  >
-                                    {isPositive ? (
-                                      <ArrowUpRight className="w-3 h-3" />
-                                    ) : (
-                                      <ArrowDownRight className="w-3 h-3" />
-                                    )}
-                                    <span>
-                                      {isPositive ? `+${ret.toFixed(2)}%` : `${ret.toFixed(2)}%`}
+                                  {isPenalty ? (
+                                    <span className="text-slate-500 font-mono text-xs">-</span>
+                                  ) : (
+                                    <span
+                                      className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-bold ${
+                                        isPositive
+                                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                      }`}
+                                    >
+                                      {isPositive ? (
+                                        <ArrowUpRight className="w-3 h-3" />
+                                      ) : (
+                                        <ArrowDownRight className="w-3 h-3" />
+                                      )}
+                                      <span>
+                                        {isPositive ? `+${ret.toFixed(2)}%` : `${ret.toFixed(2)}%`}
+                                      </span>
                                     </span>
-                                  </span>
+                                  )}
                                 </td>
 
                                 {/* Tournament Points */}
                                 <td className="py-3.5 px-4 text-center font-mono">
                                   <span
                                     className={`inline-block px-2.5 py-1 rounded-lg text-xs font-extrabold ${
-                                      pts > 0
+                                      isPenalty
+                                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                        : pts > 0
                                         ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                                         : pts < 0
                                         ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                                         : 'bg-slate-800 text-slate-300 border border-slate-700'
                                     }`}
                                   >
-                                    {pts > 0 ? `+${pts.toFixed(2)} pts` : `${pts.toFixed(2)} pts`}
+                                    {isPenalty
+                                      ? `${pts.toFixed(2)} pts`
+                                      : pts > 0
+                                      ? `+${pts.toFixed(2)} pts`
+                                      : `${pts.toFixed(2)} pts`}
                                   </span>
                                 </td>
 
                                 {/* Exit Reason */}
                                 <td className="py-3.5 px-4 text-center">
-                                  <span
-                                    className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                      r.exitReason === 'INITIAL_CL'
-                                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                        : r.exitReason === 'TRAILING_STOP'
-                                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                        : r.exitReason === 'MARKET_CLOSE'
-                                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                        : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                                    }`}
-                                  >
-                                    {r.exitReason}
-                                  </span>
+                                  {isPenalty ? (
+                                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                                      PENALTI NO-PICK
+                                    </span>
+                                  ) : (
+                                    <span
+                                      className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                        r.exitReason === 'INITIAL_CL'
+                                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                          : r.exitReason === 'TRAILING_STOP'
+                                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                          : r.exitReason === 'MARKET_CLOSE'
+                                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                          : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                                      }`}
+                                    >
+                                      {r.exitReason}
+                                    </span>
+                                  )}
                                 </td>
 
                                 {/* Evidence Action */}
                                 <td className="py-3.5 px-4 text-right">
-                                  <button
-                                    onClick={() => handleViewEvidence(r.evaluationId || r.pickId || '')}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition-all border border-slate-700 shadow-sm"
-                                    title="Lihat Bukti Audit & Trigger Candle"
-                                  >
-                                    <Eye className="w-3.5 h-3.5 text-blue-400" />
-                                    <span>Evidence</span>
-                                  </button>
+                                  {isPenalty ? (
+                                    <span className="text-[11px] text-slate-500 italic">
+                                      Auto -10 Poin
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleViewEvidence(r.evaluationId || r.pickId || '')}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition-all border border-slate-700 shadow-sm"
+                                      title="Lihat Bukti Audit & Trigger Candle"
+                                    >
+                                      <Eye className="w-3.5 h-3.5 text-blue-400" />
+                                      <span>Evidence</span>
+                                    </button>
+                                  )}
                                 </td>
                               </tr>
                             );
@@ -4012,6 +4210,7 @@ export default function TournamentDetailPage() {
                             <th className="py-3 px-4 font-semibold text-center w-16">Peringkat</th>
                             <th className="py-3 px-4 font-semibold">Peserta Turnamen</th>
                             <th className="py-3 px-4 font-semibold text-center">Total Poin</th>
+                            <th className="py-3 px-4 font-semibold text-center">Penalti (No-Pick)</th>
                             <th className="py-3 px-4 font-semibold text-center">Win Rate</th>
                             <th className="py-3 px-4 font-semibold text-center">
                               Rekor (Menang / Kalah / Seri)
@@ -4067,6 +4266,31 @@ export default function TournamentDetailPage() {
                                 <span className="text-sm font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
                                   {s.totalPoints.toFixed(2)} pts
                                 </span>
+                              </td>
+
+                              {/* Penalty Column */}
+                              <td className="py-3.5 px-4 text-center font-mono">
+                                {s.penaltiesCount && s.penaltiesCount > 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setSelectedParticipantPenalties({
+                                        participantName: s.participantName,
+                                        penalties: s.penaltiesHistory || [],
+                                      })
+                                    }
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-all cursor-pointer shadow-sm group"
+                                    title="Klik untuk melihat riwayat pengurangan poin"
+                                  >
+                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
+                                    <span>{s.penaltyPoints ?? s.penaltiesCount * -10} pts</span>
+                                    <span className="text-[10px] px-1.5 py-0.2 bg-rose-500/20 text-rose-300 rounded-full font-bold">
+                                      {s.penaltiesCount}x
+                                    </span>
+                                  </button>
+                                ) : (
+                                  <span className="text-slate-500 text-xs font-mono">0 pts</span>
+                                )}
                               </td>
 
                               {/* Win Rate */}
@@ -4990,7 +5214,41 @@ export default function TournamentDetailPage() {
               </div>
             )}
 
-            <div className="pt-4 mt-4 border-t border-slate-800 flex justify-end">
+            <div className="pt-4 mt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {selectedSyncRun?.status === 'RUNNING' && (
+                  <button
+                    type="button"
+                    onClick={() => handleCancelSyncRun(selectedSyncRun.id)}
+                    disabled={cancellingSync}
+                    className="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    {cancellingSync ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                    )}
+                    <span>Batalkan / Reset Sync Macet</span>
+                  </button>
+                )}
+                {selectedSyncRun && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleResyncDate(selectedSyncRun.tradingDate, selectedSyncRun.provider)
+                    }
+                    disabled={triggeringSync}
+                    className="px-3 py-1.5 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-50"
+                  >
+                    {triggeringSync ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                    <span>Sinkron Ulang Tanggal Ini</span>
+                  </button>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => setIsDetailModalOpen(false)}
@@ -5584,6 +5842,88 @@ export default function TournamentDetailPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL RIWAYAT PENALTI PESERTA */}
+      {selectedParticipantPenalties && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-xl p-6 rounded-2xl border border-slate-700 shadow-2xl relative max-h-[85vh] flex flex-col">
+            <button
+              onClick={() => setSelectedParticipantPenalties(null)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertTriangle className="w-5 h-5 text-rose-400" />
+                <h3 className="text-lg font-bold text-white">
+                  Riwayat Pengurangan Poin Peserta
+                </h3>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Peserta: <strong className="text-white font-medium">{selectedParticipantPenalties.participantName}</strong>
+              </p>
+              <div className="mt-2.5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300">
+                Total Penalti:{' '}
+                <strong className="font-mono font-bold">
+                  {selectedParticipantPenalties.penalties.reduce((sum, p) => sum + p.points, 0)} pts
+                </strong>{' '}
+                ({selectedParticipantPenalties.penalties.length} hari tidak melakukan pick emiten).
+              </div>
+            </div>
+
+            <div className="overflow-y-auto flex-1 border border-slate-800 rounded-xl">
+              {selectedParticipantPenalties.penalties.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs">
+                  Tidak ada catatan pengurangan poin untuk peserta ini.
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] text-slate-400 uppercase bg-slate-900/80 sticky top-0 border-b border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4 font-semibold">Tanggal Sesi</th>
+                      <th className="py-3 px-4 font-semibold">Jenis Sanksi</th>
+                      <th className="py-3 px-4 font-semibold text-center">Pengurangan Poin</th>
+                      <th className="py-3 px-4 font-semibold">Alasan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {selectedParticipantPenalties.penalties.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-800/30">
+                        <td className="py-3 px-4 font-mono font-bold text-white text-xs">
+                          {item.date}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            TIDAK PICK EMITEN
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-extrabold text-rose-400">
+                          {item.points} pts
+                        </td>
+                        <td className="py-3 px-4 text-slate-400 text-[11px]">
+                          {item.reason}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div className="pt-4 mt-4 border-t border-slate-800 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedParticipantPenalties(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}

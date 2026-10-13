@@ -210,10 +210,19 @@ export class EvaluationService {
     });
 
     if (picks.length === 0) {
-      throw new BadRequestException(
-        `Tidak ada stock pick yang terdaftar pada tanggal ${tradingDateStr} untuk turnamen ini`,
-      );
+      const penaltyResult = await this.applyNoPickPenalties(tournamentId, targetDate);
+      return {
+        tournamentId,
+        tradingDate: tradingDateStr.substring(0, 10),
+        totalPicks: 0,
+        evaluatedCount: 0,
+        evaluations: [],
+        penalizedCount: penaltyResult.penalizedCount,
+      };
     }
+
+    // Apply -10 points penalty for participants who did not pick daily emiten
+    const penaltyResult = await this.applyNoPickPenalties(tournamentId, targetDate);
 
     const evaluations = [];
     for (const pick of picks) {
@@ -233,7 +242,89 @@ export class EvaluationService {
       totalPicks: picks.length,
       evaluatedCount: evaluations.length,
       evaluations,
+      penalizedCount: penaltyResult.penalizedCount,
     };
+  }
+
+  /**
+   * Applies -10 points penalty for any enrolled & approved participant who failed to pick an emiten on this trading date.
+   * Also removes penalty if the participant actually has picks.
+   */
+  async applyNoPickPenalties(tournamentId: string, tradingDate: Date) {
+    try {
+      // 1. Get all active & approved participants for this tournament
+      const enrolled = await this.prisma.tournamentParticipant.findMany({
+        where: {
+          tournamentId,
+          status: 'APPROVED',
+        },
+        include: { participant: true },
+      });
+
+      if (enrolled.length === 0) return { penalizedCount: 0, penalties: [] };
+
+      // 2. Get participants who submitted picks for this date
+      const picksToday = await this.prisma.stockPick.findMany({
+        where: {
+          tournamentId,
+          tradingDate,
+        },
+        select: { participantId: true },
+      });
+      const pickedParticipantIds = new Set(picksToday.map((p) => p.participantId));
+
+      // 3. Remove penalty for participants who DID submit picks
+      if (pickedParticipantIds.size > 0) {
+        await this.prisma.participantPenalty.deleteMany({
+          where: {
+            tournamentId,
+            tradingDate,
+            participantId: { in: Array.from(pickedParticipantIds) },
+            penaltyType: 'NO_PICK',
+          },
+        });
+      }
+
+      // 4. For participants who did NOT pick, upsert -10 penalty
+      const penalties = [];
+      for (const ep of enrolled) {
+        if (!pickedParticipantIds.has(ep.participantId)) {
+          const penalty = await this.prisma.participantPenalty.upsert({
+            where: {
+              tournamentId_participantId_tradingDate_penaltyType: {
+                tournamentId,
+                participantId: ep.participantId,
+                tradingDate,
+                penaltyType: 'NO_PICK',
+              },
+            },
+            update: {
+              points: -10,
+              reason: 'Tidak memilih emiten harian (-10 poin)',
+            },
+            create: {
+              tournamentId,
+              participantId: ep.participantId,
+              tradingDate,
+              penaltyType: 'NO_PICK',
+              points: -10,
+              reason: 'Tidak memilih emiten harian (-10 poin)',
+            },
+            include: { participant: true },
+          });
+          penalties.push(penalty);
+        }
+      }
+
+      this.logger.log(
+        `[applyNoPickPenalties] Applied ${penalties.length} penalties (-10 pts) for tournament ${tournamentId} on date ${tradingDate.toISOString().substring(0, 10)}`,
+      );
+
+      return { penalizedCount: penalties.length, penalties };
+    } catch (err: any) {
+      this.logger.error(`[applyNoPickPenalties] Error applying penalties: ${err.message}`);
+      return { penalizedCount: 0, penalties: [] };
+    }
   }
 
   /**

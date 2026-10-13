@@ -70,6 +70,18 @@ export class ResultsController {
     return this.resultsService.getOverallResults(tournamentId);
   }
 
+  @Get('penalties')
+  @ApiOperation({
+    summary: 'Ambil seluruh riwayat pengurangan poin / penalti turnamen',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Riwayat penalti turnamen berhasil diambil',
+  })
+  async getTournamentPenalties(@Param('tournamentId') tournamentId: string) {
+    return this.resultsService.getTournamentPenalties(tournamentId);
+  }
+
   @Post('recalculate')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)

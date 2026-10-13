@@ -34,6 +34,14 @@ interface OverallResultItem {
   breakevenCount: number;
   winRate: number;
   averageReturn: number;
+  penaltyPoints?: number;
+  penaltiesCount?: number;
+  penaltiesHistory?: Array<{
+    id: string;
+    date: string;
+    points: number;
+    reason: string;
+  }>;
   bestPick: {
     symbol: string;
     date: string;
@@ -67,6 +75,7 @@ interface OverallStandingsResponse {
   totalParticipants: number;
   totalEvaluatedPicks: number;
   standings: OverallResultItem[];
+  totalPenaltiesCount?: number;
 }
 
 interface DailyRankItem {
@@ -84,13 +93,15 @@ interface DailyRankItem {
   realizedReturn: number | null;
   points: number | null;
   evaluationStatus: string;
+  isPenalty?: boolean;
+  penaltyReason?: string | null;
 }
 
 interface DailyResultsResponse {
   tournamentId: string;
-  tournamentName: string;
+  tournamentName?: string;
   tradingDate: string;
-  dailyMetrics: {
+  dailyMetrics?: {
     tradingDate: string;
     totalParticipants: number;
     averageReturn: number;
@@ -107,7 +118,16 @@ interface DailyResultsResponse {
       returnPct: number;
     } | null;
   };
-  rankings: DailyRankItem[];
+  metrics?: any;
+  rankings?: DailyRankItem[];
+  results?: DailyRankItem[];
+  penalties?: Array<{
+    id: string;
+    participantId: string;
+    participantName: string;
+    points: number;
+    reason: string;
+  }>;
 }
 
 export default function TournamentLeaderboardPage() {
@@ -450,6 +470,7 @@ export default function TournamentLeaderboardPage() {
                     <th className="py-3 px-4">Peringkat</th>
                     <th className="py-3 px-4">Peserta</th>
                     <th className="py-3 px-4">Poin Akumulasi</th>
+                    <th className="py-3 px-4 text-center">Penalti (No-Pick)</th>
                     <th className="py-3 px-4">Pick Selesai</th>
                     <th className="py-3 px-4">Rekor (W/L/B)</th>
                     <th className="py-3 px-4">Win Rate</th>
@@ -492,6 +513,15 @@ export default function TournamentLeaderboardPage() {
                           {item.totalPoints >= 0 ? '+' : ''}
                           {item.totalPoints.toFixed(4)}
                         </span>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-center">
+                        {item.penaltiesCount && item.penaltiesCount > 0 ? (
+                          <span className="text-[11px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md inline-block">
+                            {item.penaltyPoints ?? item.penaltiesCount * -10} pts ({item.penaltiesCount}x)
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 text-xs">0 pts</span>
+                        )}
                       </td>
                       <td className="py-3.5 px-4">{item.picksCount} trade</td>
                       <td className="py-3.5 px-4 font-mono">
@@ -587,16 +617,16 @@ export default function TournamentLeaderboardPage() {
               <div>
                 Top Gainer Hari Ini:{' '}
                 <strong className="text-emerald-400 font-bold">
-                  {dailyData?.dailyMetrics.topGainer
-                    ? `${dailyData.dailyMetrics.topGainer.participantName} (${dailyData.dailyMetrics.topGainer.stockSymbol} +${dailyData.dailyMetrics.topGainer.returnPct.toFixed(2)}%)`
+                  {(dailyData?.dailyMetrics || dailyData?.metrics)?.topGainer
+                    ? `${(dailyData?.dailyMetrics || dailyData?.metrics).topGainer.participantName} (${(dailyData?.dailyMetrics || dailyData?.metrics).topGainer.stockSymbol} +${(dailyData?.dailyMetrics || dailyData?.metrics).topGainer.returnPct.toFixed(2)}%)`
                     : '—'}
                 </strong>
               </div>
               <div>
                 Rata-rata Return Sesi:{' '}
                 <strong className="text-white">
-                  {dailyData?.dailyMetrics.averageReturn !== undefined
-                    ? `${dailyData.dailyMetrics.averageReturn.toFixed(2)}%`
+                  {(dailyData?.dailyMetrics || dailyData?.metrics)?.averageReturn !== undefined
+                    ? `${(dailyData?.dailyMetrics || dailyData?.metrics).averageReturn.toFixed(2)}%`
                     : '0%'}
                 </strong>
               </div>
@@ -627,76 +657,114 @@ export default function TournamentLeaderboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-medium">
-                  {dailyData && dailyData.rankings.length > 0 ? (
-                    dailyData.rankings.map((row) => (
-                      <tr key={row.pickId} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3 px-4 font-bold">
-                          <span
-                            className={`w-6 h-6 rounded inline-flex items-center justify-center text-xs ${
-                              row.rank === 1
-                                ? 'bg-amber-500/20 text-amber-300 font-extrabold'
-                                : row.rank === 2
-                                ? 'bg-slate-400/20 text-slate-200'
-                                : row.rank === 3
-                                ? 'bg-orange-600/20 text-orange-300'
-                                : 'text-slate-400'
-                            }`}
-                          >
-                            #{row.rank}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-bold text-white">{row.participantName}</td>
-                        <td className="py-3 px-4">
-                          <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
-                            {row.stockSymbol}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-mono">
-                          Rp {row.entryPrice.toLocaleString('id-ID')}
-                        </td>
-                        <td className="py-3 px-4 font-mono text-emerald-400">
-                          {row.peakPrice ? `Rp ${row.peakPrice.toLocaleString('id-ID')}` : '—'}
-                        </td>
-                        <td className="py-3 px-4 font-mono">
-                          {row.exitPrice ? `Rp ${row.exitPrice.toLocaleString('id-ID')}` : '—'}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                            {row.exitReason || row.evaluationStatus}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-mono font-bold">
-                          {row.realizedReturn !== null ? (
+                  {(() => {
+                    const rows = dailyData?.rankings || dailyData?.results || [];
+                    if (rows.length === 0) return null;
+                    return rows.map((row) => {
+                      const isPenalty = Boolean(row.isPenalty);
+                      return (
+                        <tr
+                          key={row.pickId}
+                          className={`hover:bg-slate-800/40 transition-colors ${
+                            isPenalty ? 'bg-rose-500/5' : ''
+                          }`}
+                        >
+                          <td className="py-3 px-4 font-bold">
                             <span
-                              className={
-                                row.realizedReturn >= 0 ? 'text-emerald-400' : 'text-red-400'
-                              }
+                              className={`w-6 h-6 rounded inline-flex items-center justify-center text-xs ${
+                                isPenalty
+                                  ? 'text-rose-400'
+                                  : row.rank === 1
+                                  ? 'bg-amber-500/20 text-amber-300 font-extrabold'
+                                  : row.rank === 2
+                                  ? 'bg-slate-400/20 text-slate-200'
+                                  : row.rank === 3
+                                  ? 'bg-orange-600/20 text-orange-300'
+                                  : 'text-slate-400'
+                              }`}
                             >
-                              {row.realizedReturn >= 0 ? '+' : ''}
-                              {row.realizedReturn.toFixed(2)}%
+                              #{row.rank}
                             </span>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                        <td className="py-3 px-4 font-mono font-bold text-white">
-                          {row.points !== null ? row.points.toFixed(4) : '—'}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedEvidenceId(row.pickId);
-                              fetchEvidenceDetail(row.pickId);
-                            }}
-                            className="px-2.5 py-1 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 text-[11px] font-semibold inline-flex items-center gap-1 transition-colors"
-                          >
-                            <Eye className="w-3 h-3" />
-                            <span>Bukti</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
+                          </td>
+                          <td className="py-3 px-4 font-bold text-white">{row.participantName}</td>
+                          <td className="py-3 px-4">
+                            {isPenalty ? (
+                              <span className="font-mono font-bold text-rose-300 px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/30 text-[11px]">
+                                NO PICK
+                              </span>
+                            ) : (
+                              <span className="font-mono font-bold text-blue-400 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+                                {row.stockSymbol}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-mono">
+                            {isPenalty ? '-' : `Rp ${Number(row.entryPrice).toLocaleString('id-ID')}`}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-emerald-400">
+                            {isPenalty ? '-' : row.peakPrice ? `Rp ${row.peakPrice.toLocaleString('id-ID')}` : '—'}
+                          </td>
+                          <td className="py-3 px-4 font-mono">
+                            {isPenalty ? '-' : row.exitPrice ? `Rp ${row.exitPrice.toLocaleString('id-ID')}` : '—'}
+                          </td>
+                          <td className="py-3 px-4">
+                            {isPenalty ? (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20">
+                                PENALTI NO-PICK
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                                {row.exitReason || row.evaluationStatus}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold">
+                            {isPenalty ? (
+                              <span className="text-slate-500">-</span>
+                            ) : row.realizedReturn !== null && row.realizedReturn !== undefined ? (
+                              <span
+                                className={
+                                  Number(row.realizedReturn) >= 0 ? 'text-emerald-400' : 'text-red-400'
+                                }
+                              >
+                                {Number(row.realizedReturn) >= 0 ? '+' : ''}
+                                {Number(row.realizedReturn).toFixed(2)}%
+                              </span>
+                            ) : (
+                              '—'
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold">
+                            {isPenalty ? (
+                              <span className="text-rose-400">
+                                {Number(row.points || -10).toFixed(4)}
+                              </span>
+                            ) : (
+                              <span className="text-white">
+                                {row.points !== null && row.points !== undefined ? Number(row.points).toFixed(4) : '—'}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            {isPenalty ? (
+                              <span className="text-[11px] text-slate-500 italic">Auto-Penalty</span>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setSelectedEvidenceId(row.pickId);
+                                  fetchEvidenceDetail(row.pickId);
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 text-[11px] font-semibold inline-flex items-center gap-1 transition-colors"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>Bukti</span>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })() || (
                     <tr>
                       <td colSpan={10} className="py-8 text-center text-slate-500 text-xs">
                         Tidak ada trade yang dievaluasi pada tanggal {selectedDate}.
